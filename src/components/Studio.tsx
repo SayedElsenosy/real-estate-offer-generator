@@ -9,8 +9,9 @@ type Project = { id: string; slug: string; name: string; paymentPlans: Plan[] };
 type Shape = { unitCode: string; d: string };
 type Floor = { id: string; name: string; floor: string | null; viewBox: string; shapes: Shape[] };
 type History = { id: string; unitCode: string; issuedAt: string; status: string; project: { name: string } };
-function unavailable(status: string): boolean {
-  return ["booked","sold","reserved","unavailable","مباع","محجوز"].includes(status.trim().toLowerCase());
+function isAvailable(status: string): boolean {
+  const normalized = String(status).normalize("NFKC").trim().toLowerCase().replace(/\s+/g,"");
+  return ["available","avail","forsale","متاح","متاحة","متوفر","متوفرة"].includes(normalized);
 }
 function nicePrice(value: string) {
   const x = Number(value.replace(/[,\s]/g, ""));
@@ -51,7 +52,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
   }, []);
   function selectUnit(code: string) {
     const match = units.find(u => u.code === code);
-    if (!match || unavailable(match.status)) return;
+    if (!match || !isAvailable(match.status)) return;
     setSelected(code);
   }
   async function issueOffer() {
@@ -98,7 +99,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
           {floor?.shapes?.length ? <svg className="floor-svg" viewBox={floor.viewBox} role="img" aria-label="Selectable floor map">
             {floor.shapes.map((shape, i) => {
               const known = units.find(value => value.code === shape.unitCode);
-              const blocked = !known || unavailable(known.status);
+              const blocked = !known || !isAvailable(known.status);
               return <path key={i} d={shape.d} stroke="#314763" strokeWidth="2"
                 fill={blocked ? "#d3d9e1" : shape.unitCode === selected ? "#c5a16a" : "#d8e8df"}
                 style={{ cursor: blocked ? "not-allowed" : "pointer", transition: "fill 150ms" }}
@@ -114,7 +115,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
         <section className="panel"><div className="panelhead"><div><div className="eyebrow">CURRENT INVENTORY</div><h2 style={{marginTop:10}}>Find your property</h2></div><span className="pill">{units.length} total</span></div>
           <input className="field" placeholder="Search Unit Code or floor..." value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:15}} />
           <div className="list">{visibleUnits.map(value => <button type="button" key={value.code} className={"unit" + (value.code === selected ? " active" : "")}
-            disabled={unavailable(value.status)} onClick={() => selectUnit(value.code)}>
+            disabled={!isAvailable(value.status)} onClick={() => selectUnit(value.code)}>
             <span><b>{value.code}</b><small>Floor {value.floor || "—"} · {value.area || "—"} sqm</small></span>
             <span style={{textAlign:"right"}}><b>{nicePrice(value.price)}</b><small>{value.status}</small></span>
           </button>)}
