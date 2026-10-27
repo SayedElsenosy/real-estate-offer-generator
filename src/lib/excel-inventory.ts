@@ -51,7 +51,7 @@ export async function getExcelInventory(
     throw new Error("Google Drive did not return a valid supported XLSX file.");
 
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(bytes as Parameters<typeof workbook.xlsx.load>[0]);
+  await workbook.xlsx.load(bytes as unknown as Parameters<typeof workbook.xlsx.load>[0]);
   const sheet = workbook.getWorksheet(tab);
   if (!sheet)
     throw new Error("The Excel workbook does not contain the configured tab: " + tab);
