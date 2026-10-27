@@ -94,16 +94,16 @@ export default function AdminPanel({ email, projects }: { email: string; project
       <select className="field" style={{maxWidth:300}} value={id} onChange={e=>{setId(e.target.value);setPlan(blankPlan);setFloor(blankFloor);setNotice("");}}>
         {items.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></div></div>
     {project && <div className="grid2"><div className="stack">
-      <section className="panel"><div className="eyebrow">PRIVATE INVENTORY SOURCE</div><h2 style={{marginTop:12}}>Google Sheets connection</h2>
-        <p className="muted">Store the Spreadsheet ID and range. Each salesperson must have Reader access. Publish to web is not needed.</p>
+      <section className="panel"><div className="eyebrow">READ-ONLY INVENTORY SOURCE</div><h2 style={{marginTop:12}}>Google Drive / Google Sheets connection</h2>
+        <p className="muted">Cairo Plaza reads the Excel file directly from Google Drive, using Sheet1. Other projects read native Google Sheets. Each account only needs Viewer/Reader access; no file is edited.</p>
         <div className="stack" style={{gap:13}}>
-          <label className="fieldlabel">Spreadsheet ID<input className="field" value={project.spreadsheetId || ""} placeholder="1AbCdEf..." onChange={e=>changeProject("spreadsheetId",e.target.value)}/></label>
-          <label className="fieldlabel">Sheet range<input className="field" value={project.sheetRange} onChange={e=>changeProject("sheetRange",e.target.value)}/></label>
+          <label className="fieldlabel">Google Drive file ID<input className="field" value={project.spreadsheetId || ""} placeholder="1AbCdEf..." onChange={e=>changeProject("spreadsheetId",e.target.value)}/></label>
+          <label className="fieldlabel">Tab / range<input className="field" value={project.sheetRange} onChange={e=>changeProject("sheetRange",e.target.value)}/></label>
           <label className="fieldlabel">Company name on offers<input className="field" value={project.companyName} onChange={e=>changeProject("companyName",e.target.value)}/></label>
           <label className="fieldlabel">Company logo URL (HTTPS)<input className="field" value={project.logoUrl||""} onChange={e=>changeProject("logoUrl",e.target.value)}/></label>
           <button className="btn" onClick={saveProject} disabled={busy}>Save project settings</button>
         </div>
-        <div className="notice" style={{marginTop:18}}>Supported headers: Unit Code, Price, Area, Floor, Status. Custom sheet columns can be normalized in the integration service.</div>
+        <div className="notice" style={{marginTop:18}}>Cairo Plaza: Excel Sheet1 (column A code, G area, E floor, L status, M total price). The other projects use their verified live sheet layouts.</div>
       </section>
       <section className="panel"><div className="eyebrow">ARCHITECTURAL GEOMETRY</div><h2 style={{marginTop:12}}>Import floor-plan SVG</h2>
         <p className="muted">Export the original floor PDF to SVG and assign IDs to its unit paths/polygons (for example CP-A101). Only SVG geometric paths are saved, not embedded scripts or markup.</p>

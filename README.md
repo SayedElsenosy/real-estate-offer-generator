@@ -43,3 +43,16 @@ Prisma schema matches eight tables already provisioned in the dedicated Neon off
 The current PDF is an original corporate starter template. Exact 1:1 matching requires the original reference PDF, official fonts, imagery, and brand assets. Generated PDF files are streamed to the user and offer data is snapshotted in PostgreSQL, but the binary PDF itself is not archived in object storage yet. This is not an invoice or binding contract.
 
 Do not place .env secrets into the repository or front-end bundles.
+
+
+## Cairo Plaza XLSX: original file, read-only
+
+Cairo Plaza's source is an Office workbook (Price List.xlsx) on Google Drive, not a native Google Sheet.
+
+The server downloads the original file via the Drive files.get alt=media endpoint with the signed-in user's drive.readonly scope and parses only the configured Sheet1 tab with ExcelJS. No conversion, copy or writes.
+
+Configured in Neon as Sheet1!A:N. Its verified Sheet1 columns are A = Unit Code, E = floor, G = area, L = availability, M = total unit price.
+
+Only Available units can be offered. The server re-reads prices and status when issuing each PDF.
+
+On the next login the user may need to consent to Google Drive readonly access. Enable Google Drive API in the Google Cloud project if it is disabled. Drive readonly is a restricted scope that may need app verification for production users.

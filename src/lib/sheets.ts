@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { getExcelInventory } from "@/lib/excel-inventory";
 
 export type InventoryUnit = {
   code: string;
@@ -105,6 +106,9 @@ export async function getLiveInventory(
   userId: string, spreadsheetId: string, range: string, projectName: string
 ): Promise<InventoryUnit[]> {
   const token = await accessToken(userId);
+  if (projectName.toLowerCase().replace(/\s+/g, "-") === "cairo-plaza") {
+    return getExcelInventory(token, spreadsheetId, range, projectName);
+  }
   const url = "https://sheets.googleapis.com/v4/spreadsheets/" +
     encodeURIComponent(spreadsheetId) + "/values/" + encodeURIComponent(range);
   const response = await fetch(url, {
