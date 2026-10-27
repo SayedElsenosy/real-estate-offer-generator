@@ -111,16 +111,16 @@ export default function Studio({ projects, email }: { projects: Project[]; email
               const known = units.find(value => value.code === shape.unitCode);
               const blocked = !known || !isAvailable(known.status);
               return <path key={i} d={shape.d} stroke="#314763" strokeWidth="2"
-                fill={blocked ? "#d3d9e1" : shape.unitCode === selected ? "#c5a16a" : "#d8e8df"}
+                fill={!known ? "#efaaaa" : blocked ? "#d3d9e1" : shape.unitCode === selected ? "#c5a16a" : "#d8e8df"}
                 style={{ cursor: blocked ? "not-allowed" : "pointer", transition: "fill 150ms" }}
                 tabIndex={blocked ? -1 : 0} role="button" aria-label={"Unit " + shape.unitCode}
                 onClick={() => selectUnit(shape.unitCode)}
                 onKeyDown={event => { if (event.key === "Enter" || event.key === " ") selectUnit(shape.unitCode); }}>
-                <title>{shape.unitCode + (known ? " · " + nicePrice(known.price) : " · No matching inventory")}</title>
+                <title>{shape.unitCode + (known ? " · " + nicePrice(known.price) : " · SOLD OUT (not in current inventory)")}</title>
               </path>;
             })}
           </svg> : <div className="floor-blank"><div><div className="symbol">⌗</div><h2>Floor plan not mapped yet</h2><p className="muted">Upload a real SVG with IDs matching Unit Codes from the Sheet in Workspace Settings.</p></div></div>}
-          <p className="muted">Gold = selected unit. Pale green = selectable. Grey = booked or unmatched. Shapes are matched by exact Unit Code.</p>
+          <p className="muted">Gold = selected. Green = available. Grey = reserved. Red = SOLD OUT (present on drawing, absent from inventory). These units cannot be offered.</p>
         </section>
       </div>
       <div className="stack">
