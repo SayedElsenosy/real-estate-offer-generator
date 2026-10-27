@@ -3,7 +3,7 @@ import { Document, Page, Text, View, Image, Svg, Path, StyleSheet } from "@react
 import type { InventoryUnit } from "@/lib/sheets";
 import type { ScheduleRow } from "@/lib/payment";
 
-export type FloorGeometry = { viewBox: string; shapes: { unitCode: string; d: string }[] } | null;
+export type FloorGeometry = { viewBox: string; shapes: { unitCode: string; d: string; status: "AVAILABLE" | "UNAVAILABLE" | "SOLD_OUT" }[] } | null;
 export type OfferSchedule = {
   name: string; totalPrice: string; downPayment: string; maintenance: string;
   totalIncludingMaintenance: string; rows: ScheduleRow[]
@@ -57,11 +57,11 @@ export function OfferDocument({ company, logo, project, unit, issuedAt, floor, s
       {floor?.shapes?.length
         ? <View style={{ marginTop: 34, borderWidth: 1, borderColor: "#e0e6ec", padding: 10 }}>
             <Svg width={470} height={350} viewBox={floor.viewBox}>
-              {floor.shapes.map((s, i) => <Path key={i} d={s.d} fill={s.unitCode === unit.code ? "#c99d55" : "#e1e8ef"} stroke="#293c54" strokeWidth={2} />)}
+              {floor.shapes.map((s, i) => <Path key={i} d={s.d} fill={s.unitCode === unit.code ? "#c99d55" : s.status === "SOLD_OUT" ? "#efaaaa" : s.status === "UNAVAILABLE" ? "#cbd5e1" : "#d8e8df"} stroke="#293c54" strokeWidth={2} />)}
             </Svg>
           </View>
         : <Text style={{ marginTop: 34, color: "#8c97a5" }}>An approved floor plan is not yet attached for this floor.</Text>}
-      <Text style={{ marginTop: 20, color: "#8c97a5", fontSize: 9 }}>The gold shape marks the chosen unit. Floor plan is for location reference, not measurements.</Text>
+      <Text style={{ marginTop: 20, color: "#8c97a5", fontSize: 9 }}>Gold marks the chosen unit. Red = SOLD OUT (not in current inventory). Grey = unavailable. Green = available. Floor plan is for location reference, not measurements.</Text>
       <Footer company={company} />
     </Page>
     {schedules.map((schedule, index) => <Page key={index} size="A4" style={st.page} wrap>
