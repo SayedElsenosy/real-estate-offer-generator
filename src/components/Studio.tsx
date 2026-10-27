@@ -7,7 +7,7 @@ type Unit = { code: string; price: string; area: string; floor: string; status: 
 type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number };
 type Project = { id: string; slug: string; name: string; paymentPlans: Plan[] };
 type Shape = { unitCode: string; d: string };
-type Floor = { id: string; name: string; floor: string | null; viewBox: string; shapes: Shape[] };
+type Floor = { id: string; name: string; floor: string | null; viewBox: string; shapes: Shape[]; backgroundData?: string | null; reviewStatus?: string };
 type History = { id: string; unitCode: string; issuedAt: string; status: string; project: { name: string } };
 function isAvailable(status: string): boolean {
   const normalized = String(status).normalize("NFKC").trim().toLowerCase().replace(/\s+/g,"");
@@ -21,6 +21,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
   const [projectId, setProjectId] = useState(projects[0]?.id || "");
   const [units, setUnits] = useState<Unit[]>([]);
   const [floors, setFloors] = useState<Floor[]>([]);
+  const [floorNumber, setFloorNumber] = useState("");
   const [selected, setSelected] = useState("");
   const [chosenPlans, setChosenPlans] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -30,7 +31,8 @@ export default function Studio({ projects, email }: { projects: Project[]; email
   const [history, setHistory] = useState<History[]>([]);
   const project = projects.find(p => p.id === projectId);
   const unit = units.find(value => value.code === selected);
-  const floor = floors.find(f => f.floor === unit?.floor) || floors.find(f => !f.floor) || floors[0];
+  const floor = floors.find(f => f.floor === (unit?.floor ?? floorNumber)) || floors[0];
+  const vb = floor?.viewBox?.trim().split(/\s+/).map(Number) || [0,0,1000,700];
   const visibleUnits = useMemo(() => units.filter(item =>
     (item.code + " " + item.floor).toLowerCase().includes(search.toLowerCase())).slice(0, 100), [units, search]);
   useEffect(() => {
@@ -54,6 +56,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
     const match = units.find(u => u.code === code);
     if (!match || !isAvailable(match.status)) return;
     setSelected(code);
+    setFloorNumber(match.floor);
   }
   async function issueOffer() {
     if (!unit || !chosenPlans.length || generating) return;
@@ -105,22 +108,37 @@ export default function Studio({ projects, email }: { projects: Project[]; email
           {units.length > 100 && <p className="muted">Showing the first 100 matches. Use search to narrow the results.</p>}
         </section>
         <section className="panel">
-          <div className="panelhead"><div><div className="eyebrow">ARCHITECTURAL MAP</div><h2 style={{marginTop:10}}>Interactive floor plan</h2></div><span className="pill">{floor?.name || "Not configured"}</span></div>
-          {floor?.shapes?.length ? <svg className="floor-svg" viewBox={floor.viewBox} role="img" aria-label="Selectable floor map">
-            {floor.shapes.map((shape, i) => {
-              const known = units.find(value => value.code === shape.unitCode);
-              const blocked = !known || !isAvailable(known.status);
-              return <path key={i} d={shape.d} stroke="#314763" strokeWidth="2"
-                fill={!known ? "#efaaaa" : blocked ? "#d3d9e1" : shape.unitCode === selected ? "#c5a16a" : "#d8e8df"}
-                style={{ cursor: blocked ? "not-allowed" : "pointer", transition: "fill 150ms" }}
-                tabIndex={blocked ? -1 : 0} role="button" aria-label={"Unit " + shape.unitCode}
-                onClick={() => selectUnit(shape.unitCode)}
-                onKeyDown={event => { if (event.key === "Enter" || event.key === " ") selectUnit(shape.unitCode); }}>
-                <title>{shape.unitCode + (known ? " · " + nicePrice(known.price) : " · SOLD OUT (not in current inventory)")}</title>
-              </path>;
-            })}
-          </svg> : <div className="floor-blank"><div><div className="symbol">⌗</div><h2>Floor plan not mapped yet</h2><p className="muted">Upload a real SVG with IDs matching Unit Codes from the Sheet in Workspace Settings.</p></div></div>}
-          <p className="muted">Gold = selected. Green = available. Grey = reserved. Red = SOLD OUT (present on drawing, absent from inventory). These units cannot be offered.</p>
+          <div className="panelhead">
+            <div><div className="eyebrow">ARCHITECTURAL MAP</div><h2 style={{marginTop:10}}>Interactive floor plan</h2></div>
+            <span className="pill">{floor?.reviewStatus === "APPROVED" ? "Verified shapes" : "Review mode"}</span>
+          </div>
+          {floors.length > 0 && <label className="fieldlabel" style={{display:"block",marginBottom:14}}>
+            SHOW FLOOR
+            <select className="field" value={floor?.floor || ""} onChange={e=>{setFloorNumber(e.target.value);setSelected("");}}>
+              {floors.map(f=><option value={f.floor || ""} key={f.id}>{f.name} — Floor {f.floor}</option>)}
+            </select>
+          </label>}
+          {floor && (floor.backgroundData || floor.shapes.length) ?
+            <svg className="floor-svg" viewBox={floor.viewBox} role="img" aria-label="Architectural floor map with reviewed unit geometry">
+              {floor.backgroundData && <image href={floor.backgroundData} x={vb[0]} y={vb[1]} width={vb[2]} height={vb[3]} preserveAspectRatio="none"/>}
+              {floor.reviewStatus === "APPROVED" && floor.shapes.map((shape,i)=>{
+                const known = units.find(value=>value.code===shape.unitCode);
+                const blocked = !known || !isAvailable(known.status);
+                return <path key={i} d={shape.d} fill={!known?"#efaaaa":blocked?"#d3d9e1":shape.unitCode===selected?"#c5a16a":"#d8e8df"}
+                  stroke="#32465d" strokeWidth={3} fillOpacity={.42}
+                  style={{cursor:blocked?"not-allowed":"pointer"}}
+                  tabIndex={blocked?-1:0} role="button" aria-label={"Unit "+shape.unitCode+" "+(known?.status||"Sold Out")}
+                  onClick={()=>selectUnit(shape.unitCode)}
+                  onKeyDown={e=>{if(e.key==="Enter"||e.key===" ")selectUnit(shape.unitCode);}}>
+                  <title>{shape.unitCode+" · "+(known?.status||"SOLD OUT")}</title>
+                </path>;
+              })}
+            </svg> :
+            <div className="floor-blank"><div><div className="symbol">⌗</div><h2>Floor plan not published</h2>
+              <p className="muted">The original architectural image and reviewed unit boundaries will appear here after a floor is saved in Workspace Settings.</p>
+            </div></div>}
+          {floor?.reviewStatus !== "APPROVED" && floor?.backgroundData && <p className="notice">Original architectural artwork only. Clickable unit outlines are disabled until an administrator approves the actual traced polygons.</p>}
+          <p className="muted">Gold: selected. Green: available. Grey: reserved. Red: SOLD OUT if the drawn unit is absent from current inventory. Only approved outlines are interactive.</p>
         </section>
       </div>
       <div className="stack">
