@@ -7,7 +7,7 @@ export const authReady = Boolean(
   process.env.GOOGLE_CLIENT_ID &&
   process.env.GOOGLE_CLIENT_SECRET &&
   process.env.DATABASE_URL &&
-  process.env.AUTH_SECRET
+  (process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET)
 );
 
 export function isAdmin(email?: string | null): boolean {
@@ -17,7 +17,7 @@ export function isAdmin(email?: string | null): boolean {
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   trustHost: true,
-  secret: process.env.AUTH_SECRET,
+  secret: (process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET),
   adapter: authReady ? PrismaAdapter(db()) : undefined,
   session: {
     strategy: authReady ? "database" : "jwt",
