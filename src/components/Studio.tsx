@@ -7,7 +7,7 @@ type Unit = { code: string; price: string; area: string; floor: string; status: 
 type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number };
 type Project = { id: string; slug: string; name: string; paymentPlans: Plan[] };
 type Shape = { unitCode: string; d: string };
-type Floor = { id: string; name: string; floor: string | null; viewBox: string; shapes: Shape[]; backgroundData?: string | null; reviewStatus?: string };
+type Floor = { id: string; name: string; floor: string | null; viewBox: string; shapes: Shape[]; markers?: {code:string;x:number;y:number}[]; backgroundData?: string | null; reviewStatus?: string };
 type History = { id: string; unitCode: string; issuedAt: string; status: string; project: { name: string } };
 function isAvailable(status: string): boolean {
   const normalized = String(status).normalize("NFKC").trim().toLowerCase().replace(/\s+/g,"");
@@ -121,6 +121,15 @@ export default function Studio({ projects, email }: { projects: Project[]; email
           {floor && (floor.backgroundData || floor.shapes.length) ?
             <svg className="floor-svg" viewBox={floor.viewBox} role="img" aria-label="Architectural floor map with reviewed unit geometry">
               {floor.backgroundData && <image href={floor.backgroundData} x={vb[0]} y={vb[1]} width={vb[2]} height={vb[3]} preserveAspectRatio="none"/>}
+              {(floor.markers || []).map((m,i)=>{
+                const u=units.find(value=>value.code===m.code);
+                const status=u?.status || "SOLD OUT";
+                return <circle key={"source-label-"+i} cx={m.x} cy={m.y} r={9}
+                  fill={u?"#c2a064":"#e34545"} fillOpacity={.72}
+                  stroke="#ffffff" strokeWidth={2} aria-label={m.code+" "+status}>
+                    <title>{m.code+" · "+status+" · label location (not unit boundary)"}</title>
+                  </circle>;
+              })}
               {floor.reviewStatus === "APPROVED" && floor.shapes.map((shape,i)=>{
                 const known = units.find(value=>value.code===shape.unitCode);
                 const blocked = !known || !isAvailable(known.status);
@@ -137,7 +146,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
             <div className="floor-blank"><div><div className="symbol">⌗</div><h2>Floor plan not published</h2>
               <p className="muted">The original architectural image and reviewed unit boundaries will appear here after a floor is saved in Workspace Settings.</p>
             </div></div>}
-          {floor?.reviewStatus !== "APPROVED" && floor?.backgroundData && <p className="notice">Original architectural artwork only. Clickable unit outlines are disabled until an administrator approves the actual traced polygons.</p>}
+          {floor?.reviewStatus !== "APPROVED" && floor?.backgroundData && <p className="notice">Original architectural artwork with colored code-label markers only. Red markers indicate SOLD OUT if that code is absent from live inventory. These dots are NOT unit outlines; selection remains disabled until boundaries are reviewed.</p>}
           <p className="muted">Gold: selected. Green: available. Grey: reserved. Red: SOLD OUT if the drawn unit is absent from current inventory. Only approved outlines are interactive.</p>
         </section>
       </div>
