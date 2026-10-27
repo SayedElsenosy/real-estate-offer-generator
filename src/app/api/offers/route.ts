@@ -44,8 +44,14 @@ export async function POST(req: NextRequest) {
       maintenancePct: plan.maintenancePct.toString(), startOffsetMonths: plan.startOffsetMonths
     }, date));
     const match = project.floorPlans.find(f => f.floor === unit.floor) || project.floorPlans.find(f => !f.floor);
+    const rawShapes = match?.shapes as { unitCode: string; d: string }[] | undefined;
     const geometry: FloorGeometry = match ? { viewBox: match.viewBox,
-      shapes: match.shapes as { unitCode: string; d: string }[] } : null;
+      shapes: (rawShapes || []).map(shape => {
+        const current = units.find(value => value.code === shape.unitCode);
+        const status: "AVAILABLE" | "UNAVAILABLE" | "SOLD_OUT" = !current
+          ? "SOLD_OUT" : isAvailable(current.status) ? "AVAILABLE" : "UNAVAILABLE";
+        return { unitCode: shape.unitCode, d: shape.d, status };
+      }) } : null;
     const issuedAt = date.toISOString().slice(0, 10);
     const pdfNode = React.createElement(OfferDocument, {
       company: project.companyName, logo: trustedLogo(project.logoUrl),
