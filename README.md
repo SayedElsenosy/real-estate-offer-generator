@@ -56,3 +56,7 @@ Configured in Neon as Sheet1!A:N. Its verified Sheet1 columns are A = Unit Code,
 Only Available units can be offered. The server re-reads prices and status when issuing each PDF.
 
 On the next login the user may need to consent to Google Drive readonly access. Enable Google Drive API in the Google Cloud project if it is disabled. Drive readonly is a restricted scope that may need app verification for production users.
+
+
+## Operational correction
+Cairo Plaza's XLSX has a leading unnamed index column, so Unit Code is in B, Floor in F, Area in H, Availability in M, and Total Price in N. The application resolves the columns by unique exact header names instead of trusting fixed offsets. Google Drive HTTP 403 errors now describe specific API or owner-download restrictions where the provider includes a reason.

@@ -37,8 +37,27 @@ export async function getExcelInventory(
     }
   );
   if (!response.ok) {
-    if (response.status === 401 || response.status === 403)
-      throw new Error("Excel access denied. Sign in again and allow Google Drive read-only access, and confirm that this account can view the file.");
+    let providerReason = "";
+    try {
+      const errorPayload = await response.json() as {
+        error?: { status?: string; errors?: { reason?: string }[] };
+      };
+      providerReason = String(errorPayload.error?.errors?.[0]?.reason ||
+        errorPayload.error?.status || "").slice(0, 70).replace(/[^a-zA-Z0-9_-]/g, "");
+    } catch { /* Some errors do not have a JSON body. */ }
+    if (response.status === 401)
+      throw new Error("Google Drive token expired or invalid. Reconnect your Google account.");
+    if (response.status === 403) {
+      if (/accessNotConfigured|SERVICE_DISABLED|SERVICE_USAGE_LIMIT_EXCEEDED|API_KEY_SERVICE_BLOCKED/i.test(providerReason))
+        throw new Error("Google Drive API is not enabled for this OAuth project's Google Cloud account. Enable Google Drive API, then refresh.");
+      if (/insufficientPermissions|ACCESS_TOKEN_SCOPE_INSUFFICIENT/i.test(providerReason))
+        throw new Error("Google OAuth token lacks Drive read-only permission. Sign out and consent again.");
+      if (/fileNotDownloadable|cannotDownloadFile|downloadRestrictedForRevision/i.test(providerReason))
+        throw new Error("The owner of Cairo Plaza's Excel file disabled downloads. The app cannot read its XLSX bytes until the owner allows downloading; the source stays untouched.");
+      throw new Error("Google Drive denied reading Cairo Plaza Excel (HTTP 403" +
+        (providerReason ? ", reason: " + providerReason : "") +
+        "). Check Drive API activation, file Viewer access and the owner's download restrictions.");
+    }
     if (response.status === 404)
       throw new Error("Cairo Plaza Excel file was not found in this Google account's accessible Drive files.");
     throw new Error("Google Drive Excel download returned HTTP " + response.status);
@@ -57,29 +76,37 @@ export async function getExcelInventory(
     throw new Error("The Excel workbook does not contain the configured tab: " + tab);
 
   const headings = sheet.getRow(1);
-  const requiredHeaders = [
-    { column: 1, valid: ["column1", "unitcode"] },
-    { column: 7, valid: ["grossareasqm"] },
-    { column: 12, valid: ["availabilitystatus"] },
-    { column: 13, valid: ["totalprice"] }
-  ];
-  for (const required of requiredHeaders) {
-    if (!required.valid.includes(normalize(valueAt(headings, required.column))))
-      throw new Error("Cairo Plaza XLSX column structure has changed. Expected the " +
-        required.valid.join("/") + " column at " + required.column + "; no values were guessed.");
-  }
+  const columnNamed = (label: string): number => {
+    const found: number[] = [];
+    for (let i = 1; i <= headings.cellCount; i++) {
+      if (normalize(valueAt(headings, i)) === label) found.push(i);
+    }
+    if (found.length !== 1)
+      throw new Error("Cairo Plaza Excel header " + label +
+        " missing or ambiguous. Price and availability cannot be guessed.");
+    return found[0];
+  };
+  // The original workbook has a leading, unlabeled index column. Locate
+  // actual fields by header instead of hard-coding Excel letters.
+  const columns = {
+    code: columnNamed("unitcode"),
+    area: columnNamed("grossareasqm"),
+    floor: columnNamed("floornumber"),
+    status: columnNamed("availabilitystatus"),
+    price: columnNamed("totalprice")
+  };
 
   const items = new Map<string, InventoryUnit>();
   sheet.eachRow((row, rowNumber) => {
     if (rowNumber === 1) return;
-    const code = valueAt(row, 1);
-    const price = valueAt(row, 13);
-    const status = valueAt(row, 12);
+    const code = valueAt(row, columns.code);
+    const price = valueAt(row, columns.price);
+    const status = valueAt(row, columns.status);
     const numericPrice = Number(price.replace(/[,\s]/g, ""));
     if (!code || !status || !Number.isFinite(numericPrice) || numericPrice <= 0) return;
     if (items.has(code)) throw new Error("Duplicate Cairo Plaza Unit Code: " + code);
     items.set(code, {
-      code, price, area: valueAt(row, 7), floor: valueAt(row, 5), status, project: projectName
+      code, price, area: valueAt(row, columns.area), floor: valueAt(row, columns.floor), status, project: projectName
     });
   });
   return [...items.values()];

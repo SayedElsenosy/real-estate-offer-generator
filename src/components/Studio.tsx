@@ -94,6 +94,16 @@ export default function Studio({ projects, email }: { projects: Project[]; email
     </div>
     <div className="grid2">
       <div className="stack">
+        <section className="panel"><div className="panelhead"><div><div className="eyebrow">CURRENT INVENTORY</div><h2 style={{marginTop:10}}>Find your property</h2></div><span className="pill">{units.length} total</span></div>
+          <input className="field" placeholder="Search Unit Code or floor..." value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:15}} />
+          <div className="list">{visibleUnits.map(value => <button type="button" key={value.code} className={"unit" + (value.code === selected ? " active" : "")}
+            disabled={!isAvailable(value.status)} onClick={() => selectUnit(value.code)}>
+            <span><b>{value.code}</b><small>Floor {value.floor || "—"} · {value.area || "—"} sqm</small></span>
+            <span style={{textAlign:"right"}}><b>{nicePrice(value.price)}</b><small>{value.status}</small></span>
+          </button>)}
+          {!visibleUnits.length && <p className="muted">{loading ? "Loading authorized inventory…" : "No matching live inventory. Confirm the Sheet connection in Settings."}</p>}</div>
+          {units.length > 100 && <p className="muted">Showing the first 100 matches. Use search to narrow the results.</p>}
+        </section>
         <section className="panel">
           <div className="panelhead"><div><div className="eyebrow">ARCHITECTURAL MAP</div><h2 style={{marginTop:10}}>Interactive floor plan</h2></div><span className="pill">{floor?.name || "Not configured"}</span></div>
           {floor?.shapes?.length ? <svg className="floor-svg" viewBox={floor.viewBox} role="img" aria-label="Selectable floor map">
@@ -111,16 +121,6 @@ export default function Studio({ projects, email }: { projects: Project[]; email
             })}
           </svg> : <div className="floor-blank"><div><div className="symbol">⌗</div><h2>Floor plan not mapped yet</h2><p className="muted">Upload a real SVG with IDs matching Unit Codes from the Sheet in Workspace Settings.</p></div></div>}
           <p className="muted">Gold = selected unit. Pale green = selectable. Grey = booked or unmatched. Shapes are matched by exact Unit Code.</p>
-        </section>
-        <section className="panel"><div className="panelhead"><div><div className="eyebrow">CURRENT INVENTORY</div><h2 style={{marginTop:10}}>Find your property</h2></div><span className="pill">{units.length} total</span></div>
-          <input className="field" placeholder="Search Unit Code or floor..." value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:15}} />
-          <div className="list">{visibleUnits.map(value => <button type="button" key={value.code} className={"unit" + (value.code === selected ? " active" : "")}
-            disabled={!isAvailable(value.status)} onClick={() => selectUnit(value.code)}>
-            <span><b>{value.code}</b><small>Floor {value.floor || "—"} · {value.area || "—"} sqm</small></span>
-            <span style={{textAlign:"right"}}><b>{nicePrice(value.price)}</b><small>{value.status}</small></span>
-          </button>)}
-          {!visibleUnits.length && <p className="muted">{loading ? "Loading authorized inventory…" : "No matching live inventory. Confirm the Sheet connection in Settings."}</p>}</div>
-          {units.length > 100 && <p className="muted">Showing the first 100 matches. Use search to narrow the results.</p>}
         </section>
       </div>
       <div className="stack">
