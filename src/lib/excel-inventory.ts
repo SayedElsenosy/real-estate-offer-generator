@@ -76,20 +76,22 @@ export async function getExcelInventory(
     throw new Error("The Excel workbook does not contain the configured tab: " + tab);
 
   const headings = sheet.getRow(1);
-  const columnNamed = (label: string): number => {
+  const columnNamed = (label: string | string[]): number => {
+    const aliases = (Array.isArray(label) ? label : [label]).map(normalize);
     const found: number[] = [];
     for (let i = 1; i <= headings.cellCount; i++) {
-      if (normalize(valueAt(headings, i)) === label) found.push(i);
+      if (aliases.includes(normalize(valueAt(headings, i)))) found.push(i);
     }
     if (found.length !== 1)
-      throw new Error("Cairo Plaza Excel header " + label +
+      throw new Error("Cairo Plaza Excel header " + aliases.join("/") +
         " missing or ambiguous. Price and availability cannot be guessed.");
     return found[0];
   };
-  // The original workbook has a leading, unlabeled index column. Locate
-  // actual fields by header instead of hard-coding Excel letters.
+  // The native XLSX Sheet1 uses "Column 1" at A1 for Unit Codes.
+  // Google Drive's CSV preview adds a synthetic leading row-index column
+  // which does NOT exist in the native Excel worksheet.
   const columns = {
-    code: columnNamed("unitcode"),
+    code: columnNamed(["column1", "unitcode"]),
     area: columnNamed("grossareasqm"),
     floor: columnNamed("floornumber"),
     status: columnNamed("availabilitystatus"),
