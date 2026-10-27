@@ -28,13 +28,13 @@ function available(status: string) {
     status.normalize("NFKC").toLowerCase().replace(/\s+/g,""));
 }
 export function FloorPlanEditor({ projectId, floors }: { projectId: string; floors: Floor[] }) {
-  const [selected, setSelected] = useState<Floor>({ ...empty });
+  const [selected, setSelected] = useState<Floor>(() => floors.find(f => f.floor === "-1") || floors[0] || { ...empty });
   const [reviewed, setReviewed] = useState(false);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const [inventory, setInventory] = useState<InventoryUnit[]>([]);
   const [selectedCode, setSelectedCode] = useState("");
-  const [floorNumber, setFloorNumber] = useState("-1");
+  const [floorNumber, setFloorNumber] = useState(() => floors.find(f => f.floor === "-1")?.floor || floors[0]?.floor || "-1");
   useEffect(() => {
     let cancelled = false;
     fetch("/api/inventory?projectId="+encodeURIComponent(projectId), { cache:"no-store" })
