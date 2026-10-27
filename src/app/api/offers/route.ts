@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { currentUser } from "@/lib/guards";
-import { getLiveInventory } from "@/lib/sheets";
+import { getLiveInventory, isAvailable } from "@/lib/sheets";
 import { calculateSchedule } from "@/lib/payment";
 import { OfferDocument, type FloorGeometry } from "@/lib/pdf";
 
@@ -15,10 +15,6 @@ const inputSchema = z.object({
   unitCode: z.string().min(1),
   planIds: z.array(z.string()).min(1).max(5)
 });
-function unavailable(status: string) {
-  return ["sold", "booked", "reserved", "unavailable", "مباع", "محجوز", "غيرمتاح"]
-    .includes(status.trim().toLowerCase().replace(/\s/g, ""));
-}
 function trustedLogo(url: string | null): string | null {
   if (!url) return null;
   try {
@@ -37,7 +33,7 @@ export async function POST(req: NextRequest) {
     const units = await getLiveInventory(user.id, project.spreadsheetId, project.sheetRange, project.name);
     const unit = units.find(value => value.code === unitCode);
     if (!unit) return NextResponse.json({ error: "Unit does not exist in the live inventory" }, { status: 404 });
-    if (unavailable(unit.status)) return NextResponse.json({ error: "Unit is no longer available" }, { status: 409 });
+    if (!isAvailable(unit.status)) return NextResponse.json({ error: "Unit is no longer available" }, { status: 409 });
     const uniquePlanIds = [...new Set(planIds)];
     if (uniquePlanIds.length !== planIds.length) return NextResponse.json({ error: "Duplicate plan selection" }, { status: 400 });
     const plans = await db().paymentPlan.findMany({ where: { id: { in: uniquePlanIds }, projectId } });
