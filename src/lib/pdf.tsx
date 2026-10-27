@@ -3,7 +3,7 @@ import { Document, Page, Text, View, Image, Svg, Path, StyleSheet } from "@react
 import type { InventoryUnit } from "@/lib/sheets";
 import type { ScheduleRow } from "@/lib/payment";
 
-export type FloorGeometry = { viewBox: string; shapes: { unitCode: string; d: string; status: "AVAILABLE" | "UNAVAILABLE" | "SOLD_OUT" }[] } | null;
+export type FloorGeometry = { viewBox: string; backgroundData: string | null; shapes: { unitCode: string; d: string; status: "AVAILABLE" | "UNAVAILABLE" | "SOLD_OUT" }[] } | null;
 export type OfferSchedule = {
   name: string; totalPrice: string; downPayment: string; maintenance: string;
   totalIncludingMaintenance: string; rows: ScheduleRow[]
@@ -56,9 +56,14 @@ export function OfferDocument({ company, logo, project, unit, issuedAt, floor, s
       <Text>{project} / {unit.code} / Floor {unit.floor || "-"}</Text>
       {floor?.shapes?.length
         ? <View style={{ marginTop: 34, borderWidth: 1, borderColor: "#e0e6ec", padding: 10 }}>
-            <Svg width={470} height={350} viewBox={floor.viewBox}>
-              {floor.shapes.map((s, i) => <Path key={i} d={s.d} fill={s.unitCode === unit.code ? "#c99d55" : s.status === "SOLD_OUT" ? "#efaaaa" : s.status === "UNAVAILABLE" ? "#cbd5e1" : "#d8e8df"} stroke="#293c54" strokeWidth={2} />)}
-            </Svg>
+            <View style={{ width: 468, height: 351, position: "relative" }}>
+              {floor.backgroundData ? <Image src={floor.backgroundData} style={{ width: 468, height: 351, position: "absolute", left: 0, top: 0 }} /> : null}
+              <Svg width={468} height={351} viewBox={floor.viewBox} style={{ position: "absolute", left: 0, top: 0 }}>
+                {floor.shapes.map((s, i) => <Path key={i} d={s.d}
+                  fill={s.unitCode === unit.code ? "#c99d55" : s.status === "SOLD_OUT" ? "#efaaaa" : s.status === "UNAVAILABLE" ? "#cbd5e1" : "#d8e8df"}
+                  fillOpacity={0.42} stroke="#293c54" strokeWidth={3} />)}
+              </Svg>
+            </View>
           </View>
         : <Text style={{ marginTop: 34, color: "#8c97a5" }}>An approved floor plan is not yet attached for this floor.</Text>}
       <Text style={{ marginTop: 20, color: "#8c97a5", fontSize: 9 }}>Gold marks the chosen unit. Red = SOLD OUT (not in current inventory). Grey = unavailable. Green = available. Floor plan is for location reference, not measurements.</Text>
