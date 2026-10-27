@@ -15,6 +15,7 @@ const inputSchema = z.object({
   floor: z.string().trim().max(50).nullable(),
   viewBox: z.string().regex(/^[-\d.]+\s+[-\d.]+\s+[\d.]+\s+[\d.]+$/, "Invalid SVG viewBox"),
   shapes: z.array(shapeSchema).max(500),
+  markers: z.array(z.object({code:z.string().trim().min(1).max(80),x:z.number().finite().min(0).max(3000),y:z.number().finite().min(0).max(3000)})).max(600).optional(),
   backgroundData: z.string().max(3000000).nullable().optional(),
   reviewStatus: z.enum(["DRAFT", "APPROVED"]).default("DRAFT"),
   approvalConfirmed: z.boolean().optional()
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest) {
     const data = {
       projectId: input.projectId, name: input.name, floor: input.floor || null,
       viewBox: input.viewBox, shapes: input.shapes, updatedAt: new Date(),
+      ...(input.markers !== undefined ? {markers: input.markers} : {}),
       reviewStatus: input.reviewStatus,
       ...(input.backgroundData !== undefined ? { backgroundData: input.backgroundData } : {})
     };
