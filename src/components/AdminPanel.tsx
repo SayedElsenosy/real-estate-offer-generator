@@ -18,7 +18,7 @@ function extractPaths(source: string): { viewBox: string; shapes: Shape[] } {
   const root = document.documentElement;
   const viewBox = root.getAttribute("viewBox") || "0 0 1000 700";
   const paths: Shape[] = [];
-  for (const node of Array.from(root.querySelectorAll("path[id],polygon[id],rect[id]"))) {
+  for (const node of Array.from(root.querySelectorAll("path[id],polygon[id],rect[id],path[data-unit-code],polygon[data-unit-code],rect[data-unit-code]"))) {
     const code = (node.getAttribute("data-unit-code") || node.getAttribute("id") || "").trim();
     let d = node.getAttribute("d") || "";
     if (node.localName === "polygon") {
