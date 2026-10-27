@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
 import { FloorPlanEditor } from "@/components/FloorPlanEditor";
+import { BulkFloorImporter } from "@/components/BulkFloorImporter";
 
 type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number };
 type Shape = { unitCode: string; d: string };
@@ -106,6 +107,7 @@ export default function AdminPanel({ email, projects }: { email: string; project
         </div>
         <div className="notice" style={{marginTop:18}}>Cairo Plaza: Excel Sheet1 (column A code, G area, E floor, L status, M total price). The other projects use their verified live sheet layouts.</div>
       </section>
+      {id === "cairo-plaza" && <BulkFloorImporter projectId={id} floors={project.floorPlans} />}
       <FloorPlanEditor key={id} projectId={id} floors={project.floorPlans} />
 
     </div><div className="stack">
