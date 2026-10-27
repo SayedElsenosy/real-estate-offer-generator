@@ -5,6 +5,7 @@ type Shape = { unitCode: string; d: string };
 type Floor = {
   id: string; name: string; floor: string | null;
   viewBox: string; shapes: Shape[];
+  markers?: {code:string;x:number;y:number}[];
   backgroundData?: string | null; reviewStatus?: string;
 };
 type InventoryUnit = { code: string; status: string };
@@ -111,14 +112,14 @@ export function FloorPlanEditor({ projectId, floors }: { projectId: string; floo
   return <section className="panel">
     <div className="eyebrow">ARCHITECTURAL FLOOR PLANS — REVIEW WORKFLOW</div>
     <h2 style={{marginTop:12}}>Original artwork & verified unit polygons</h2>
-    <p className="muted">Use the Cairo Plaza SVG package to trace each unit accurately. Upload its matching floor preview PNG and the exported mapping JSON. Draft backgrounds display for review; only approved polygons are selectable.</p>
+    <p className="muted">The archive importer above uploads all original floor images and source text-location markers automatically. These are not verified unit boundaries. Review exact polygons here before enabling selectable units.</p>
     <div className="stack" style={{gap:13}}>
       <label className="fieldlabel">Floor
         <select className="field" value={floorNumber} onChange={e=>choose(e.target.value)}>
           {CODES.map(c=><option key={c.floor} value={c.floor}>{c.label} / Floor {c.floor}</option>)}
         </select>
       </label>
-      <div className="between"><span className="pill">{selected.reviewStatus==="APPROVED"?"APPROVED GEOMETRY":"DRAFT — NEEDS REVIEW"}</span><span className="muted">{selected.shapes.length} mapped units</span></div>
+      <div className="between"><span className="pill">{selected.reviewStatus==="APPROVED"?"APPROVED GEOMETRY":"DRAFT — NEEDS REVIEW"}</span><span className="muted">{selected.shapes.length} reviewed boundary outlines / {(selected.markers || []).length} text markers</span></div>
       <label className="fieldlabel">Floor title
         <input className="field" value={selected.name} onChange={e=>setSelected(p=>({...p,name:e.target.value}))}/>
       </label>
@@ -132,6 +133,11 @@ export function FloorPlanEditor({ projectId, floors }: { projectId: string; floo
         {hasImage || selected.shapes.length ?
           <svg viewBox={selected.viewBox} style={{width:"100%",height:"auto",display:"block"}} aria-label={"Reviewed map "+selected.name}>
             {hasImage && <image href={selected.backgroundData || ""} x={vb[0]||0} y={vb[1]||0} width={width} height={height} preserveAspectRatio="none"/>}
+            {(selected.markers || []).map((m,i)=>{
+              const u=unitByCode.get(m.code);
+              const status=u?.status || "SOLD OUT";
+              return <g key={"marker-"+i}><circle cx={m.x} cy={m.y} r={9} fill={u?"#c19b5d":"#e24848"} fillOpacity={.6} stroke="#fff" strokeWidth={2}><title>{m.code+" — "+status+" — PDF text location only"}</title></circle></g>;
+            })}
             {selected.shapes.map((shape,i)=>{
               const u=unitByCode.get(shape.unitCode);
               const fill=!u?"#d94545":available(u.status)?"#9bc8a7":"#aeb8c6";
