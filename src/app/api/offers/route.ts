@@ -43,9 +43,9 @@ export async function POST(req: NextRequest) {
       name: plan.name, downPaymentPct: plan.downPaymentPct.toString(), months: plan.months,
       maintenancePct: plan.maintenancePct.toString(), startOffsetMonths: plan.startOffsetMonths
     }, date));
-    const match = project.floorPlans.find(f => f.floor === unit.floor) || project.floorPlans.find(f => !f.floor);
+    const match = project.floorPlans.find(f => f.floor === unit.floor && f.reviewStatus === "APPROVED");
     const rawShapes = match?.shapes as { unitCode: string; d: string }[] | undefined;
-    const geometry: FloorGeometry = match ? { viewBox: match.viewBox,
+    const geometry: FloorGeometry = match ? { viewBox: match.viewBox, backgroundData: match.backgroundData || null,
       shapes: (rawShapes || []).map(shape => {
         const current = units.find(value => value.code === shape.unitCode);
         const status: "AVAILABLE" | "UNAVAILABLE" | "SOLD_OUT" = !current
