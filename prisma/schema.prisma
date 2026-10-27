@@ -75,6 +75,7 @@ model FloorPlan {
   floor     String?
   viewBox   String   @default("0 0 1000 700")
   shapes         Json     @default("[]")
+  markers        Json     @default("[]")
   backgroundData String?  @db.Text
   reviewStatus   String   @default("DRAFT")
   updatedAt DateTime @default(now()) @db.Timestamptz(6)
