@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
+import { FloorPlanEditor } from "@/components/FloorPlanEditor";
 
 type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number };
 type Shape = { unitCode: string; d: string };
@@ -105,21 +106,8 @@ export default function AdminPanel({ email, projects }: { email: string; project
         </div>
         <div className="notice" style={{marginTop:18}}>Cairo Plaza: Excel Sheet1 (column A code, G area, E floor, L status, M total price). The other projects use their verified live sheet layouts.</div>
       </section>
-      <section className="panel"><div className="eyebrow">ARCHITECTURAL GEOMETRY</div><h2 style={{marginTop:12}}>Import floor-plan SVG</h2>
-        <p className="muted">Export the original floor PDF to SVG and assign IDs to its unit paths/polygons (for example CP-A101). Only SVG geometric paths are saved, not embedded scripts or markup.</p>
-        <div className="stack" style={{gap:13}}>
-          {project.floorPlans.map(f=><button key={f.id} className="unit" type="button" onClick={()=>setFloor({id:f.id,name:f.name,floor:f.floor||"",viewBox:f.viewBox,shapes:f.shapes})}><span><b>{f.name}</b><small>{f.shapes.length} shapes</small></span><span className="muted">Edit</span></button>)}
-          <label className="fieldlabel">Floor-plan title<input className="field" value={floor.name} placeholder="Cairo Plaza - 2nd Floor" onChange={e=>setFloor({...floor,name:e.target.value})}/></label>
-          <label className="fieldlabel">Matching floor code<input className="field" value={floor.floor} placeholder="2" onChange={e=>setFloor({...floor,floor:e.target.value})}/></label>
-          <label className="fieldlabel">Upload SVG file<input className="field" type="file" accept=".svg,image/svg+xml" onChange={e=>{const f=e.target.files?.[0];if(f)void readSvg(f);}}/></label>
-          <label className="fieldlabel">SVG viewBox<input className="field" value={floor.viewBox} onChange={e=>setFloor({...floor,viewBox:e.target.value})}/></label>
-          <div className="pill">{floor.shapes.length} selected geometric shapes</div>
-          {floor.shapes.length>0 && <svg className="floor-svg" viewBox={floor.viewBox}>
-            {floor.shapes.map((s,i)=><path key={i} d={s.d} fill={i%2?"#e3e9ef":"#e8dfcc"} stroke="#203750" strokeWidth={1.5}><title>{s.unitCode}</title></path>)}
-          </svg>}
-          <button className="btn" disabled={busy || !floor.shapes.length || !floor.name} onClick={saveFloor}>{floor.id?"Update floor map":"Save floor map"}</button>
-        </div>
-      </section>
+      <FloorPlanEditor key={id} projectId={id} floors={project.floorPlans} />
+
     </div><div className="stack">
       <section className="panel"><div className="eyebrow">FINANCIAL CONFIGURATION</div><h2 style={{marginTop:12}}>Payment plan manager</h2>
         <p className="muted">Define reusable payment structures, then select multiple scenarios when issuing an offer.</p>
