@@ -74,7 +74,9 @@ model FloorPlan {
   name      String
   floor     String?
   viewBox   String   @default("0 0 1000 700")
-  shapes    Json     @default("[]")
+  shapes         Json     @default("[]")
+  backgroundData String?  @db.Text
+  reviewStatus   String   @default("DRAFT")
   updatedAt DateTime @default(now()) @db.Timestamptz(6)
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   @@index([projectId])
