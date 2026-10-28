@@ -32,7 +32,11 @@ export async function POST(req: NextRequest) {
     const project = await db().project.findUnique({ where: { id: projectId }, include: { floorPlans: true } });
     if (!project?.spreadsheetId) return NextResponse.json({ error: "Project inventory is not connected" }, { status: 409 });
     const units = await getLiveInventory(user.id, project.spreadsheetId, project.sheetRange, project.name);
-    const unit = units.find(value => unitKey(value.code) === unitKey(unitCode));
+    const exactUnit = units.find(value => value.code === unitCode);
+    const matchingUnits = units.filter(value => unitKey(value.code) === unitKey(unitCode));
+    const unit = exactUnit || (matchingUnits.length === 1 ? matchingUnits[0] : undefined);
+    if (!exactUnit && matchingUnits.length > 1)
+      return NextResponse.json({ error: "Ambiguous unit code across the inventory. Select an exact code." }, { status: 409 });
     if (!unit) return NextResponse.json({ error: "Unit does not exist in the live inventory" }, { status: 404 });
     if (!isAvailable(unit.status)) return NextResponse.json({ error: "Unit is no longer available" }, { status: 409 });
     const uniquePlanIds = [...new Set(planIds)];
@@ -48,7 +52,9 @@ export async function POST(req: NextRequest) {
     const rawShapes = match?.shapes as { unitCode: string; d: string }[] | undefined;
     const geometry: FloorGeometry = match ? { viewBox: match.viewBox, backgroundData: match.backgroundData || null,
       shapes: (rawShapes || []).map(shape => {
-        const current = units.find(value => unitKey(value.code) === unitKey(shape.unitCode));
+        const candidates = units.filter(value => value.floor === unit.floor &&
+          unitKey(value.code) === unitKey(shape.unitCode));
+        const current = candidates.length === 1 ? candidates[0] : undefined;
         const status: "AVAILABLE" | "UNAVAILABLE" | "SOLD_OUT" = !current
           ? "SOLD_OUT" : isAvailable(current.status) ? "AVAILABLE" : "UNAVAILABLE";
         return { unitCode: current?.code || shape.unitCode, d: shape.d, status };
