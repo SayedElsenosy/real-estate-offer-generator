@@ -1,0 +1,61 @@
+{
+  "reviewedAt": "2026-10-28",
+  "scope": "Cairo Plaza - Offer Atelier (not BUNYRA)",
+  "sources": {
+    "geometry": "assets/cairo-plaza/trace-drafts-361.json",
+    "review": "assets/cairo-plaza/review-2026-10-28/REPORT.md",
+    "liveDatabase": "Neon offer_generator / FloorPlan / cairo-plaza",
+    "authoritativeInventory": "Price List.xlsx / Sheet1 (read only)"
+  },
+  "verifiedState": {
+    "status": "DRAFT",
+    "floors": 8,
+    "inventoryRows": 153,
+    "draftPaths": 361,
+    "strictCodeAndFloorDraftCandidates": 140,
+    "unresolvedStockRows": 13,
+    "floorShapeCounts": {
+      "0": 95,
+      "1": 73,
+      "2": 67,
+      "3": 25,
+      "4": 22,
+      "5": 25,
+      "6": 37,
+      "-1": 17
+    },
+    "newCandidatesSince347": {
+      "floor0": 6,
+      "floor1": 8
+    },
+    "appFloorPlansApproved": 0
+  },
+  "app": {
+    "productionUrl": "https://real-estate-offer-generator-tau.vercel.app",
+    "healthEndpoint": "/api/health",
+    "healthHttpStatus": 200,
+    "healthReported": {
+      "status": "configured",
+      "database": "connected",
+      "googleOAuth": "configured",
+      "configuredProjects": 5
+    },
+    "offerPersistence": "New offer POST generates PDF in memory without writing Offer records (verified from source code); no live offer issuance performed in this review"
+  },
+  "checks": {
+    "auditEvidence": "assets/cairo-plaza/review-2026-10-28/vector-audit.json",
+    "newlyAddedPathsClosedAndInsidePage": true,
+    "sharedWallNumericalOverlapPdfPointSquared": 0.004041644752391325,
+    "sourceVectorAndSheet1Tests": "Reported PASS in work review; not rerun during this continuation",
+    "build": "Vercel completed successful earlier builds; latest documentation deployment may still be publishing"
+  },
+  "blockers": [
+    "Basement 7 stock SH rows have distinct SR drawings; no alias.",
+    "Ground B/GR/SH/04-a versus B/GR/SH/4a; no automatic code rewriting.",
+    "Ground F/GR/SH/24 vector perimeter has a small open gap; no invented closing edge.",
+    "Ground I/GR/SH/17 versus two 17A and 17B shapes; cannot merge by summed area.",
+    "First A/FR/SR/22a and 22b require a real subdivision drawing.",
+    "First C/GR/SH/16B stock record on floor 1 conflicts with C/FR/SH/16B drawing."
+  ],
+  "warning": "These are DRAFT visual candidates, not architect-certified footprints. Do not enable customer map selection or infer unit sales status from draft geometry."
+}
