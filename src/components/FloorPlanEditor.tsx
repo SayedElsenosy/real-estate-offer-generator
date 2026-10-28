@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 import { unitKey } from "@/lib/unit-code";
 
 type Shape = { unitCode: string; d: string };
@@ -30,6 +31,7 @@ function available(status: string) {
     status.normalize("NFKC").toLowerCase().replace(/\s+/g,""));
 }
 export function FloorPlanEditor({ projectId, floors }: { projectId: string; floors: Floor[] }) {
+  const { tr } = useLanguage();
   const [selected, setSelected] = useState<Floor>(() => floors.find(f => f.floor === "-1") || floors[0] || { ...empty });
   const [reviewed, setReviewed] = useState(false);
   const [message, setMessage] = useState("");
@@ -118,23 +120,23 @@ export function FloorPlanEditor({ projectId, floors }: { projectId: string; floo
     .map(([key,items]) => [key, items[0]]));
   const hasImage=!!selected.backgroundData;
   return <section className="panel">
-    <div className="eyebrow">ARCHITECTURAL FLOOR PLANS — REVIEW WORKFLOW</div>
-    <h2 style={{marginTop:12}}>Original artwork & verified unit polygons</h2>
-    <p className="muted">The archive importer above uploads all original floor images and source text-location markers automatically. These are not verified unit boundaries. Review exact polygons here before enabling selectable units.</p>
+    <div className="eyebrow">{tr("ARCHITECTURAL FLOOR PLANS — REVIEW WORKFLOW")}</div>
+    <h2 style={{marginTop:12}}>{tr("Original artwork & verified unit polygons")}</h2>
+    <p className="muted">{tr("The archive importer above uploads all original floor images and source text-location markers automatically. These are not verified unit boundaries. Review exact polygons here before enabling selectable units.")}</p>
     <div className="stack" style={{gap:13}}>
-      <label className="fieldlabel">Floor
+      <label className="fieldlabel">{tr("Floor")}
         <select className="field" value={floorNumber} onChange={e=>choose(e.target.value)}>
           {CODES.map(c=><option key={c.floor} value={c.floor}>{c.label} / Floor {c.floor}</option>)}
         </select>
       </label>
       <div className="between"><span className="pill">{selected.reviewStatus==="APPROVED"?"APPROVED GEOMETRY":"DRAFT — NEEDS REVIEW"}</span></div>
-      <label className="fieldlabel">Floor title
+      <label className="fieldlabel">{tr("Floor title")}
         <input className="field" value={selected.name} onChange={e=>setSelected(p=>({...p,name:e.target.value}))}/>
       </label>
-      <label className="fieldlabel">Original reference preview (PNG/JPG)
+      <label className="fieldlabel">{tr("Original reference preview (PNG/JPG)")}
         <input className="field" type="file" accept="image/png,image/jpeg" onChange={e=>{const file=e.target.files?.[0];if(file)void imageFile(file);}}/>
       </label>
-      <label className="fieldlabel">Reviewed unit polygons (JSON export from OPEN_PREVIEW.html)
+      <label className="fieldlabel">{tr("Reviewed unit polygons (JSON export from OPEN_PREVIEW.html)")}
         <input className="field" type="file" accept=".json,application/json" onChange={e=>{const file=e.target.files?.[0];if(file)void mappingFile(file);}}/>
       </label>
       <div className="floor-blank" style={{height:"auto",minHeight:250,padding:8,display:"block"}}>
@@ -154,17 +156,17 @@ export function FloorPlanEditor({ projectId, floors }: { projectId: string; floo
                 <title>{shape.unitCode+" — "+(u?.status||"SOLD OUT")}</title>
               </path>;
             })}
-          </svg> : <div><div className="symbol">⌗</div><p className="muted">Upload the correct floor image from the SVG package to begin.</p></div>}
+          </svg> : <div><div className="symbol">⌗</div><p className="muted">{tr("Upload the correct floor image from the SVG package to begin.")}</p></div>}
       </div>
       {selectedCode && <p className="notice">{selectedCode}: {unitByCode.get(unitKey(selectedCode))?.status || "SOLD OUT — not listed in current inventory"}</p>}
-      <div className="notice">RED: drawing-only, not in inventory = Sold Out. GREEN: available in live inventory. GREY: reserved. Original artwork is preserved below the approved overlays. Never use a text-label bounding box as a unit footprint.</div>
+      <div className="notice">{tr("RED: drawing-only, not in inventory = Sold Out. GREEN: available in live inventory. GREY: reserved. Original artwork is preserved below the approved overlays. Never use a text-label bounding box as a unit footprint.")}</div>
       <label style={{display:"flex",alignItems:"flex-start",gap:9,fontSize:12}}>
         <input type="checkbox" checked={reviewed} onChange={e=>setReviewed(e.target.checked)} disabled={!selected.shapes.length}/>
-        <span>I manually verified every polygon against the original drawing and approve these exact unit boundaries for live selection.</span>
+        <span>{tr("I manually verified every polygon against the original drawing and approve these exact unit boundaries for live selection.")}</span>
       </label>
       <div className="actionline"><button className="btn" onClick={save} disabled={saving||!selected.name||(selected.shapes.length===0&&!hasImage)}>
         {saving?"Saving…":reviewed?"Approve and publish":"Save draft for review"}</button>
-        <button className="btn soft" onClick={()=>choose(floorNumber)}>Reset selection</button></div>
+        <button className="btn soft" onClick={()=>choose(floorNumber)}>{tr("Reset selection")}</button></div>
       {message && <p className="notice">{message}</p>}
     </div>
   </section>;
