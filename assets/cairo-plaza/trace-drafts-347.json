@@ -1,0 +1,1976 @@
+{
+  "source": "cairo plaza floors printing copy(3).pdf",
+  "pageGeometry": "0 0 2267.72 1700.79",
+  "status": "DRAFT",
+  "note": "347 DRAFT architectural paths. Of 153 original Sheet1 stock rows, 126 have exact full code+floor candidates, 27 remain unresolved. Four additional B Ground shops mapped by printed source code and GSA. No type alias (SR and SH always distinct). All polygons require architectural review.",
+  "byFloor": {
+    "0": [
+      {
+        "unitCode": "I/GR/SH/18A",
+        "d": "M 303.2 306 L 411.5 306 L 411.5 345.09999999999997 L 303.2 345.09999999999997 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/18B",
+        "d": "M 303.2 348.6 L 411.5 348.6 L 411.5 385.7 L 303.2 385.7 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/17A",
+        "d": "M 303.2 389.40000000000003 L 411.5 389.40000000000003 L 411.5 422.2 L 303.2 422.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/17B",
+        "d": "M 303.2 425.7 L 411.5 425.7 L 411.5 458.7 L 303.2 458.7 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/16",
+        "d": "M 303.2 462.1 L 411.5 462.1 L 411.5 499.4 L 303.2 499.4 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/15",
+        "d": "M 303.2 502.8 L 411.5 502.8 L 411.5 540.1 L 303.2 540.1 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/14",
+        "d": "M 303.2 543.5999999999999 L 411.5 543.5999999999999 L 411.5 580.8000000000001 L 303.2 580.8000000000001 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/13",
+        "d": "M 303.2 584.3 L 411.5 584.3 L 411.5 621.5 L 303.2 621.5 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/12",
+        "d": "M 303.2 625 L 411.5 625 L 411.5 662.1 L 303.2 662.1 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/11",
+        "d": "M 303.2 665.6999999999999 L 411.5 665.6999999999999 L 411.5 702.8000000000001 L 303.2 702.8000000000001 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/10",
+        "d": "M 303.2 706.4 L 411.5 706.4 L 411.5 764.1 L 303.2 764.1 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/09B",
+        "d": "M 303.2 788 L 411.5 788 L 411.5 822.4000000000001 L 303.2 822.4000000000001 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/09A",
+        "d": "M 303.2 825.9 L 411.5 825.9 L 411.5 862.2 L 303.2 862.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/01A",
+        "d": "M 415 306 L 494 306 L 494 345.09999999999997 L 415 345.09999999999997 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/01B",
+        "d": "M 415 348.6 L 494 348.6 L 494 385.7 L 415 385.7 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/02",
+        "d": "M 415 389.40000000000003 L 494 389.40000000000003 L 494 454.7 L 415 454.7 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/03A",
+        "d": "M 415 559 L 494 559 L 494 588.9000000000001 L 415 588.9000000000001 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/03B",
+        "d": "M 415 592.5 L 494 592.5 L 494 621.5 L 415 621.5 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/04",
+        "d": "M 415 625 L 494 625 L 494 662.1 L 415 662.1 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/05",
+        "d": "M 415 665.6999999999999 L 494 665.6999999999999 L 494 702.8000000000001 L 415 702.8000000000001 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/06",
+        "d": "M 415 706.4 L 494 706.4 L 494 743.6 L 415 743.6 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/07",
+        "d": "M 415 747.1999999999999 L 494 747.1999999999999 L 494 784.3000000000001 L 415 784.3000000000001 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/08A",
+        "d": "M 415 787.8 L 494 787.8 L 494 822.4000000000001 L 415 822.4000000000001 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/GR/SH/08B",
+        "d": "M 415 825.9 L 494 825.9 L 494 862.2 L 415 862.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/18",
+        "d": "M 1827 304.6 L 1905 304.6 L 1905 384.7 L 1827 384.7 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/17",
+        "d": "M 1827 387.3 L 1905 387.3 L 1905 454.2 L 1827 454.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/16A",
+        "d": "M 1827 557.8 L 1905 557.8 L 1905 588.2 L 1827 588.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/16B",
+        "d": "M 1827 590.8 L 1905 590.8 L 1905 621.2 L 1827 621.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/15",
+        "d": "M 1827 623.8 L 1905 623.8 L 1905 661.2 L 1827 661.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/14",
+        "d": "M 1827 663.8 L 1905 663.8 L 1905 701.2 L 1827 701.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/13",
+        "d": "M 1827 703.8 L 1905 703.8 L 1905 741.2 L 1827 741.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/12",
+        "d": "M 1827 743.8 L 1905 743.8 L 1905 781.2 L 1827 781.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/11B",
+        "d": "M 1827 784.8 L 1905 784.8 L 1905 822.2 L 1827 822.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/11A",
+        "d": "M 1827 824.8 L 1905 824.8 L 1905 860.2 L 1827 860.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/01",
+        "d": "M 1909 386.8 L 2015 386.8 L 2015 453.7 L 1909 453.7 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/02",
+        "d": "M 1909 456.8 L 2015 456.8 L 2015 498.5 L 1909 498.5 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/03",
+        "d": "M 1909 501.2 L 2015 501.2 L 2015 538.5 L 1909 538.5 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/04",
+        "d": "M 1909 541 L 2015 541 L 2015 578.2 L 1909 578.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/05",
+        "d": "M 1909 580.8 L 2015 580.8 L 2015 620.4000000000001 L 1909 620.4000000000001 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/06",
+        "d": "M 1909 623 L 2015 623 L 2015 660.4000000000001 L 1909 660.4000000000001 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/07",
+        "d": "M 1909 662.8 L 2015 662.8 L 2015 702.2 L 1909 702.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/08",
+        "d": "M 1909 704.8 L 2015 704.8 L 2015 782.7 L 1909 782.7 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/09",
+        "d": "M 1909 785.3 L 2015 785.3 L 2015 821.7 L 1909 821.7 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/GR/SH/10",
+        "d": "M 1909 824.5 L 2015 824.5 L 2015 860.4000000000001 L 1909 860.4000000000001 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SH/16",
+        "d": "M 834 1184 L 891 1184 L 891 1257.4 L 834 1257.4 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SH/15",
+        "d": "M 894 1184 L 940 1184 L 940 1257.4 L 894 1257.4 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SH/14",
+        "d": "M 942 1184 L 981 1184 L 981 1257.4 L 942 1257.4 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SH/13",
+        "d": "M 983 1184 L 1023 1184 L 1023 1257.4 L 983 1257.4 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SH/12",
+        "d": "M 1025 1184 L 1066 1184 L 1066 1257.4 L 1025 1257.4 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SH/11",
+        "d": "M 1068 1184 L 1095 1184 L 1095 1257.4 L 1068 1257.4 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SH/10",
+        "d": "M 1191 1184 L 1242 1184 L 1242 1257.4 L 1191 1257.4 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SH/09",
+        "d": "M 1244 1184 L 1284 1184 L 1284 1257.4 L 1244 1257.4 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SH/08",
+        "d": "M 1286 1184 L 1325 1184 L 1325 1257.4 L 1286 1257.4 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SH/07",
+        "d": "M 1327 1184 L 1380 1184 L 1380 1257.4 L 1327 1257.4 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SH/06",
+        "d": "M 1382 1184 L 1432 1184 L 1432 1257.4 L 1382 1257.4 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SR/22",
+        "d": "M 834 1261 L 889 1261 L 889 1357 L 834 1357 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SR/21",
+        "d": "M 891 1261 L 940 1261 L 940 1357 L 891 1357 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SR/20",
+        "d": "M 942 1261 L 981 1261 L 981 1357 L 942 1357 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SR/19",
+        "d": "M 983 1261 L 1023 1261 L 1023 1357 L 983 1357 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SR/18",
+        "d": "M 1025 1261 L 1066 1261 L 1066 1357 L 1025 1357 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SR/17",
+        "d": "M 1068 1261 L 1094 1261 L 1094 1357 L 1068 1357 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SR/16",
+        "d": "M 1096 1261 L 1133 1261 L 1133 1357 L 1096 1357 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SR/15",
+        "d": "M 1135 1261 L 1171 1261 L 1171 1357 L 1135 1357 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SR/14",
+        "d": "M 1173 1261 L 1214 1261 L 1214 1357 L 1173 1357 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SR/13",
+        "d": "M 1216 1261 L 1256 1261 L 1256 1357 L 1216 1357 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SR/12",
+        "d": "M 1258 1261 L 1296 1261 L 1296 1357 L 1258 1357 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SR/11",
+        "d": "M 1298 1261 L 1326 1261 L 1326 1357 L 1298 1357 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SR/10",
+        "d": "M 1328 1261 L 1377 1261 L 1377 1357 L 1328 1357 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SR/09",
+        "d": "M 1379 1261 L 1433 1261 L 1433 1357 L 1379 1357 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/GR/SR/29",
+        "d": "M 303 1040 L 411 1040 L 442 1074 L 355 1142 L 302 1098 Z",
+        "source": "Original Cairo Plaza PDF ground floor: drawn code and gross area confirmed against original Sheet1, source-partition draft",
+        "confidence": "DRAFT_VERIFIED_CODE_GSA"
+      },
+      {
+        "unitCode": "A/GR/SR/28",
+        "d": "M 357 1144 L 442 1085 L 486 1130 L 391 1200 Z",
+        "source": "Original Cairo Plaza PDF ground floor: drawn code and gross area confirmed against original Sheet1, source-partition draft",
+        "confidence": "DRAFT_VERIFIED_CODE_GSA"
+      },
+      {
+        "unitCode": "A/GR/SR/27",
+        "d": "M 396 1205 L 481 1156 L 523 1256 L 436 1302 Z",
+        "source": "Original Cairo Plaza PDF ground floor: drawn code and gross area confirmed against original Sheet1, source-partition draft",
+        "confidence": "DRAFT_VERIFIED_CODE_GSA"
+      },
+      {
+        "unitCode": "A/GR/SR/26",
+        "d": "M 440 1300 L 526 1256 L 588 1368 L 513 1383 Z",
+        "source": "Original Cairo Plaza PDF ground floor: drawn code and gross area confirmed against original Sheet1, source-partition draft",
+        "confidence": "DRAFT_VERIFIED_CODE_GSA"
+      },
+      {
+        "unitCode": "A/GR/SH/21",
+        "d": "M 417 971 L 493 971 L 494 1024 L 500 1044 L 460 1074 L 415 1025 Z",
+        "source": "Original Cairo Plaza PDF ground floor: drawn code and gross area confirmed against original Sheet1, source-partition draft",
+        "confidence": "DRAFT_VERIFIED_CODE_GSA"
+      },
+      {
+        "unitCode": "A/GR/SH/20",
+        "d": "M 459 1079 L 504 1045 L 535 1087 L 484 1115 Z",
+        "source": "Original Cairo Plaza PDF ground floor: drawn code and gross area confirmed against original Sheet1, source-partition draft",
+        "confidence": "DRAFT_VERIFIED_CODE_GSA"
+      },
+      {
+        "unitCode": "A/GR/SH/19",
+        "d": "M 537 1170 L 579 1140 L 607 1190 L 565 1223 Z",
+        "source": "Original Cairo Plaza PDF ground floor: drawn code and gross area confirmed against original Sheet1, source-partition draft",
+        "confidence": "DRAFT_VERIFIED_CODE_GSA"
+      },
+      {
+        "unitCode": "A/GR/SH/18",
+        "d": "M 612 1204 L 645 1204 L 650 1290 L 615 1290 L 602 1251 Z",
+        "source": "Original Cairo Plaza PDF ground floor: drawn code and gross area confirmed against original Sheet1, source-partition draft",
+        "confidence": "DRAFT_VERIFIED_CODE_GSA"
+      },
+      {
+        "unitCode": "A/GR/SH/17b",
+        "d": "M 653 1205 L 694 1205 L 694 1290 L 653 1290 Z",
+        "source": "Original Cairo Plaza PDF ground floor: drawn code and gross area confirmed against original Sheet1, source-partition draft",
+        "confidence": "DRAFT_VERIFIED_CODE_GSA"
+      },
+      {
+        "unitCode": "A/GR/SH/17a",
+        "d": "M 697 1205 L 751 1205 L 751 1290 L 697 1290 Z",
+        "source": "Original Cairo Plaza PDF ground floor: drawn code and gross area confirmed against original Sheet1, source-partition draft",
+        "confidence": "DRAFT_VERIFIED_CODE_GSA"
+      },
+      {
+        "unitCode": "A/GR/SH/01",
+        "d": "M 1831 973 L 1907 973 L 1907 1033 L 1864 1086 L 1824 1051 Z",
+        "source": "Original Cairo Plaza PDF ground floor: drawn code and gross area confirmed against original Sheet1, source-partition draft",
+        "confidence": "DRAFT_VERIFIED_CODE_GSA"
+      },
+      {
+        "unitCode": "A/GR/SH/02",
+        "d": "M 1804 1064 L 1852 1087 L 1828 1129 L 1793 1100 Z",
+        "source": "Original Cairo Plaza PDF ground floor: drawn code and gross area confirmed against original Sheet1, source-partition draft",
+        "confidence": "DRAFT_VERIFIED_CODE_GSA"
+      },
+      {
+        "unitCode": "A/GR/SH/03",
+        "d": "M 1775 1128 L 1817 1159 L 1780 1198 L 1746 1177 Z",
+        "source": "Original Cairo Plaza PDF ground floor: drawn code and gross area confirmed against original Sheet1, source-partition draft",
+        "confidence": "DRAFT_VERIFIED_CODE_GSA"
+      },
+      {
+        "unitCode": "A/GR/SH/04",
+        "d": "M 1691 1215 L 1734 1180 L 1777 1242 L 1721 1290 L 1670 1290 Z",
+        "source": "Original Cairo Plaza PDF ground floor: drawn code and gross area confirmed against original Sheet1, source-partition draft",
+        "confidence": "DRAFT_VERIFIED_CODE_GSA"
+      },
+      {
+        "unitCode": "A/GR/SH/05a",
+        "d": "M 1574 1204 L 1620 1204 L 1620 1293 L 1574 1293 Z",
+        "source": "Original Cairo Plaza PDF ground floor: drawn code and gross area confirmed against original Sheet1, source-partition draft",
+        "confidence": "DRAFT_VERIFIED_CODE_GSA"
+      },
+      {
+        "unitCode": "A/GR/SH/05b",
+        "d": "M 1622 1204 L 1666 1204 L 1666 1293 L 1622 1293 Z",
+        "source": "Original Cairo Plaza PDF ground floor: drawn code and gross area confirmed against original Sheet1, source-partition draft",
+        "confidence": "DRAFT_VERIFIED_CODE_GSA"
+      },
+      {
+        "unitCode": "B/GR/SH/15",
+        "d": "M 596 971 L 650 971 L 650 1033 L 614 1033 L 595 996 Z",
+        "confidence": "DRAFT_SOURCE_WALLS",
+        "source": "PDF ground-floor B shops: full code + GSA confirmed against original read-only inventory, manually traced wall geometry"
+      },
+      {
+        "unitCode": "B/GR/SH/16",
+        "d": "M 652 971 L 694 971 L 694 1033 L 652 1033 Z",
+        "confidence": "DRAFT_SOURCE_WALLS",
+        "source": "PDF ground-floor B shops: full code + GSA confirmed against original read-only inventory, manually traced wall geometry"
+      },
+      {
+        "unitCode": "B/GR/SH/14",
+        "d": "M 652 1041 L 694 1041 L 694 1108 L 662 1108 L 651 1090 Z",
+        "confidence": "DRAFT_SOURCE_WALLS",
+        "source": "PDF ground-floor B shops: full code + GSA confirmed against original read-only inventory, manually traced wall geometry"
+      },
+      {
+        "unitCode": "B/GR/SH/01",
+        "d": "M 1623 1040 L 1698 1040 L 1663 1109 L 1623 1109 Z",
+        "confidence": "DRAFT_SOURCE_WALLS",
+        "source": "PDF ground-floor B shops: full code + GSA confirmed against original read-only inventory, manually traced wall geometry"
+      }
+    ],
+    "1": [
+      {
+        "unitCode": "I/FR/SH/15",
+        "d": "M 254 328.1 L 338 328.1 L 338 448.9 L 254 448.9 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/14",
+        "d": "M 254 451.5 L 338 451.5 L 338 493.7 L 254 493.7 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/13",
+        "d": "M 254 496.3 L 338 496.3 L 338 536.5 L 254 536.5 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/12",
+        "d": "M 254 539.0999999999999 L 338 539.0999999999999 L 338 579.4000000000001 L 254 579.4000000000001 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/11",
+        "d": "M 254 582 L 338 582 L 338 623.1 L 254 623.1 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/10",
+        "d": "M 254 625.6999999999999 L 338 625.6999999999999 L 338 665.9000000000001 L 254 665.9000000000001 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/09",
+        "d": "M 254 668.5 L 338 668.5 L 338 708.6 L 254 708.6 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/08",
+        "d": "M 254 711.1999999999999 L 338 711.1999999999999 L 338 751.7 L 254 751.7 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/07",
+        "d": "M 254 754.3 L 338 754.3 L 338 821.7 L 254 821.7 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/16",
+        "d": "M 340 329 L 406 329 L 406 383.3 L 340 383.3 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/17",
+        "d": "M 409 329 L 476 329 L 476 383.3 L 409 383.3 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/01A",
+        "d": "M 371.5 415.8 L 444.8 415.8 L 444.8 451.4 L 371.5 451.4 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/01B",
+        "d": "M 371.5 453.8 L 444.8 453.8 L 444.8 490.2 L 371.5 490.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/02A",
+        "d": "M 371.5 601.5 L 444.8 601.5 L 444.8 634.2 L 371.5 634.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/02B",
+        "d": "M 371.5 636.8 L 444.8 636.8 L 444.8 669.9000000000001 L 371.5 669.9000000000001 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/03",
+        "d": "M 371.5 672.5 L 444.8 672.5 L 444.8 711.7 L 371.5 711.7 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/04A",
+        "d": "M 371.5 714.3 L 444.8 714.3 L 444.8 751.3000000000001 L 371.5 751.3000000000001 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "I/FR/SH/04B",
+        "d": "M 371.5 754 L 444.8 754 L 444.8 790.6 L 371.5 790.6 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/FR/SH/01",
+        "d": "M 1878 327.5 L 1946 327.5 L 1946 383 L 1878 383 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/FR/SH/02",
+        "d": "M 1949 327.5 L 2012 327.5 L 2012 383 L 1949 383 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/FR/SH/17A",
+        "d": "M 1911 414.40000000000003 L 1984 414.40000000000003 L 1984 450.3 L 1911 450.3 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/FR/SH/17B",
+        "d": "M 1911 452.90000000000003 L 1984 452.90000000000003 L 1984 488.4 L 1911 488.4 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/FR/SH/16A",
+        "d": "M 1911 599.8 L 1984 599.8 L 1984 632.7 L 1911 632.7 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/FR/SH/16B",
+        "d": "M 1911 635.3 L 1984 635.3 L 1984 670.2 L 1911 670.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/FR/SH/15",
+        "d": "M 1911 672.8 L 1984 672.8 L 1984 710.4000000000001 L 1911 710.4000000000001 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/FR/SH/14A",
+        "d": "M 1911 712.8 L 1984 712.8 L 1984 750.2 L 1911 750.2 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "C/FR/SH/14B",
+        "d": "M 1911 752.8 L 1984 752.8 L 1984 789.9000000000001 L 1911 789.9000000000001 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/FR/SH/16",
+        "d": "M 827 1284 L 889 1284 L 889 1336 L 827 1336 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/FR/SH/15",
+        "d": "M 892 1284 L 941 1284 L 941 1336 L 892 1336 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/FR/SH/14",
+        "d": "M 943 1284 L 982 1284 L 982 1336 L 943 1336 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/FR/SH/13",
+        "d": "M 984 1284 L 1022 1284 L 1022 1336 L 984 1336 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/FR/SH/12",
+        "d": "M 1024 1284 L 1066 1284 L 1066 1336 L 1024 1336 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/FR/SH/11",
+        "d": "M 1068 1284 L 1105 1284 L 1105 1336 L 1068 1336 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/FR/SH/10A",
+        "d": "M 1214 1284 L 1240 1284 L 1240 1370 L 1214 1370 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/FR/SH/10B",
+        "d": "M 1242 1284 L 1271 1284 L 1271 1336 L 1242 1336 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/FR/SH/09",
+        "d": "M 1273 1284 L 1314 1284 L 1314 1336 L 1273 1336 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/FR/SH/08",
+        "d": "M 1316 1284 L 1356 1284 L 1356 1336 L 1316 1336 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/FR/SH/07",
+        "d": "M 1358 1284 L 1410 1284 L 1410 1336 L 1358 1336 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/FR/SH/06",
+        "d": "M 1413 1284 L 1470 1284 L 1470 1336 L 1413 1336 Z",
+        "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
+        "confidence": "DRAFT_VISUAL_PARTITION"
+      },
+      {
+        "unitCode": "A/FR/SR/21",
+        "d": "M 834 1398 L 897 1398 L 897 1491 L 834 1491 Z",
+        "confidence": "DRAFT_SOURCE_PARTITION",
+        "source": "Source architectural PDF first floor southern retail strip; readable unit labels"
+      },
+      {
+        "unitCode": "A/FR/SR/20",
+        "d": "M 900 1398 L 955 1398 L 955 1491 L 900 1491 Z",
+        "confidence": "DRAFT_SOURCE_PARTITION",
+        "source": "Source architectural PDF first floor southern retail strip; readable unit labels"
+      },
+      {
+        "unitCode": "A/FR/SR/19",
+        "d": "M 958 1398 L 999 1398 L 999 1491 L 958 1491 Z",
+        "confidence": "DRAFT_SOURCE_PARTITION",
+        "source": "Source architectural PDF first floor southern retail strip; readable unit labels"
+      },
+      {
+        "unitCode": "A/FR/SR/18",
+        "d": "M 1001 1398 L 1040 1398 L 1040 1491 L 1001 1491 Z",
+        "confidence": "DRAFT_SOURCE_PARTITION",
+        "source": "Source architectural PDF first floor southern retail strip; readable unit labels"
+      },
+      {
+        "unitCode": "A/FR/SR/17",
+        "d": "M 1043 1398 L 1090 1398 L 1090 1491 L 1043 1491 Z",
+        "confidence": "DRAFT_SOURCE_PARTITION",
+        "source": "Source architectural PDF first floor southern retail strip; readable unit labels"
+      },
+      {
+        "unitCode": "A/FR/SR/16",
+        "d": "M 1092 1398 L 1132 1398 L 1132 1491 L 1092 1491 Z",
+        "confidence": "DRAFT_SOURCE_PARTITION",
+        "source": "Source architectural PDF first floor southern retail strip; readable unit labels"
+      },
+      {
+        "unitCode": "A/FR/SR/15",
+        "d": "M 1134 1398 L 1175 1398 L 1175 1491 L 1134 1491 Z",
+        "confidence": "DRAFT_SOURCE_PARTITION",
+        "source": "Source architectural PDF first floor southern retail strip; readable unit labels"
+      },
+      {
+        "unitCode": "A/FR/SR/14",
+        "d": "M 1177 1398 L 1218 1398 L 1218 1491 L 1177 1491 Z",
+        "confidence": "DRAFT_SOURCE_PARTITION",
+        "source": "Source architectural PDF first floor southern retail strip; readable unit labels"
+      },
+      {
+        "unitCode": "A/FR/SR/13",
+        "d": "M 1221 1398 L 1263 1398 L 1263 1491 L 1221 1491 Z",
+        "confidence": "DRAFT_SOURCE_PARTITION",
+        "source": "Source architectural PDF first floor southern retail strip; readable unit labels"
+      },
+      {
+        "unitCode": "A/FR/SR/12",
+        "d": "M 1265 1398 L 1307 1398 L 1307 1491 L 1265 1491 Z",
+        "confidence": "DRAFT_SOURCE_PARTITION",
+        "source": "Source architectural PDF first floor southern retail strip; readable unit labels"
+      },
+      {
+        "unitCode": "A/FR/SR/11",
+        "d": "M 1310 1398 L 1352 1398 L 1352 1491 L 1310 1491 Z",
+        "confidence": "DRAFT_SOURCE_PARTITION",
+        "source": "Source architectural PDF first floor southern retail strip; readable unit labels"
+      },
+      {
+        "unitCode": "A/FR/SR/10",
+        "d": "M 1355 1398 L 1397 1398 L 1397 1491 L 1355 1491 Z",
+        "confidence": "DRAFT_SOURCE_PARTITION",
+        "source": "Source architectural PDF first floor southern retail strip; readable unit labels"
+      },
+      {
+        "unitCode": "A/FR/SR/09",
+        "d": "M 1399 1398 L 1455 1398 L 1455 1491 L 1399 1491 Z",
+        "confidence": "DRAFT_SOURCE_PARTITION",
+        "source": "Source architectural PDF first floor southern retail strip; readable unit labels"
+      },
+      {
+        "unitCode": "A/FR/SR/08",
+        "d": "M 1457 1398 L 1519 1398 L 1519 1491 L 1457 1491 Z",
+        "confidence": "DRAFT_SOURCE_PARTITION",
+        "source": "Source architectural PDF first floor southern retail strip; readable unit labels"
+      },
+      {
+        "unitCode": "A/FR/SR/28",
+        "d": "M 243 1048 L 343 1048 L 343 1110 L 243 1110 Z",
+        "source": "First floor original PDF shows full unit code and gross area matching private Sheet1 row on floor 1. Draft source-wall geometry.",
+        "confidence": "DRAFT_LABEL_GSA_MATCH"
+      },
+      {
+        "unitCode": "A/FR/SR/27",
+        "d": "M 244 1115 L 344 1115 L 387 1172 L 300 1224 L 244 1170 Z",
+        "source": "First floor original PDF shows full unit code and gross area matching private Sheet1 row on floor 1. Draft source-wall geometry.",
+        "confidence": "DRAFT_LABEL_GSA_MATCH"
+      },
+      {
+        "unitCode": "A/FR/SR/26",
+        "d": "M 310 1226 L 389 1179 L 434 1240 L 352 1300 Z",
+        "source": "First floor original PDF shows full unit code and gross area matching private Sheet1 row on floor 1. Draft source-wall geometry.",
+        "confidence": "DRAFT_LABEL_GSA_MATCH"
+      },
+      {
+        "unitCode": "A/FR/SR/24",
+        "d": "M 389 1343 L 432 1319 L 503 1395 L 458 1468 Z",
+        "source": "First floor original PDF shows full unit code and gross area matching private Sheet1 row on floor 1. Draft source-wall geometry.",
+        "confidence": "DRAFT_LABEL_GSA_MATCH"
+      },
+      {
+        "unitCode": "A/FR/SR/23",
+        "d": "M 510 1412 L 596 1412 L 596 1487 L 510 1487 Z",
+        "source": "First floor original PDF shows full unit code and gross area matching private Sheet1 row on floor 1. Draft source-wall geometry.",
+        "confidence": "DRAFT_LABEL_GSA_MATCH"
+      },
+      {
+        "unitCode": "A/FR/SH/21",
+        "d": "M 381 1049 L 442 1049 L 442 1104 L 408 1134 L 381 1100 Z",
+        "source": "First floor original PDF shows full unit code and gross area matching private Sheet1 row on floor 1. Draft source-wall geometry.",
+        "confidence": "DRAFT_LABEL_GSA_MATCH"
+      },
+      {
+        "unitCode": "A/FR/SR/01",
+        "d": "M 1990 1047 L 2087 1047 L 2087 1113 L 1990 1113 Z",
+        "source": "First floor original PDF shows full unit code and gross area matching private Sheet1 row on floor 1. Draft source-wall geometry.",
+        "confidence": "DRAFT_LABEL_GSA_MATCH"
+      },
+      {
+        "unitCode": "A/FR/SR/02",
+        "d": "M 1990 1117 L 2088 1117 L 2088 1171 L 2019 1223 L 1960 1184 Z",
+        "source": "First floor original PDF shows full unit code and gross area matching private Sheet1 row on floor 1. Draft source-wall geometry.",
+        "confidence": "DRAFT_LABEL_GSA_MATCH"
+      },
+      {
+        "unitCode": "A/FR/SR/03",
+        "d": "M 1951 1189 L 2013 1220 L 1971 1285 L 1919 1256 Z",
+        "source": "First floor original PDF shows full unit code and gross area matching private Sheet1 row on floor 1. Draft source-wall geometry.",
+        "confidence": "DRAFT_LABEL_GSA_MATCH"
+      },
+      {
+        "unitCode": "A/FR/SR/05",
+        "d": "M 1895 1353 L 1937 1373 L 1885 1405 L 1850 1390 Z",
+        "source": "First floor original PDF shows full unit code and gross area matching private Sheet1 row on floor 1. Draft source-wall geometry.",
+        "confidence": "DRAFT_LABEL_GSA_MATCH"
+      },
+      {
+        "unitCode": "A/FR/SR/06",
+        "d": "M 1766 1410 L 1816 1370 L 1874 1435 L 1848 1488 L 1744 1488 Z",
+        "source": "First floor original PDF shows full unit code and gross area matching private Sheet1 row on floor 1. Draft source-wall geometry.",
+        "confidence": "DRAFT_LABEL_GSA_MATCH"
+      },
+      {
+        "unitCode": "A/FR/SR/07",
+        "d": "M 1613 1399 L 1715 1399 L 1715 1487 L 1613 1487 Z",
+        "source": "First floor original PDF shows full unit code and gross area matching private Sheet1 row on floor 1. Draft source-wall geometry.",
+        "confidence": "DRAFT_LABEL_GSA_MATCH"
+      }
+    ],
+    "2": [
+      {
+        "unitCode": "A/2ND/OFF/17",
+        "d": "M 831.5 1171.4 L 895.8 1171.4 L 895.8 1258.8 L 831.5 1258.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/16",
+        "d": "M 895.8 1171.4 L 947.5 1171.4 L 947.5 1258.8 L 895.8 1258.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/15",
+        "d": "M 947.5 1171.4 L 990.3 1171.4 L 990.3 1258.8 L 947.5 1258.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/14",
+        "d": "M 990.3 1171.4 L 1031.1 1171.4 L 1031.1 1258.8 L 990.3 1258.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/13",
+        "d": "M 1031.1 1171.4 L 1072.1 1171.4 L 1072.1 1258.8 L 1031.1 1258.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/12",
+        "d": "M 1072.1 1171.4 L 1113.2 1171.4 L 1113.2 1258.8 L 1072.1 1258.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/11",
+        "d": "M 1215.2 1171.4 L 1274.05 1171.4 L 1274.05 1258.8 L 1215.2 1258.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/10",
+        "d": "M 1274.05 1171.4 L 1317.5 1171.4 L 1317.5 1258.8 L 1274.05 1258.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/09",
+        "d": "M 1317.5 1171.4 L 1358.3 1171.4 L 1358.3 1258.8 L 1317.5 1258.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/08",
+        "d": "M 1358.3 1171.4 L 1410 1171.4 L 1410 1258.8 L 1358.3 1258.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/07",
+        "d": "M 1410 1171.4 L 1474.2 1171.4 L 1474.2 1258.8 L 1410 1258.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/32",
+        "d": "M 831.5 1277.5 L 895.7 1277.5 L 895.7 1368.8 L 831.5 1368.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/33",
+        "d": "M 895.7 1277.5 L 949.3 1277.5 L 949.3 1368.8 L 895.7 1368.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/34",
+        "d": "M 949.3 1277.5 L 990.1 1277.5 L 990.1 1368.8 L 949.3 1368.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/35",
+        "d": "M 990.1 1277.5 L 1031.1 1277.5 L 1031.1 1368.8 L 990.1 1368.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/36",
+        "d": "M 1031.1 1277.5 L 1072 1277.5 L 1072 1368.8 L 1031.1 1368.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/37",
+        "d": "M 1072 1277.5 L 1112.9 1277.5 L 1112.9 1368.8 L 1072 1368.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/38",
+        "d": "M 1112.9 1277.5 L 1153.8 1277.5 L 1153.8 1368.8 L 1112.9 1368.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/39",
+        "d": "M 1153.8 1277.5 L 1194.6 1277.5 L 1194.6 1368.8 L 1153.8 1368.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/40",
+        "d": "M 1194.6 1277.5 L 1235.5 1277.5 L 1235.5 1368.8 L 1194.6 1368.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/41",
+        "d": "M 1235.5 1277.5 L 1276.4 1277.5 L 1276.4 1368.8 L 1235.5 1368.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/42",
+        "d": "M 1276.4 1277.5 L 1317.3 1277.5 L 1317.3 1368.8 L 1276.4 1368.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/43",
+        "d": "M 1317.3 1277.5 L 1358.2 1277.5 L 1358.2 1368.8 L 1317.3 1368.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/44",
+        "d": "M 1358.2 1277.5 L 1411.8 1277.5 L 1411.8 1368.8 L 1358.2 1368.8 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/45",
+        "d": "M 1411.8 1277.5 L 1474.1 1277.5 L 1474.1 1368.8 L 1411.8 1368.8 Z"
+      },
+      {
+        "unitCode": "I/2ND/F&B/02",
+        "d": "M 370.5 600.2 L 464.9 600.2 L 464.9 641.1 L 370.5 641.1 Z"
+      },
+      {
+        "unitCode": "I/2ND/F&B/03",
+        "d": "M 370.5 641.1 L 464.9 641.1 L 464.9 682 L 370.5 682 Z"
+      },
+      {
+        "unitCode": "I/2ND/F&B/04",
+        "d": "M 370.5 682 L 464.9 682 L 464.9 722.95 L 370.5 722.95 Z"
+      },
+      {
+        "unitCode": "I/2ND/F&B/05",
+        "d": "M 370.5 722.95 L 464.9 722.95 L 464.9 762.77 L 370.5 762.77 Z"
+      },
+      {
+        "unitCode": "I/2ND/F&B/06",
+        "d": "M 370.5 762.77 L 464.9 762.77 L 464.9 798.28 L 370.5 798.28 Z"
+      },
+      {
+        "unitCode": "I/2ND/F&B/07",
+        "d": "M 370.5 798.28 L 464.9 798.28 L 464.9 841.22 L 370.5 841.22 Z"
+      },
+      {
+        "unitCode": "C/2ND/F&B/02",
+        "d": "M 1841.7 599.5 L 1936.1 599.5 L 1936.1 642.38 L 1841.7 642.38 Z"
+      },
+      {
+        "unitCode": "C/2ND/F&B/03",
+        "d": "M 1841.7 642.38 L 1936.1 642.38 L 1936.1 683.28 L 1841.7 683.28 Z"
+      },
+      {
+        "unitCode": "C/2ND/F&B/04",
+        "d": "M 1841.7 683.28 L 1936.1 683.28 L 1936.1 724.19 L 1841.7 724.19 Z"
+      },
+      {
+        "unitCode": "C/2ND/F&B/05",
+        "d": "M 1841.7 724.19 L 1936.1 724.19 L 1936.1 763.14 L 1841.7 763.14 Z"
+      },
+      {
+        "unitCode": "C/2ND/F&B/06",
+        "d": "M 1841.7 763.14 L 1936.1 763.14 L 1936.1 799.59 L 1841.7 799.59 Z"
+      },
+      {
+        "unitCode": "C/2ND/F&B/07",
+        "d": "M 1841.7 799.59 L 1936.1 799.59 L 1936.1 842.44 L 1841.7 842.44 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/19",
+        "d": "M 639.8 1170.1 L 680.7 1170.1 L 680.7 1259 L 639.8 1259 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/18",
+        "d": "M 680.7 1170.1 L 733.8 1170.1 L 733.8 1259 L 680.7 1259 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/31",
+        "d": "M 681.5 1277.6 L 733.7 1277.6 L 733.7 1368.7 L 681.5 1368.7 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/30",
+        "d": "M 628.5 1277.6 L 681.5 1277.6 L 681.5 1368.7 L 628.5 1368.7 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/06",
+        "d": "M 1572.1 1170.9 L 1625.2 1170.9 L 1625.2 1259.4 L 1572.1 1259.4 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/05",
+        "d": "M 1625.2 1170.9 L 1666.1 1170.9 L 1666.1 1259.4 L 1625.2 1259.4 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/46",
+        "d": "M 1571.9 1278.3 L 1626 1278.3 L 1626 1369.4 L 1571.9 1369.4 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/47",
+        "d": "M 1626 1278.3 L 1686.4 1278.3 L 1686.4 1369.4 L 1626 1369.4 Z"
+      },
+      {
+        "unitCode": "A/2ND/OFF/24",
+        "d": "M 291 949 L 389 949 L 389 1016 L 291 1016 Z",
+        "confidence": "PROPOSED_REVIEW",
+        "source": "Original PDF architectural wall corners and source text coordinate; vector-based manual trace"
+      },
+      {
+        "unitCode": "A/2ND/OFF/25",
+        "d": "M 291 1018 L 389 1018 L 436 1075 L 320 1113 L 291 1075 Z",
+        "confidence": "PROPOSED_REVIEW",
+        "source": "Original PDF architectural wall corners and source text coordinate; vector-based manual trace"
+      },
+      {
+        "unitCode": "A/2ND/OFF/23",
+        "d": "M 399 949 L 488 949 L 488 985 L 504 993 L 452 1030 L 421 1012 L 399 1012 Z",
+        "confidence": "PROPOSED_REVIEW",
+        "source": "Original PDF architectural wall corners and source text coordinate; vector-based manual trace"
+      },
+      {
+        "unitCode": "A/2ND/OFF/53",
+        "d": "M 1918 949 L 2013 949 L 2013 1016 L 1918 1016 Z",
+        "confidence": "PROPOSED_REVIEW",
+        "source": "Original PDF architectural wall corners and source text coordinate; vector-based manual trace"
+      },
+      {
+        "unitCode": "A/2ND/OFF/52",
+        "d": "M 1919 1018 L 2013 1018 L 2013 1071 L 1984 1116 L 1975 1108 L 1899 1066 L 1919 1042 Z",
+        "confidence": "PROPOSED_REVIEW",
+        "source": "Original PDF architectural wall corners and source text coordinate; vector-based manual trace"
+      },
+      {
+        "unitCode": "A/2ND/OFF/01",
+        "d": "M 1819 949 L 1900 949 L 1900 1021 L 1880 1048 L 1835 1013 L 1819 993 Z",
+        "confidence": "PROPOSED_REVIEW",
+        "source": "Original PDF architectural wall corners and source text coordinate; vector-based manual trace"
+      },
+      {
+        "unitCode": "I/2ND/F&B/01",
+        "d": "M 375 365 L 483 365 L 483 441 L 375 441 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "C/2ND/F&B/01",
+        "d": "M 1819 366 L 1925 366 L 1925 439 L 1819 439 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/2ND/OFF/22",
+        "d": "M 455 1032 L 477 1021 L 523 1061 L 484 1090 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/2ND/OFF/21",
+        "d": "M 509 1140 L 546 1112 L 580 1162 L 562 1192 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/2ND/OFF/20",
+        "d": "M 565 1197 L 600 1177 L 627 1212 L 609 1261 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/2ND/OFF/26",
+        "d": "M 367 1116 L 420 1086 L 463 1153 L 414 1185 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/2ND/OFF/27",
+        "d": "M 432 1186 L 461 1158 L 497 1200 L 451 1238 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/2ND/OFF/28",
+        "d": "M 458 1238 L 494 1210 L 521 1274 L 509 1299 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/2ND/OFF/29",
+        "d": "M 521 1279 L 627 1279 L 627 1367 L 573 1367 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/2ND/OFF/02",
+        "d": "M 1799 1033 L 1818 1018 L 1868 1051 L 1843 1086 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/2ND/OFF/03",
+        "d": "M 1716 1129 L 1752 1104 L 1809 1168 L 1774 1214 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/2ND/OFF/04",
+        "d": "M 1668 1170 L 1723 1170 L 1743 1222 L 1708 1272 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/2ND/OFF/51",
+        "d": "M 1852 1084 L 1879 1060 L 1916 1103 L 1901 1153 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/2ND/OFF/50",
+        "d": "M 1807 1148 L 1861 1115 L 1902 1186 L 1869 1235 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/2ND/OFF/49",
+        "d": "M 1769 1220 L 1812 1215 L 1847 1261 L 1818 1308 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/2ND/OFF/48",
+        "d": "M 1687 1279 L 1790 1279 L 1803 1315 L 1747 1367 L 1687 1367 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      }
+    ],
+    "3": [
+      {
+        "unitCode": "I/3RD/OFF/01",
+        "d": "M 388 413 L 476 413 L 476 483 L 388 483 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "I/3RD/OFF/02",
+        "d": "M 370 580 L 470 580 L 470 652 L 370 652 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "I/3RD/OFF/03",
+        "d": "M 350 653 L 462 653 L 462 693 L 350 693 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "I/3RD/OFF/04",
+        "d": "M 350 694 L 462 694 L 462 736 L 350 736 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "I/3RD/OFF/05",
+        "d": "M 350 737 L 462 737 L 462 777 L 350 777 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "I/3RD/OFF/06",
+        "d": "M 350 778 L 462 778 L 462 818 L 350 818 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "I/3RD/OFF/07",
+        "d": "M 350 819 L 462 819 L 462 900 L 350 900 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "C/3RD/OFF/01",
+        "d": "M 1905 413 L 2003 413 L 2003 485 L 1905 485 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "C/3RD/OFF/02",
+        "d": "M 1915 585 L 2010 585 L 2010 653 L 1915 653 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "C/3RD/OFF/03",
+        "d": "M 1915 654 L 2010 654 L 2010 697 L 1915 697 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "C/3RD/OFF/04",
+        "d": "M 1915 698 L 2010 698 L 2010 739 L 1915 739 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "C/3RD/OFF/05",
+        "d": "M 1915 740 L 2010 740 L 2010 781 L 1915 781 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "C/3RD/OFF/06",
+        "d": "M 1915 782 L 2010 782 L 2010 823 L 1915 823 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "C/3RD/OFF/07",
+        "d": "M 1915 824 L 2010 824 L 2010 903 L 1915 903 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "A/3RD/F&B/10",
+        "d": "M 840 1293 L 900 1293 L 900 1383 L 840 1383 Z",
+        "confidence": "DRAFT_PDF_TEXT_AND_GSA_VERIFIED",
+        "source": "Third-floor original PDF art: unit label, gross area and partition walls visible"
+      },
+      {
+        "unitCode": "A/3RD/F&B/16",
+        "d": "M 901 1293 L 953 1293 L 953 1383 L 901 1383 Z",
+        "confidence": "DRAFT_PDF_TEXT_AND_GSA_VERIFIED",
+        "source": "Third-floor original PDF art: unit label, gross area and partition walls visible"
+      },
+      {
+        "unitCode": "A/3RD/F&B/15",
+        "d": "M 954 1293 L 995 1293 L 995 1383 L 954 1383 Z",
+        "confidence": "DRAFT_PDF_TEXT_AND_GSA_VERIFIED",
+        "source": "Third-floor original PDF art: unit label, gross area and partition walls visible"
+      },
+      {
+        "unitCode": "A/3RD/F&B/14",
+        "d": "M 996 1293 L 1036 1293 L 1036 1383 L 996 1383 Z",
+        "confidence": "DRAFT_PDF_TEXT_AND_GSA_VERIFIED",
+        "source": "Third-floor original PDF art: unit label, gross area and partition walls visible"
+      },
+      {
+        "unitCode": "A/3RD/F&B/13",
+        "d": "M 1037 1293 L 1077 1293 L 1077 1383 L 1037 1383 Z",
+        "confidence": "DRAFT_PDF_TEXT_AND_GSA_VERIFIED",
+        "source": "Third-floor original PDF art: unit label, gross area and partition walls visible"
+      },
+      {
+        "unitCode": "A/3RD/F&B/12",
+        "d": "M 1078 1293 L 1119 1293 L 1119 1383 L 1078 1383 Z",
+        "confidence": "DRAFT_PDF_TEXT_AND_GSA_VERIFIED",
+        "source": "Third-floor original PDF art: unit label, gross area and partition walls visible"
+      },
+      {
+        "unitCode": "A/3RD/F&B/11",
+        "d": "M 1243 1293 L 1306 1293 L 1306 1383 L 1243 1383 Z",
+        "confidence": "DRAFT_PDF_TEXT_AND_GSA_VERIFIED",
+        "source": "Third-floor original PDF art: unit label, gross area and partition walls visible"
+      },
+      {
+        "unitCode": "A/3RD/F&B/09",
+        "d": "M 1307 1293 L 1352 1293 L 1352 1383 L 1307 1383 Z",
+        "confidence": "DRAFT_PDF_TEXT_AND_GSA_VERIFIED",
+        "source": "Third-floor original PDF art: unit label, gross area and partition walls visible"
+      },
+      {
+        "unitCode": "A/3RD/F&B/08",
+        "d": "M 1353 1293 L 1395 1293 L 1395 1383 L 1353 1383 Z",
+        "confidence": "DRAFT_PDF_TEXT_AND_GSA_VERIFIED",
+        "source": "Third-floor original PDF art: unit label, gross area and partition walls visible"
+      },
+      {
+        "unitCode": "A/3RD/F&B/07",
+        "d": "M 1396 1293 L 1450 1293 L 1450 1383 L 1396 1383 Z",
+        "confidence": "DRAFT_PDF_TEXT_AND_GSA_VERIFIED",
+        "source": "Third-floor original PDF art: unit label, gross area and partition walls visible"
+      },
+      {
+        "unitCode": "A/3RD/F&B/06",
+        "d": "M 1451 1293 L 1517 1293 L 1517 1383 L 1451 1383 Z",
+        "confidence": "DRAFT_PDF_TEXT_AND_GSA_VERIFIED",
+        "source": "Third-floor original PDF art: unit label, gross area and partition walls visible"
+      }
+    ],
+    "4": [
+      {
+        "unitCode": "I/4TH/OFF/01",
+        "d": "M 362 414 L 456 414 L 456 478 L 362 478 Z",
+        "confidence": "DRAFT_SOURCE_LABEL_EXACT",
+        "source": "Original PDF left wing reads I, not A; label and gross area visible"
+      },
+      {
+        "unitCode": "I/4TH/OFF/02",
+        "d": "M 350 592 L 456 592 L 456 665 L 350 665 Z",
+        "confidence": "DRAFT_SOURCE_LABEL_EXACT",
+        "source": "Original PDF left wing reads I, not A; label and gross area visible"
+      },
+      {
+        "unitCode": "I/4TH/OFF/03",
+        "d": "M 350 666 L 456 666 L 456 708 L 350 708 Z",
+        "confidence": "DRAFT_SOURCE_LABEL_EXACT",
+        "source": "Original PDF left wing reads I, not A; label and gross area visible"
+      },
+      {
+        "unitCode": "I/4TH/OFF/04",
+        "d": "M 350 709 L 456 709 L 456 750 L 350 750 Z",
+        "confidence": "DRAFT_SOURCE_LABEL_EXACT",
+        "source": "Original PDF left wing reads I, not A; label and gross area visible"
+      },
+      {
+        "unitCode": "I/4TH/OFF/05",
+        "d": "M 350 751 L 456 751 L 456 792 L 350 792 Z",
+        "confidence": "DRAFT_SOURCE_LABEL_EXACT",
+        "source": "Original PDF left wing reads I, not A; label and gross area visible"
+      },
+      {
+        "unitCode": "I/4TH/OFF/06",
+        "d": "M 350 793 L 456 793 L 456 835 L 350 835 Z",
+        "confidence": "DRAFT_SOURCE_LABEL_EXACT",
+        "source": "Original PDF left wing reads I, not A; label and gross area visible"
+      },
+      {
+        "unitCode": "I/4TH/OFF/07",
+        "d": "M 350 836 L 456 836 L 456 914 L 350 914 Z",
+        "confidence": "DRAFT_SOURCE_LABEL_EXACT",
+        "source": "Original PDF left wing reads I, not A; label and gross area visible"
+      },
+      {
+        "unitCode": "C/4TH/OFF/01",
+        "d": "M 1902 414 L 1998 414 L 1998 482 L 1902 482 Z",
+        "confidence": "DRAFT_VISIBLE_ARCHITECTURAL_PARTITIONS"
+      },
+      {
+        "unitCode": "C/4TH/OFF/02",
+        "d": "M 1902 592 L 1998 592 L 1998 664 L 1902 664 Z",
+        "confidence": "DRAFT_VISIBLE_ARCHITECTURAL_PARTITIONS"
+      },
+      {
+        "unitCode": "C/4TH/OFF/03",
+        "d": "M 1902 665 L 1998 665 L 1998 709 L 1902 709 Z",
+        "confidence": "DRAFT_VISIBLE_ARCHITECTURAL_PARTITIONS"
+      },
+      {
+        "unitCode": "C/4TH/OFF/04",
+        "d": "M 1902 710 L 1998 710 L 1998 751 L 1902 751 Z",
+        "confidence": "DRAFT_VISIBLE_ARCHITECTURAL_PARTITIONS"
+      },
+      {
+        "unitCode": "C/4TH/OFF/05",
+        "d": "M 1902 752 L 1998 752 L 1998 794 L 1902 794 Z",
+        "confidence": "DRAFT_VISIBLE_ARCHITECTURAL_PARTITIONS"
+      },
+      {
+        "unitCode": "C/4TH/OFF/06",
+        "d": "M 1902 795 L 1998 795 L 1998 836 L 1902 836 Z",
+        "confidence": "DRAFT_VISIBLE_ARCHITECTURAL_PARTITIONS"
+      },
+      {
+        "unitCode": "C/4TH/OFF/07",
+        "d": "M 1902 837 L 1998 837 L 1998 915 L 1902 915 Z",
+        "confidence": "DRAFT_VISIBLE_ARCHITECTURAL_PARTITIONS"
+      },
+      {
+        "unitCode": "A/4TH/OFF/20",
+        "d": "M 466 1308 L 503 1308 L 539 1335 L 544 1392 L 540 1394 L 483 1394 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/4TH/OFF/23",
+        "d": "M 357 1030 L 446 1030 L 447 1076 L 461 1098 L 395 1137 L 353 1095 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/4TH/OFF/01",
+        "d": "M 1901 1032 L 1998 1032 L 1998 1098 L 1918 1098 L 1899 1077 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/4TH/OFF/02",
+        "d": "M 1901 1107 L 1953 1145 L 1908 1198 L 1878 1180 L 1876 1160 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/4TH/OFF/03",
+        "d": "M 1805 1252 L 1860 1277 L 1817 1314 L 1782 1290 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/4TH/OFF/04",
+        "d": "M 1740 1320 L 1784 1298 L 1800 1323 L 1740 1391 L 1736 1391 L 1736 1360 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/4TH/OFF/05",
+        "d": "M 1681 1302 L 1732 1302 L 1732 1394 L 1681 1394 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/4TH/OFF/06",
+        "d": "M 1626 1302 L 1677 1302 L 1677 1394 L 1626 1394 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      }
+    ],
+    "5": [
+      {
+        "unitCode": "I/5TH/OFF/01",
+        "d": "M 392 414 L 474 414 L 474 482 L 392 482 Z",
+        "confidence": "DRAFT_SOURCE_LABEL_EXACT",
+        "source": "Original PDF left wing reads I, not A; label and gross area visible"
+      },
+      {
+        "unitCode": "I/5TH/OFF/02",
+        "d": "M 382 579 L 468 579 L 468 657 L 382 657 Z",
+        "confidence": "DRAFT_SOURCE_LABEL_EXACT",
+        "source": "Original PDF left wing reads I, not A; label and gross area visible"
+      },
+      {
+        "unitCode": "I/5TH/OFF/03",
+        "d": "M 382 658 L 468 658 L 468 696 L 382 696 Z",
+        "confidence": "DRAFT_SOURCE_LABEL_EXACT",
+        "source": "Original PDF left wing reads I, not A; label and gross area visible"
+      },
+      {
+        "unitCode": "I/5TH/OFF/04",
+        "d": "M 382 697 L 468 697 L 468 737 L 382 737 Z",
+        "confidence": "DRAFT_SOURCE_LABEL_EXACT",
+        "source": "Original PDF left wing reads I, not A; label and gross area visible"
+      },
+      {
+        "unitCode": "I/5TH/OFF/05",
+        "d": "M 382 738 L 468 738 L 468 777 L 382 777 Z",
+        "confidence": "DRAFT_SOURCE_LABEL_EXACT",
+        "source": "Original PDF left wing reads I, not A; label and gross area visible"
+      },
+      {
+        "unitCode": "I/5TH/OFF/06",
+        "d": "M 382 778 L 468 778 L 468 817 L 382 817 Z",
+        "confidence": "DRAFT_SOURCE_LABEL_EXACT",
+        "source": "Original PDF left wing reads I, not A; label and gross area visible"
+      },
+      {
+        "unitCode": "I/5TH/OFF/07",
+        "d": "M 382 818 L 468 818 L 468 896 L 382 896 Z",
+        "confidence": "DRAFT_SOURCE_LABEL_EXACT",
+        "source": "Original PDF left wing reads I, not A; label and gross area visible"
+      },
+      {
+        "unitCode": "C/5TH/OFF/01",
+        "d": "M 1889 413 L 1999 413 L 1999 482 L 1889 482 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "C/5TH/OFF/02",
+        "d": "M 1904 579 L 2006 579 L 2006 657 L 1904 657 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "C/5TH/OFF/03",
+        "d": "M 1904 658 L 2006 658 L 2006 697 L 1904 697 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "C/5TH/OFF/04",
+        "d": "M 1904 698 L 2006 698 L 2006 737 L 1904 737 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "C/5TH/OFF/05",
+        "d": "M 1904 738 L 2006 738 L 2006 778 L 1904 778 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "C/5TH/OFF/06",
+        "d": "M 1904 779 L 2006 779 L 2006 816 L 1904 816 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "C/5TH/OFF/07",
+        "d": "M 1904 817 L 2006 817 L 2006 894 L 1904 894 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS"
+      },
+      {
+        "unitCode": "A/5TH/OFF/19",
+        "d": "M 666 1300 L 702 1300 L 702 1391 L 666 1391 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/5TH/OFF/20",
+        "d": "M 564 1298 L 602 1298 L 656 1381 L 653 1394 L 607 1394 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/5TH/OFF/21",
+        "d": "M 498 1238 L 560 1213 L 596 1275 L 536 1302 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/5TH/OFF/22",
+        "d": "M 432 1120 L 490 1084 L 524 1138 L 466 1180 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/5TH/OFF/23",
+        "d": "M 393 1025 L 481 1025 L 481 1067 L 477 1082 L 420 1114 L 388 1093 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/5TH/OFF/01",
+        "d": "M 1898 1029 L 1995 1029 L 1995 1093 L 1914 1093 L 1896 1079 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/5TH/OFF/02",
+        "d": "M 1893 1099 L 1953 1142 L 1900 1201 L 1876 1180 L 1878 1158 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/5TH/OFF/03",
+        "d": "M 1796 1229 L 1855 1257 L 1817 1312 L 1777 1284 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/5TH/OFF/04",
+        "d": "M 1733 1323 L 1791 1294 L 1800 1323 L 1736 1391 L 1730 1391 L 1730 1360 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/5TH/OFF/05",
+        "d": "M 1680 1301 L 1725 1301 L 1725 1385 L 1680 1385 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      },
+      {
+        "unitCode": "A/5TH/OFF/06",
+        "d": "M 1628 1301 L 1676 1301 L 1676 1385 L 1628 1385 Z",
+        "source": "Original 8-page Cairo Plaza architectural PDF; complete drawn code and GSA match original inventory same floor; geometry candidate only",
+        "confidence": "DRAFT_WALL_TRACE"
+      }
+    ],
+    "6": [
+      {
+        "unitCode": "A/6TH/OFF/09",
+        "d": "M 1335.9 1246.3 L 1375 1246.3 L 1375 1340.8 L 1335.9 1340.8 Z"
+      },
+      {
+        "unitCode": "A/6TH/OFF/08",
+        "d": "M 1375 1246.3 L 1428.9 1246.3 L 1428.9 1340.8 L 1375 1340.8 Z"
+      },
+      {
+        "unitCode": "A/6TH/OFF/07",
+        "d": "M 1430.1 1246.8 L 1494.2 1246.8 L 1494.2 1340.8 L 1430.1 1340.8 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "A/6TH/OFF/10",
+        "d": "M 1295.1 1246.8 L 1334 1246.8 L 1334 1340.8 L 1295.1 1340.8 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "A/6TH/OFF/11",
+        "d": "M 1233.9 1246.8 L 1293.2 1246.8 L 1293.2 1340.8 L 1233.9 1340.8 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "A/6TH/OFF/12",
+        "d": "M 1091.2 1246.8 L 1132.2 1246.8 L 1132.2 1340.8 L 1091.2 1340.8 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "A/6TH/OFF/13",
+        "d": "M 1050.4 1246.8 L 1089.2 1246.8 L 1089.2 1340.8 L 1050.4 1340.8 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "A/6TH/OFF/14",
+        "d": "M 1009.6 1246.8 L 1048.4 1246.8 L 1048.4 1340.8 L 1009.6 1340.8 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "A/6TH/OFF/15",
+        "d": "M 966.9 1246.8 L 1007.6 1246.8 L 1007.6 1340.8 L 966.9 1340.8 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "A/6TH/OFF/16",
+        "d": "M 915.4 1246.8 L 966.9 1246.8 L 966.9 1340.8 L 915.4 1340.8 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "A/6TH/OFF/17",
+        "d": "M 849.3 1246.8 L 913.4 1246.8 L 913.4 1340.8 L 849.3 1340.8 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "A/6TH/OFF/18",
+        "d": "M 716 1246.8 L 755.6 1246.8 L 755.6 1340.8 L 716 1340.8 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "A/6TH/OFF/19",
+        "d": "M 661.8 1246.8 L 714.1 1246.8 L 714.1 1340.8 L 661.8 1340.8 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "A/6TH/OFF/05",
+        "d": "M 1630.4 1246.8 L 1681.7 1246.8 L 1681.7 1340.8 L 1630.4 1340.8 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "A/6TH/OFF/06",
+        "d": "M 1588 1246.8 L 1628.5 1246.8 L 1628.5 1340.8 L 1588 1340.8 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "I/6TH/OFF/02",
+        "d": "M 402.5 582.53 L 504.5 582.53 L 504.5 646.63 L 402.5 646.63 Z",
+        "source": "source PDF horizontal office partition + vertical exterior wall",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "I/6TH/OFF/03",
+        "d": "M 402.5 648.58 L 504.5 648.58 L 504.5 687.43 L 402.5 687.43 Z",
+        "source": "source PDF horizontal office partition + vertical exterior wall",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "I/6TH/OFF/04",
+        "d": "M 402.5 689.39 L 504.5 689.39 L 504.5 728.24 L 402.5 728.24 Z",
+        "source": "source PDF horizontal office partition + vertical exterior wall",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "I/6TH/OFF/05",
+        "d": "M 402.5 730.12 L 504.5 730.12 L 504.5 768.98 L 402.5 768.98 Z",
+        "source": "source PDF horizontal office partition + vertical exterior wall",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "I/6TH/OFF/06",
+        "d": "M 402.5 770.93 L 504.5 770.93 L 504.5 809.78 L 402.5 809.78 Z",
+        "source": "source PDF horizontal office partition + vertical exterior wall",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "I/6TH/OFF/07",
+        "d": "M 402.5 811.73 L 504.5 811.73 L 504.5 872.67 L 402.5 872.67 Z",
+        "source": "source PDF horizontal office partition + vertical exterior wall",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "C/6TH/OFF/02",
+        "d": "M 1839 582.53 L 1942.9 582.53 L 1942.9 646.63 L 1839 646.63 Z",
+        "source": "source PDF horizontal office partition + vertical exterior wall",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "C/6TH/OFF/03",
+        "d": "M 1839 648.58 L 1942.9 648.58 L 1942.9 687.43 L 1839 687.43 Z",
+        "source": "source PDF horizontal office partition + vertical exterior wall",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "C/6TH/OFF/04",
+        "d": "M 1839 689.39 L 1942.9 689.39 L 1942.9 728.24 L 1839 728.24 Z",
+        "source": "source PDF horizontal office partition + vertical exterior wall",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "C/6TH/OFF/05",
+        "d": "M 1839 730.12 L 1942.9 730.12 L 1942.9 768.98 L 1839 768.98 Z",
+        "source": "source PDF horizontal office partition + vertical exterior wall",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "C/6TH/OFF/06",
+        "d": "M 1839 770.93 L 1942.9 770.93 L 1942.9 809.78 L 1839 809.78 Z",
+        "source": "source PDF horizontal office partition + vertical exterior wall",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "C/6TH/OFF/07",
+        "d": "M 1839 811.73 L 1942.9 811.73 L 1942.9 872.67 L 1839 872.67 Z",
+        "source": "source PDF horizontal office partition + vertical exterior wall",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "A/6TH/OFF/01",
+        "d": "M 1832 990 L 1942 990 L 1942 1025 L 1952 1025 L 1952 1073 L 1923 1112 L 1832 1058 L 1832 1040 Z",
+        "confidence": "PROPOSED_REVIEW",
+        "source": "Original PDF architectural wall corners and source text coordinate; vector-based manual trace"
+      },
+      {
+        "unitCode": "A/6TH/OFF/23",
+        "d": "M 401 991 L 505 991 L 505 1034 L 535 1077 L 439 1123 L 385 1073 L 385 1027 L 401 1027 Z",
+        "confidence": "PROPOSED_REVIEW",
+        "source": "Original PDF architectural wall corners and source text coordinate; vector-based manual trace"
+      },
+      {
+        "unitCode": "I/6TH/OFF/01",
+        "d": "M 390 416 L 501 416 L 501 478 L 390 478 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "C/6TH/OFF/01",
+        "d": "M 1822 415 L 1934 415 L 1934 477 L 1822 477 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/6TH/OFF/22",
+        "d": "M 463.5 1112 L 535 1082 L 552 1114 L 481 1169 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/6TH/OFF/21",
+        "d": "M 511 1170 L 558 1137 L 609 1220 L 565 1262 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/6TH/OFF/20",
+        "d": "M 578 1251 L 637 1251 L 656 1329 L 602 1329 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/6TH/OFF/02",
+        "d": "M 1833 1112 L 1865 1095 L 1913 1137 L 1888 1175 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/6TH/OFF/03",
+        "d": "M 1757 1183 L 1800 1157 L 1840 1218 L 1791 1280 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/6TH/OFF/04",
+        "d": "M 1683 1246 L 1757 1246 L 1765 1329 L 1683 1329 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      }
+    ],
+    "-1": [
+      {
+        "unitCode": "I/BA/SH/09",
+        "d": "M 233.6 354.1 L 343.2 354.1 L 343.2 412.2 L 233.6 412.2 Z"
+      },
+      {
+        "unitCode": "I/BA/SH/07",
+        "d": "M 233.6 455.6 L 343.1 455.6 L 343.1 497.5 L 233.6 497.5 Z"
+      },
+      {
+        "unitCode": "I/BA/SH/02",
+        "d": "M 233.4 666.6 L 343 666.6 L 343 749.1 L 233.4 749.1 Z"
+      },
+      {
+        "unitCode": "I/BA/SH/01",
+        "d": "M 233.4 749.1 L 343 749.1 L 343 831.1 L 233.4 831.1 Z"
+      },
+      {
+        "unitCode": "I/BA/SH/08",
+        "d": "M 233.5 412.2 L 343.1 412.2 L 343.1 455.6 L 233.5 455.6 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "I/BA/SH/06",
+        "d": "M 233.5 497.5 L 343.1 497.5 L 343.1 538.9 L 233.5 538.9 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "I/BA/SH/05",
+        "d": "M 233.5 538.9 L 343.1 538.9 L 343.1 577.7 L 233.5 577.7 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "I/BA/SH/04",
+        "d": "M 233.5 577.7 L 343.1 577.7 L 343.1 618.8 L 233.5 618.8 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "I/BA/SH/03",
+        "d": "M 233.5 618.8 L 343.1 618.8 L 343.1 666.6 L 233.5 666.6 Z",
+        "source": "source PDF wall partition + label coordinate",
+        "confidence": "PROPOSED_REVIEW"
+      },
+      {
+        "unitCode": "A/BA/SR/08",
+        "d": "M 202 939 L 391 939 L 391 1013 L 202 1013 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/BA/SR/07",
+        "d": "M 202 1017 L 390 1017 L 390 1030 L 396 1042 L 192 1149 L 202 1090 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/BA/SR/06",
+        "d": "M 194 1149 L 397 1045 L 445 1103 L 275 1195 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/BA/SR/05",
+        "d": "M 277 1197 L 447 1105 L 518 1170 L 360 1277 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/BA/SR/04",
+        "d": "M 361 1279 L 519 1172 L 575 1273 L 440 1340 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/BA/SR/03",
+        "d": "M 450 1353 L 575 1278 L 575 1367 L 511 1367 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/BA/SR/02",
+        "d": "M 577 1278 L 639 1278 L 639 1367 L 577 1367 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      },
+      {
+        "unitCode": "A/BA/SR/01",
+        "d": "M 642 1278 L 698 1278 L 698 1367 L 642 1367 Z",
+        "confidence": "DRAFT_VISUAL_SOURCE_WALLS",
+        "source": "Original Cairo Plaza PDF floor artwork; visual polygon tracing; requires architectural approval"
+      }
+    ]
+  }
+}
