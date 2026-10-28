@@ -1,5 +1,21 @@
 # Offer Atelier — Real Estate Property Offer Generator
 
+## Cairo Plaza — official engineering DWG (2026-10-28)
+
+**The DWG supplied by the engineering department is the only authoritative architectural source** for Cairo Plaza. Older PDF-derived floor images and polygons have been retired from all live app responses, the admin PDF importer, floor-map approval, and customer quote map sections. The existing legacy geometry is preserved only as non-public DRAFT audit history until replacement is verified.
+
+- Exact original DWG SHA-256: `9c9aac1fcf2b330fbbb5e3555b86300b922ac1a33037e4ea51510ece82792c6a`
+- Upload filename: `معماري كايرو بلازا(1).dwg`, native Autodesk DWG revision `AC1027` (2013–2017).
+- The two supplied DWG uploads had identical SHA-256 digests, so they represent a single source.
+- See [the source manifest](assets/cairo-plaza/engineering-dwg-source.json).
+- **Current extraction status:** this runtime cannot decode DWG AC1027 directly, so the original layers, unit polygons and floor count have *not* been independently recovered from the new file. Do not confuse registration of the source with geometry approval.
+- Export the *same DWG* to DXF R2013 using a native DWG-capable CAD converter (e.g. AutoCAD / official ODA converter), then verify it with `python scripts/analyze-cairo-engineering-cad.py --dwg original.dwg --dxf export.dxf --out cad-report.json`. Preserve block insertions, layers, hatches, and text entities. Do not use PDF conversion.
+- The new floorplan import API requires the exact DWG SHA-256 and manual verification for each floor; Cairo Plaza customer PDF offers omit floor geometry until new source-based mappings are approved.
+- Live inventory is still **Sheet1**, and payment plan/price/offer generation are unaffected. Downloadable quotation PDF remains supported; only the **architectural PDF source** was retired.
+
+**Legacy note:** the 362 old paths in Neon are not approved. The prior reports and screenshots remain in the repository only to document what was rejected—not as an active architectural reference.
+
+
 Standalone full-stack property offer generator using Next.js (App Router), Auth.js v5 with Google OAuth, Prisma 7, Neon PostgreSQL, Tailwind CSS and Vercel.
 
 ## Current capabilities
