@@ -80,37 +80,37 @@ export default function Studio({ projects, email }: { projects: Project[]; email
   }
   const toggle = (id: string, checked: boolean) => setChosenPlans(ids => checked ? [...ids, id] : ids.filter(x => x !== id));
   return <div className="shell"><Sidebar active="studio" email={email} /><main className="main">
-    <header className="header-line"><div><div className="eyebrow">OFFER STUDIO / LIVE INVENTORY</div><h1>Build a property offer</h1><p className="muted">Pick a project, inspect a unit and include one or more financial scenarios.</p></div>
-      <div style={{ minWidth: 230 }}><label className="fieldlabel">ACTIVE PROJECT
+    <header className="header-line"><div><div className="eyebrow">{tr("OFFER STUDIO / LIVE INVENTORY")}</div><h1>{tr("Build a property offer")}</h1><p className="muted">{tr("Pick a project, inspect a unit and include one or more financial scenarios.")}</p></div>
+      <div style={{ minWidth: 230 }}><label className="fieldlabel">{tr("ACTIVE PROJECT")}
         <select className="field" value={projectId} onChange={e => setProjectId(e.target.value)}>
           {projects.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}
         </select></label></div>
     </header>
     {error && <div className="notice" style={{marginBottom:18}}>{error}</div>}
     <div className="metrics">
-      <div className="metric"><div className="eyebrow">LIVE INVENTORY</div><strong>{loading ? "Loading…" : units.length}</strong><span className="muted">Units returned by the authorized Google account</span></div>
-      <div className="metric"><div className="eyebrow">SELECTED PROPERTY</div><strong>{unit?.code || "—"}</strong><span className="muted">{unit?.area ? unit.area + " m²" : "Select a unit to continue"}</span></div>
-      <div className="metric"><div className="eyebrow">LISTED UNIT PRICE</div><strong>{unit ? nicePrice(unit.price) : "—"}</strong><span className="muted">Fetched at selection, refreshed at PDF creation</span></div>
+      <div className="metric"><div className="eyebrow">{tr("LIVE INVENTORY")}</div><strong>{loading ? "Loading…" : units.length}</strong><span className="muted">{tr("Units returned by the authorized Google account")}</span></div>
+      <div className="metric"><div className="eyebrow">{tr("SELECTED PROPERTY")}</div><strong>{unit?.code || "—"}</strong><span className="muted">{unit?.area ? unit.area + " m²" : "Select a unit to continue"}</span></div>
+      <div className="metric"><div className="eyebrow">{tr("LISTED UNIT PRICE")}</div><strong>{unit ? nicePrice(unit.price) : "—"}</strong><span className="muted">{tr("Fetched at selection, refreshed at PDF creation")}</span></div>
     </div>
     <div className="grid2">
       <div className="stack">
-        <section className="panel"><div className="panelhead"><div><div className="eyebrow">CURRENT INVENTORY</div><h2 style={{marginTop:10}}>Find your property</h2></div><span className="pill">{units.length} total</span></div>
-          <input className="field" placeholder="Search Unit Code or floor..." value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:15}} />
+        <section className="panel"><div className="panelhead"><div><div className="eyebrow">{tr("CURRENT INVENTORY")}</div><h2 style={{marginTop:10}}>{tr("Find your property")}</h2></div><span className="pill">{units.length} total</span></div>
+          <input className="field" placeholder={tr("Search Unit Code or floor...")} value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:15}} />
           <div className="list">{visibleUnits.map(value => <button type="button" key={value.code+"::"+value.floor} className={"unit" + (value.code === selected ? " active" : "")}
             disabled={!isAvailable(value.status)} onClick={() => selectUnit(value.code, value.floor)}>
             <span><b>{value.code}</b><small>Floor {value.floor || "—"} · {value.area || "—"} sqm</small></span>
-            <span style={{textAlign:"right"}}><b>{nicePrice(value.price)}</b><small>{value.status}</small></span>
+            <span style={{textAlign:"right"}}><b>{nicePrice(value.price)}</b><small>{tr(value.status)}</small></span>
           </button>)}
           {!visibleUnits.length && <p className="muted">{loading ? "Loading authorized inventory…" : "No matching live inventory. Confirm the Sheet connection in Settings."}</p>}</div>
-          {units.length > 100 && <p className="muted">Showing the first 100 matches. Use search to narrow the results.</p>}
+          {units.length > 100 && <p className="muted">{tr("Showing the first 100 matches. Use search to narrow the results.")}</p>}
         </section>
         <section className="panel">
           <div className="panelhead">
-            <div><div className="eyebrow">ARCHITECTURAL MAP</div><h2 style={{marginTop:10}}>Interactive floor plan</h2></div>
+            <div><div className="eyebrow">{tr("ARCHITECTURAL MAP")}</div><h2 style={{marginTop:10}}>{tr("Interactive floor plan")}</h2></div>
             <span className="pill">{floor?.reviewStatus === "APPROVED" ? "Verified shapes" : "Review mode"}</span>
           </div>
           {floors.length > 0 && <label className="fieldlabel" style={{display:"block",marginBottom:14}}>
-            SHOW FLOOR
+            {tr("SHOW FLOOR")}
             <select className="field" value={floor?.floor || ""} onChange={e=>{setFloorNumber(e.target.value);setSelected("");}}>
               {floors.map(f=><option value={f.floor || ""} key={f.id}>{f.name} — Floor {f.floor}</option>)}
             </select>
@@ -146,31 +146,31 @@ export default function Studio({ projects, email }: { projects: Project[]; email
                   <title>{shape.unitCode+" · "+(known?.status||"SOLD OUT")+(approved?"":" · PROPOSED OUTLINE (NOT SELECTABLE)")}</title>
                 </path>;
               })}            </svg> :
-            <div className="floor-blank"><div><div className="symbol">⌗</div><h2>Floor plan not published</h2>
-              <p className="muted">The original architectural image and reviewed unit boundaries will appear here after a floor is saved in Workspace Settings.</p>
+            <div className="floor-blank"><div><div className="symbol">⌗</div><h2>{tr("Floor plan not published")}</h2>
+              <p className="muted">{tr("The original architectural image and reviewed unit boundaries will appear here after a floor is saved in Workspace Settings.")}</p>
             </div></div>}
-          {floor?.reviewStatus !== "APPROVED" && floor?.backgroundData && <p className="notice">Draft review: proposed boundaries are shown as dashed blue lines alongside source code-label markers. Red = SOLD OUT if absent from live inventory. These outlines are NOT selectable until approved.</p>}
-          <p className="muted">Gold: selected. Green: available. Grey: reserved. Red: SOLD OUT if the drawn unit is absent from current inventory. Only approved outlines are interactive.</p>
+          {floor?.reviewStatus !== "APPROVED" && floor?.backgroundData && <p className="notice">{tr("Draft review: proposed boundaries are shown as dashed blue lines alongside source code-label markers. Red = SOLD OUT if absent from live inventory. These outlines are NOT selectable until approved.")}</p>}
+          <p className="muted">{tr("Gold: selected. Green: available. Grey: reserved. Red: SOLD OUT if the drawn unit is absent from current inventory. Only approved outlines are interactive.")}</p>
         </section>
       </div>
       <div className="stack">
-        <section className="panel"><div className="eyebrow">PROPERTY SUMMARY</div><h2 style={{marginTop:12}}>{unit ? unit.code : "Select a unit"}</h2>
+        <section className="panel"><div className="eyebrow">{tr("PROPERTY SUMMARY")}</div><h2 style={{marginTop:12}}>{unit ? unit.code : "Select a unit"}</h2>
           {unit ? <>
-            {([["Project", project?.name || "—"],["Unit Code",unit.code],["Floor",unit.floor || "—"],["Area",unit.area ? unit.area+" sqm":"—"],["Status",unit.status],["Price",nicePrice(unit.price)]] as [string,string][]).map(([label,value]) =>
-              <div className="detailrow" key={label}><span>{label}</span><b>{value}</b></div>)}
-          </> : <p className="muted">Current price, location and availability appear here once you select a unit.</p>}
+            {([["Project", project?.name || "—"],["Unit Code",unit.code],["Floor",unit.floor || "—"],["Area",unit.area ? unit.area+" sqm":"—"],["Status",tr(unit.status)],["Price",nicePrice(unit.price)]] as [string,string][]).map(([label,value]) =>
+              <div className="detailrow" key={label}><span>{tr(label)}</span><b>{value}</b></div>)}
+          </> : <p className="muted">{tr("Current price, location and availability appear here once you select a unit.")}</p>}
         </section>
-        <section className="panel"><div className="eyebrow">CUSTOM TERMS</div><h2 style={{marginTop:12}}>Payment plan options</h2><p className="muted">Each selected plan produces its own detailed payment schedule in the proposal PDF.</p>
+        <section className="panel"><div className="eyebrow">{tr("CUSTOM TERMS")}</div><h2 style={{marginTop:12}}>{tr("Payment plan options")}</h2><p className="muted">{tr("Each selected plan produces its own detailed payment schedule in the proposal PDF.")}</p>
           {project?.paymentPlans.map(plan => <label className="planrow" key={plan.id}>
             <input type="checkbox" checked={chosenPlans.includes(plan.id)} disabled={!unit || (chosenPlans.length >= 5 && !chosenPlans.includes(plan.id))}
               onChange={event => toggle(plan.id, event.target.checked)} />
             <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% {tr("Down payment %")} · {plan.months} {tr("Installment months")} · {plan.maintenancePct}% {tr("Maintenance %")}{plan.deliveryDate ? " · " + tr("Delivery date") + ": " + plan.deliveryDate : ""}{plan.deliveryCollectionEnabled ? " · " + plan.deliveryCollectionPct + "% " + tr("Collection at delivery %") : ""}</small></span>
           </label>)}
-          {!project?.paymentPlans.length && <div className="notice">No plans yet. An administrator can add a plan (such as 10% down / 80 months) in Workspace Settings.</div>}
+          {!project?.paymentPlans.length && <div className="notice">{tr("No plans yet. An administrator can add a plan (such as 10% down / 80 months) in Workspace Settings.")}</div>}
           <button className="btn gold" style={{width:"100%",marginTop:18}} disabled={!unit || chosenPlans.length===0 || generating} onClick={issueOffer}>
             {generating ? "Rendering proposal…" : "Generate premium PDF offer"}
           </button>
-          <p className="muted" style={{fontSize:11}}>The server checks live price and availability again before producing the PDF.</p>
+          <p className="muted" style={{fontSize:11}}>{tr("The server checks live price and availability again before producing the PDF.")}</p>
         </section>
         <section className="panel">
           <div className="eyebrow">{tr("PROPOSAL DELIVERY")}</div>
