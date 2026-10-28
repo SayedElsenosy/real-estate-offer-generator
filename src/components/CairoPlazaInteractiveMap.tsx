@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { unitKey } from "@/lib/unit-code";
+import { useLanguage } from "@/components/LanguageProvider";
 import basement from "@/data/cairo-svg-floor--1.json";
 import ground from "@/data/cairo-svg-floor-0.json";
 import first from "@/data/cairo-svg-floor-1.json";
@@ -19,10 +20,10 @@ const data:Record<string,FloorData> = {
   "4":fourth,"5":fifth,"6":sixth
 } as unknown as Record<string,FloorData>;
 const colors = {
-  available:{fill:"#32a56f",name:"متاحة"},
-  reserved:{fill:"#efb954",name:"محجوزة"},
-  closed:{fill:"#94a3b8",name:"غير متاحة"},
-  soldout:{fill:"#e35d70",name:"غير موجودة في المخزون"}
+  available:{fill:"#32a56f",en:"Available",ar:"متاحة"},
+  reserved:{fill:"#efb954",en:"Reserved",ar:"محجوزة"},
+  closed:{fill:"#94a3b8",en:"Unavailable",ar:"غير متاحة"},
+  soldout:{fill:"#e35d70",en:"Not in live inventory",ar:"غير موجودة في المخزون"}
 } as const;
 type SaleStatus=keyof typeof colors;
 function stateOf(value:string):SaleStatus{
@@ -35,10 +36,13 @@ function amount(value?:string){const n=Number(String(value||"").replace(/[,\s]/g
 export function CairoPlazaInteractiveMap({floor,inventory,selected,onSelect}:{
   floor:string;inventory:LiveUnit[];selected:string;onSelect:(code:string)=>void;
 }){
+  const {language}=useLanguage();
+  const t=(en:string,ar:string)=>language==="ar"?ar:en;
   const [zoom,setZoom]=useState(1);
   const [search,setSearch]=useState("");
   const [filter,setFilter]=useState<SaleStatus|"all">("all");
   const model=data[floor]||data["0"];
+  const floorName=t(model.name,({"Basement":"البدروم","Ground":"الأرضي","First":"الأول","Second":"الثاني","Third":"الثالث","Fourth":"الرابع","Fifth":"الخامس","Sixth":"السادس"} as Record<string,string>)[model.name]||model.name);
   const units=useMemo(()=>{
     const unique=new Map<string,LiveUnit[]>();
     for(const u of inventory){
@@ -69,28 +73,28 @@ export function CairoPlazaInteractiveMap({floor,inventory,selected,onSelect}:{
     <div style={{display:"flex",gap:16,justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",marginBottom:14}}>
       <div>
         <div className="eyebrow">CAIRO PLAZA / ENGINEERING FLOORPLAN</div>
-        <h2 style={{margin:"8px 0"}}>المخطط المعماري — {model.name}</h2>
-        <p className="muted" style={{margin:0}}>اضغط على حدود أي وحدة لعرض تفاصيلها من المخزون الحي. جميع الوحدات معروضة كمضلعات، بدون نقاط منفصلة.</p>
+        <h2 style={{margin:"8px 0"}}>{t("Architectural plan","المخطط المعماري")} — {floorName}</h2>
+        <p className="muted" style={{margin:0}}>{t("Click a unit outline for its live details. All units are shown as selectable shapes, with no marker dots.","اضغط على حدود أي وحدة لعرض تفاصيلها من المخزون الحي. جميع الوحدات معروضة كمضلعات، بدون نقاط منفصلة.")}</p>
       </div>
       <div style={{display:"flex",alignItems:"center",gap:8}}>
-        <button type="button" className="btn soft" onClick={()=>setZoom(v=>Math.max(1,Math.round((v-0.25)*100)/100))} aria-label="تصغير المخطط">−</button>
+        <button type="button" className="btn soft" onClick={()=>setZoom(v=>Math.max(1,Math.round((v-0.25)*100)/100))} aria-label={t("Zoom out","تصغير المخطط")}>−</button>
         <strong style={{minWidth:50,textAlign:"center"}}>{Math.round(zoom*100)}%</strong>
-        <button type="button" className="btn soft" onClick={()=>setZoom(v=>Math.min(3,Math.round((v+0.25)*100)/100))} aria-label="تكبير المخطط">+</button>
-        <button type="button" className="btn soft" onClick={()=>setZoom(1)}>إعادة الضبط</button>
+        <button type="button" className="btn soft" onClick={()=>setZoom(v=>Math.min(3,Math.round((v+0.25)*100)/100))} aria-label={t("Zoom in","تكبير المخطط")}>+</button>
+        <button type="button" className="btn soft" onClick={()=>setZoom(1)}>{t("Reset zoom","إعادة الضبط")}</button>
       </div>
     </div>
     <div style={{display:"flex",gap:9,alignItems:"center",flexWrap:"wrap",marginBottom:14}}>
-      <input className="field" style={{width:260,maxWidth:"100%"}} placeholder="ابحث بكود الوحدة" value={search} onChange={e=>setSearch(e.target.value)}/>
-      <button type="button" onClick={()=>setFilter("all")} style={{padding:"7px 12px",borderRadius:99,border:"1px solid #d4dce6",background:filter==="all"?"#e1ebf5":"white",cursor:"pointer"}}>كل الوحدات ({units.length})</button>
+      <input className="field" style={{width:260,maxWidth:"100%"}} placeholder={t("Search unit code","ابحث بكود الوحدة")} value={search} onChange={e=>setSearch(e.target.value)}/>
+      <button type="button" onClick={()=>setFilter("all")} style={{padding:"7px 12px",borderRadius:99,border:"1px solid #d4dce6",background:filter==="all"?"#e1ebf5":"white",cursor:"pointer"}}>{t("All units","كل الوحدات")} ({units.length})</button>
       {(Object.keys(colors) as SaleStatus[]).map(status=>
         <button type="button" key={status} onClick={()=>setFilter(filter===status?"all":status)}
           style={{display:"inline-flex",alignItems:"center",gap:6,padding:"7px 10px",borderRadius:99,border:filter===status?"2px solid #1b2e49":"1px solid #d4dce6",background:"#fff",cursor:"pointer"}}>
           <span style={{width:10,height:10,borderRadius:"50%",background:colors[status].fill}}/>
-          {colors[status].name} ({counts[status]})
+          {t(colors[status].en,colors[status].ar)} ({counts[status]})
         </button>)}
     </div>
     <div style={{border:"1px solid #dbe3eb",borderRadius:14,background:"white",overflow:"auto",maxHeight:"75vh",position:"relative"}}>
-      <svg viewBox="0 0 214 155" role="img" aria-label={"مخطط كايرو بلازا " + model.name}
+      <svg viewBox="0 0 214 155" role="img" aria-label={t("Cairo Plaza floor plan ","مخطط كايرو بلازا ") + floorName}
         style={{display:"block",width:(zoom*100)+"%",minWidth:680,height:"auto",touchAction:"pan-x pan-y"}}>
         <image href={"/cairo-cad/floor-"+floor+".svg"} x={0} y={0} width={214} height={155} preserveAspectRatio="none"/>
         {units.map(({shape,sale})=>{
@@ -105,19 +109,19 @@ export function CairoPlazaInteractiveMap({floor,inventory,selected,onSelect}:{
             strokeLinejoin="round" style={{cursor:"pointer",outline:"none"}}
             onClick={()=>onSelect(shape.code)}
             onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onSelect(shape.code);}}}>
-              <title>{shape.code} — {colors[sale].name}{shape.status==="REVIEW"?" (حدود قيد الاعتماد الهندسي)":""}</title>
+              <title>{shape.code} — {t(colors[sale].en,colors[sale].ar)}{shape.status==="REVIEW"?t(" (engineering review pending)"," (حدود قيد الاعتماد الهندسي)"):""}</title>
           </path>;
         })}
       </svg>
     </div>
     <div style={{fontSize:12,color:"#64748b",marginTop:9}}>
-      الخريطة أصلها مخطط CAD الهندسي. الحدود المستخرجة مرجعية حتى المراجعة البصرية النهائية؛ مساحات البيع والأسعار وحالات التوفر تأتي من جدول المخزون، وليس من مساحة المضلع.
+      {t("The CAD engineering drawing is used as a reference. Unit outlines remain subject to final visual verification. Areas, prices and availability come from the live inventory, not polygon measurements.","الخريطة أصلها مخطط CAD الهندسي. الحدود المستخرجة مرجعية حتى المراجعة البصرية النهائية؛ مساحات البيع والأسعار وحالات التوفر تأتي من جدول المخزون، وليس من مساحة المضلع.")}
     </div>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:12,marginTop:16}}>
       <div style={{background:"#f1f5f9",borderRadius:14,padding:16}}>
-        <strong>الوحدات: {model.units.length}</strong>
-        <p style={{margin:"8px 0 0",color:"#64748b"}}>بحدود SVG قابلة للضغط: {model.units.filter(s=>!!s.d).length} • بدون علامات: 0</p>
-        {search&&<p style={{fontSize:13,marginTop:8}}>نتائج البحث: {filtered.length}</p>}
+        <strong>{t("Units","الوحدات")}: {model.units.length}</strong>
+        <p style={{margin:"8px 0 0",color:"#64748b"}}>{t("Clickable SVG outlines","حدود SVG قابلة للضغط")}: {model.units.filter(s=>!!s.d).length} • {t("Marker dots: 0","بدون علامات: 0")}</p>
+        {search&&<p style={{fontSize:13,marginTop:8}}>{t("Search results","نتائج البحث")}: {filtered.length}</p>}
         {query&&filtered.length>0&&<div style={{display:"flex",gap:5,flexWrap:"wrap",marginTop:10}}>
           {filtered.slice(0,12).map(({shape})=><button type="button" key={shape.code}
             style={{border:"1px solid #cbd5e1",background:"white",borderRadius:6,padding:"5px 7px",cursor:"pointer",fontSize:11}}
@@ -127,21 +131,21 @@ export function CairoPlazaInteractiveMap({floor,inventory,selected,onSelect}:{
       <div style={{border:"1px solid #dbe3eb",borderRadius:14,padding:16,background:"#fff"}}>
         {chosen?<div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
-            <div className="eyebrow">تفاصيل الوحدة المختارة</div>
-            <button type="button" className="btn soft" onClick={()=>onSelect("")}>إغلاق ×</button>
+            <div className="eyebrow">{t("Selected unit details","تفاصيل الوحدة المختارة")}</div>
+            <button type="button" className="btn soft" onClick={()=>onSelect("")}>{t("Close","إغلاق")} ×</button>
           </div>
           <h2 dir="ltr" style={{margin:"10px 0",textAlign:"right"}}>{chosen.shape.code}</h2>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-            <div><small className="muted">الدور</small><div>{model.name}</div></div>
-            <div><small className="muted">الحالة</small><div style={{fontWeight:600,color:colors[chosen.sale].fill}}>{chosen.live?.status||colors[chosen.sale].name}</div></div>
-            <div><small className="muted">المساحة من الشيت</small><div>{chosen.live?.area?chosen.live.area+" م²":"—"}</div></div>
-            <div><small className="muted">السعر الحالي</small><div dir="ltr" style={{textAlign:"right",fontWeight:700}}>{amount(chosen.live?.price)}</div></div>
+            <div><small className="muted">{t("Floor","الدور")}</small><div>{model.name}</div></div>
+            <div><small className="muted">{t("Status","الحالة")}</small><div style={{fontWeight:600,color:colors[chosen.sale].fill}}>{chosen.live?.status||t(colors[chosen.sale].en,colors[chosen.sale].ar)}</div></div>
+            <div><small className="muted">{t("Area from inventory","المساحة من الشيت")}</small><div>{chosen.live?.area?chosen.live.area+" sqm":"—"}</div></div>
+            <div><small className="muted">{t("Current price","السعر الحالي")}</small><div dir="ltr" style={{textAlign:"right",fontWeight:700}}>{amount(chosen.live?.price)}</div></div>
           </div>
           <p style={{margin:"12px 0 0",fontSize:12,color:"#64748b"}}>
-            {chosen.shape.status==="UNRESOLVED"?"حدود هذه الوحدة تحتاج استكمال المراجعة الهندسية.":
-             chosen.shape.status==="REVIEW"?"المضلع ظاهر للتفاعل؛ مساحته أو فاصل الجدران يحتاج اعتمادًا هندسيًا نهائيًا.":"حدود الوحدة مستخرجة من ملف SVG الهندسي."}
+            {chosen.shape.status==="UNRESOLVED"?t("This unit outline needs engineering review.","حدود هذه الوحدة تحتاج استكمال المراجعة الهندسية."):
+             chosen.shape.status==="REVIEW"?t("Selectable outline; wall divisions or measured area still need engineering approval.","المضلع ظاهر للتفاعل؛ مساحته أو فاصل الجدران يحتاج اعتمادًا هندسيًا نهائيًا."):t("Outline extracted from engineering SVG.","حدود الوحدة مستخرجة من ملف SVG الهندسي.")}
           </p>
-        </div>:<div style={{color:"#64748b"}}><h3>تفاصيل الوحدة</h3>اضغط على أي وحدة في المخطط لعرض كودها وسعرها ومساحتها وحالتها الحالية.</div>}
+        </div>:<div style={{color:"#64748b"}}><h3>{t("Unit details","تفاصيل الوحدة")}</h3>{t("Click a unit to view its code, price, area and live status.","اضغط على أي وحدة في المخطط لعرض كودها وسعرها ومساحتها وحالتها الحالية.")}</div>}
       </div>
     </div>
   </section>;
