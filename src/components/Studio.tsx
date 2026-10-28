@@ -45,7 +45,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
         setUnits(response.units || []); setFloors(response.floorPlans || []);
         if (response.error) setError(response.error);
       } })
-      .catch(err => { if (!cancelled) setError(err instanceof Error ? err.message : "Inventory request failed"); })
+      .catch(err => { if (!cancelled) setError(err instanceof Error ? tr(err.message) : tr("Inventory request failed")); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [projectId]);
@@ -75,7 +75,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
       element.click();
       setTimeout(() => URL.revokeObjectURL(objectURL), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not generate proposal");
+      setError(err instanceof Error ? tr(err.message) : tr("Could not generate proposal"));
     } finally { setGenerating(false); }
   }
   const toggle = (id: string, checked: boolean) => setChosenPlans(ids => checked ? [...ids, id] : ids.filter(x => x !== id));
@@ -88,35 +88,35 @@ export default function Studio({ projects, email }: { projects: Project[]; email
     </header>
     {error && <div className="notice" style={{marginBottom:18}}>{error}</div>}
     <div className="metrics">
-      <div className="metric"><div className="eyebrow">{tr("LIVE INVENTORY")}</div><strong>{loading ? "Loading…" : units.length}</strong><span className="muted">{tr("Units returned by the authorized Google account")}</span></div>
-      <div className="metric"><div className="eyebrow">{tr("SELECTED PROPERTY")}</div><strong>{unit?.code || "—"}</strong><span className="muted">{unit?.area ? unit.area + " m²" : "Select a unit to continue"}</span></div>
+      <div className="metric"><div className="eyebrow">{tr("LIVE INVENTORY")}</div><strong>{loading ? tr("Loading…") : units.length}</strong><span className="muted">{tr("Units returned by the authorized Google account")}</span></div>
+      <div className="metric"><div className="eyebrow">{tr("SELECTED PROPERTY")}</div><strong>{unit?.code || "—"}</strong><span className="muted">{unit?.area ? unit.area + " m²" : tr("Select a unit to continue")}</span></div>
       <div className="metric"><div className="eyebrow">{tr("LISTED UNIT PRICE")}</div><strong>{unit ? nicePrice(unit.price) : "—"}</strong><span className="muted">{tr("Fetched at selection, refreshed at PDF creation")}</span></div>
     </div>
     <div className="grid2">
       <div className="stack">
-        <section className="panel"><div className="panelhead"><div><div className="eyebrow">{tr("CURRENT INVENTORY")}</div><h2 style={{marginTop:10}}>{tr("Find your property")}</h2></div><span className="pill">{units.length} total</span></div>
+        <section className="panel"><div className="panelhead"><div><div className="eyebrow">{tr("CURRENT INVENTORY")}</div><h2 style={{marginTop:10}}>{tr("Find your property")}</h2></div><span className="pill">{units.length} {tr("total")}</span></div>
           <input className="field" placeholder={tr("Search Unit Code or floor...")} value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:15}} />
           <div className="list">{visibleUnits.map(value => <button type="button" key={value.code+"::"+value.floor} className={"unit" + (value.code === selected ? " active" : "")}
             disabled={!isAvailable(value.status)} onClick={() => selectUnit(value.code, value.floor)}>
-            <span><b>{value.code}</b><small>Floor {value.floor || "—"} · {value.area || "—"} sqm</small></span>
+            <span><b>{value.code}</b><small>{tr("Floor")} {value.floor || "—"} · {value.area || "—"} m²</small></span>
             <span style={{textAlign:"right"}}><b>{nicePrice(value.price)}</b><small>{tr(value.status)}</small></span>
           </button>)}
-          {!visibleUnits.length && <p className="muted">{loading ? "Loading authorized inventory…" : "No matching live inventory. Confirm the Sheet connection in Settings."}</p>}</div>
+          {!visibleUnits.length && <p className="muted">{tr(loading ? "Loading authorized inventory…" : "No matching live inventory. Confirm the Sheet connection in Settings.")}</p>}</div>
           {units.length > 100 && <p className="muted">{tr("Showing the first 100 matches. Use search to narrow the results.")}</p>}
         </section>
         <section className="panel">
           <div className="panelhead">
             <div><div className="eyebrow">{tr("ARCHITECTURAL MAP")}</div><h2 style={{marginTop:10}}>{tr("Interactive floor plan")}</h2></div>
-            <span className="pill">{floor?.reviewStatus === "APPROVED" ? "Verified shapes" : "Review mode"}</span>
+            <span className="pill">{tr(floor?.reviewStatus === "APPROVED" ? "Verified shapes" : "Review mode")}</span>
           </div>
           {floors.length > 0 && <label className="fieldlabel" style={{display:"block",marginBottom:14}}>
             {tr("SHOW FLOOR")}
             <select className="field" value={floor?.floor || ""} onChange={e=>{setFloorNumber(e.target.value);setSelected("");}}>
-              {floors.map(f=><option value={f.floor || ""} key={f.id}>{f.name} — Floor {f.floor}</option>)}
+              {floors.map(f=><option value={f.floor || ""} key={f.id}>{f.name} — {tr("Floor")} {f.floor}</option>)}
             </select>
           </label>}
           {floor && (floor.backgroundData || floor.shapes.length) ?
-            <svg className="floor-svg" viewBox={floor.viewBox} role="img" aria-label="Architectural floor map with reviewed unit geometry">
+            <svg className="floor-svg" viewBox={floor.viewBox} role="img" aria-label={tr("ARCHITECTURAL MAP")}>
               {floor.backgroundData && <image href={floor.backgroundData} x={vb[0]} y={vb[1]} width={vb[2]} height={vb[3]} preserveAspectRatio="none"/>}
               {(floor.markers || []).map((m,i)=>{
                 const candidates=units.filter(value=>value.floor===floor.floor&&unitKey(value.code)===unitKey(m.code));
@@ -154,7 +154,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
         </section>
       </div>
       <div className="stack">
-        <section className="panel"><div className="eyebrow">{tr("PROPERTY SUMMARY")}</div><h2 style={{marginTop:12}}>{unit ? unit.code : "Select a unit"}</h2>
+        <section className="panel"><div className="eyebrow">{tr("PROPERTY SUMMARY")}</div><h2 style={{marginTop:12}}>{unit ? unit.code : tr("Select a unit")}</h2>
           {unit ? <>
             {([["Project", project?.name || "—"],["Unit Code",unit.code],["Floor",unit.floor || "—"],["Area",unit.area ? unit.area+" sqm":"—"],["Status",tr(unit.status)],["Price",nicePrice(unit.price)]] as [string,string][]).map(([label,value]) =>
               <div className="detailrow" key={label}><span>{tr(label)}</span><b>{value}</b></div>)}
@@ -168,7 +168,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
           </label>)}
           {!project?.paymentPlans.length && <div className="notice">{tr("No plans yet. An administrator can add a plan (such as 10% down / 80 months) in Workspace Settings.")}</div>}
           <button className="btn gold" style={{width:"100%",marginTop:18}} disabled={!unit || chosenPlans.length===0 || generating} onClick={issueOffer}>
-            {generating ? "Rendering proposal…" : "Generate premium PDF offer"}
+            {tr(generating ? "Rendering proposal…" : "Generate premium PDF offer")}
           </button>
           <p className="muted" style={{fontSize:11}}>{tr("The server checks live price and availability again before producing the PDF.")}</p>
         </section>
