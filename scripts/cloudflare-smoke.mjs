@@ -6,6 +6,8 @@ const probes = [
   {path:"/api/migration-health", name:"worker health", expected:200, match:body=>body.cloudflareMigration===true},
   {path:"/api/auth/providers", name:"Google auth provider registered", expected:200, match:body=>Boolean(body.google?.signinUrl)},
   {path:"/api/access", name:"private link is not automatically granted to new devices", expected:200, match:body=>body.active===false},
+  {path:"/api/access/owner-link", method:"POST", name:"anonymous users cannot read the private link", expected:403},
+  {path:"/api/access", method:"POST", name:"unknown access key is denied", expected:403},
   {path:"/studio", name:"studio redirects non-signed visitors", expected:307},
   {path:"/api/auth/session", name:"unauthenticated auth session", expected:200},
   {path:"/", name:"home page", expected:200},
