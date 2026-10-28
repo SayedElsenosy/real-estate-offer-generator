@@ -8,15 +8,15 @@ Source drawings: original 8-page PDF; inventory: read-only Price List.xlsx / She
 | --- | ---: | --- |
 | Basement (-1) | 17 | DRAFT |
 | Ground (0) | 69 | DRAFT |
-| First (1) | 39 | DRAFT |
+| First (1) | 53 | DRAFT |
 | Second (2) | 67 | DRAFT |
 | Third (3) | 14 | DRAFT |
 | Fourth (4) | 14 | DRAFT |
 | Fifth (5) | 14 | DRAFT |
 | Sixth (6) | 37 | DRAFT |
-| **Total** | **271** | **NOT APPROVED** |
+| **Total** | **285** | **NOT APPROVED** |
 
-108 candidate polygons were newly added by tracing room partition lines in the original PDF on the ground and first floors. The existing 163 earlier draft outlines are preserved, unchanged.
+122 candidate polygons were newly added by tracing room partition lines in the original PDF on the ground and first floors. The existing 163 earlier draft outlines are preserved, unchanged.
 
 ## Matching and safety
 
@@ -30,9 +30,13 @@ Source drawings: original 8-page PDF; inventory: read-only Price List.xlsx / She
 ## Source / review artifacts
 
 - `assets/cairo-plaza/trace-drafts-163.json` earlier baseline.
-- `assets/cairo-plaza/trace-drafts-271.json` latest cumulative proposal.
+- `assets/cairo-plaza/trace-drafts-285.json` latest cumulative proposal.
 - Downloadable 8-SVG review package includes original floor artwork, floor-by-floor overlays, evidence CSV and source match audit.
 
 ## Outstanding work
 
-Ground and first have many additional inner/angled rooms whose exact vector outlines and codes need reconciliation. Third, fourth and fifth also have partial candidate coverage. Do not claim project-wide geometric completeness or enable PDF selection until the **complete stock and drawing map** is independently checked against the original floorplans.
+Ground and first still have additional inner/angled rooms whose exact vector outlines and codes need reconciliation. Third, fourth and fifth also have partial candidate coverage. Do not claim project-wide geometric completeness or enable PDF selection until the **complete stock and drawing map** is independently checked against the original floorplans.
+
+## Current stock cross-check
+
+The original 153-row reference inventory now has 73 rows matched to a draft floor-qualified geometry; 80 records remain unmatched. There are explicit possible aliases and splits (e.g. drawing `A/BA/SR/01` versus inventory `A/BA/SH/01`) that require review before any sales-facing linkage. Matching by floor and code guards against the duplicate normalized key `C/GR/SH/16B` occurring in two floor records.
