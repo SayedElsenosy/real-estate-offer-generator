@@ -35,14 +35,15 @@ export function calculateSchedule(priceInput: string, terms: PaymentTerms, issue
   const interval = terms.installmentIntervalMonths ?? 1;
   if (!Number.isInteger(interval) || interval < 1 || interval > 36)
     throw new Error("Installment interval must be an integer from 1 to 36 months");
-  // The duration INCLUDES the down payment as payment #1 at month zero.
-  // For an 80-month monthly plan, generate exactly 80 payment slots:
-  // deposit now and 79 future installments (not 80 future installments).
+  // Duration includes the deposit as payment #1 if a deposit exists.
+  // Example: 80 monthly months = deposit + 79 installments; 36 quarterly months = deposit + 11.
+  // A zero-down plan has no deposit row and retains all installment slots.
   const totalSlots = Math.ceil(terms.months / interval);
-  const futureInstallmentCount = totalSlots - 1;
+  const hasDownPayment = new Decimal(terms.downPaymentPct).gt(0);
+  const futureInstallmentCount = totalSlots - (hasDownPayment ? 1 : 0);
   if (futureInstallmentCount > 0) {
     const lastDueOffset = terms.startOffsetMonths + (futureInstallmentCount - 1) * interval;
-    if (lastDueOffset >= terms.months)
+    if (lastDueOffset > terms.months)
       throw new Error("Installment dates exceed the total duration; adjust first installment offset or interval");
   }
   const percent = new Decimal(terms.downPaymentPct);
@@ -64,9 +65,11 @@ export function calculateSchedule(priceInput: string, terms: PaymentTerms, issue
     throw new Error("The duration and interval allow only the down payment; choose a longer term or a shorter interval");
   const ordinary = futureInstallmentCount > 0
     ? remainder.div(futureInstallmentCount).toDecimalPlaces(2, Decimal.ROUND_DOWN) : new Decimal(0);
-  const rows: ScheduleRow[] = [{ number: 1, type: "DOWN_PAYMENT", due: issueDate.toISOString().slice(0, 10), amount: down.toFixed(2) }];
+  const rows: ScheduleRow[] = hasDownPayment
+    ? [{ number: 1, type: "DOWN_PAYMENT", due: issueDate.toISOString().slice(0, 10), amount: down.toFixed(2) }]
+    : [];
   for (let i = 0; i < futureInstallmentCount; i++) {
-    rows.push({ number: i + 2, type: "INSTALLMENT",
+    rows.push({ number: i + (hasDownPayment ? 2 : 1), type: "INSTALLMENT",
       due: shiftMonths(issueDate, terms.startOffsetMonths + i * interval),
       amount: (i === futureInstallmentCount - 1
         ? remainder.minus(ordinary.mul(futureInstallmentCount - 1)) : ordinary).toFixed(2) });
@@ -78,7 +81,7 @@ export function calculateSchedule(priceInput: string, terms: PaymentTerms, issue
   const rank = (type: ScheduleRow["type"]) => type === "DOWN_PAYMENT" ? 0 : type === "INSTALLMENT" ? 1 : type === "DELIVERY" ? 2 : 3;
   rows.sort((a, b) => a.due.localeCompare(b.due) || rank(a.type) - rank(b.type));
   return { name: terms.name, durationMonths: terms.months, installmentIntervalMonths: interval,
-    paymentCount: remainder.gt(0) ? totalSlots : 1, futureInstallmentCount: remainder.gt(0) ? futureInstallmentCount : 0,
+    paymentCount: remainder.gt(0) ? totalSlots : (hasDownPayment ? 1 : 0), futureInstallmentCount: remainder.gt(0) ? futureInstallmentCount : 0,
     totalPrice: price.toFixed(2), downPayment: down.toFixed(2),
     deliveryDate, deliveryCollection: delivery.toFixed(2),
     deliveryCollectionPct: deliveryPercent.toFixed(4),
