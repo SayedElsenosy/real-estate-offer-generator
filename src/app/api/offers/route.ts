@@ -14,6 +14,7 @@ export const maxDuration = 60;
 const inputSchema = z.object({
   projectId: z.string().min(1),
   unitCode: z.string().min(1),
+  unitFloor: z.string().min(1),
   planIds: z.array(z.string()).min(1).max(5)
 });
 function trustedLogo(url: string | null): string | null {
@@ -28,15 +29,15 @@ export async function POST(req: NextRequest) {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    const { projectId, unitCode, planIds } = inputSchema.parse(await req.json());
+    const { projectId, unitCode, unitFloor, planIds } = inputSchema.parse(await req.json());
     const project = await db().project.findUnique({ where: { id: projectId }, include: { floorPlans: true } });
     if (!project?.spreadsheetId) return NextResponse.json({ error: "Project inventory is not connected" }, { status: 409 });
     const units = await getLiveInventory(user.id, project.spreadsheetId, project.sheetRange, project.name);
-    const exactUnit = units.find(value => value.code === unitCode);
-    const matchingUnits = units.filter(value => unitKey(value.code) === unitKey(unitCode));
-    const unit = exactUnit || (matchingUnits.length === 1 ? matchingUnits[0] : undefined);
-    if (!exactUnit && matchingUnits.length > 1)
-      return NextResponse.json({ error: "Ambiguous unit code across the inventory. Select an exact code." }, { status: 409 });
+    const matchingUnits = units.filter(value =>
+      unitKey(value.code) === unitKey(unitCode) && value.floor === unitFloor);
+    if (matchingUnits.length > 1)
+      return NextResponse.json({ error: "Ambiguous unit code and floor. Cannot issue offer." }, { status: 409 });
+    const unit = matchingUnits.length === 1 ? matchingUnits[0] : undefined;
     if (!unit) return NextResponse.json({ error: "Unit does not exist in the live inventory" }, { status: 404 });
     if (!isAvailable(unit.status)) return NextResponse.json({ error: "Unit is no longer available" }, { status: 409 });
     const uniquePlanIds = [...new Set(planIds)];
