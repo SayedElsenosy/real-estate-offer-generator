@@ -22,14 +22,14 @@ const inputSchema = z.object({
   if (input.deliveryCollectionEnabled && (!date || input.deliveryCollectionPct <= 0))
     context.addIssue({ code: "custom", message: "Select delivery date and percentage when collection at delivery is enabled", path: ["deliveryDate"] });
   const totalSlots = Math.ceil(input.months / input.installmentIntervalMonths);
-  const recurringCount = totalSlots - 1;
+  const recurringCount = totalSlots - (input.downPaymentPct > 0 ? 1 : 0);
   const collection = input.deliveryCollectionEnabled ? input.deliveryCollectionPct : 0;
   if (input.downPaymentPct + collection > 100)
     context.addIssue({ code: "custom", message: "Down payment and delivery collection cannot exceed 100%", path: ["deliveryCollectionPct"] });
   if (recurringCount === 0 && input.downPaymentPct + collection < 100)
     context.addIssue({ code: "custom", message: "Duration and interval leave no future installment slots; extend the duration or shorten the interval", path: ["months"] });
   if (recurringCount > 0 &&
-      input.startOffsetMonths + (recurringCount - 1) * input.installmentIntervalMonths >= input.months)
+      input.startOffsetMonths + (recurringCount - 1) * input.installmentIntervalMonths > input.months)
     context.addIssue({ code: "custom", message: "Last installment falls outside the selected duration; adjust the offset or frequency", path: ["startOffsetMonths"] });
 });
 export async function POST(req: NextRequest) {
