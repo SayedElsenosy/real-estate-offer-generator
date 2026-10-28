@@ -91,3 +91,26 @@ Add **exactly** this authorized Google OAuth redirect URI to the corresponding G
 `https://real-estate-offer-generator.sayedelsenosy65.workers.dev/api/auth/callback/google`
 
 Then test sign-in, refresh-token acquisition, Sheets/Drive reads, Neon database reads, Cairo Plaza CAD map, and PDF offer generation under authenticated accounts. Do not delete or disconnect Vercel until all end-to-end checks pass.
+
+
+## Real deployment verification after configuring Cloudflare secrets
+
+As of 2026-10-28, Cloudflare reports all **five** expected secret names bound to `real-estate-offer-generator`: `DATABASE_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ADMIN_EMAILS`, and `AUTH_SECRET`. Their values were not read or logged. Non-secret `NEXTAUTH_URL` and `AUTH_TRUST_HOST` are configured.
+
+Cloudflare Builds test `91f7de90-a6ef-4842-b5f8-7428d669214f` uncovered a real Workers route failure: a GET to the retired offers history endpoint returned HTTP 500 because the PDF renderer was loaded eagerly. The fix moves runtime imports of `@react-pdf/renderer` and `@/lib/pdf` into the authenticated POST path.
+
+Cloudflare Builds test `616a06d7-b6d8-452a-864c-05ed7ea25977` **passed all seven post-deploy probes**:
+
+| Probe | Expected | Observed |
+| --- | ---: | ---: |
+| `/api/migration-health` | 200 | 200 |
+| `/api/auth/providers`, Google registered | 200 | 200 |
+| `/api/auth/session` with no cookie | 200 | 200 |
+| `/` home | 200 | 200 |
+| `GET /api/offers` (history disabled) | 410 | 410 |
+| `POST /api/offers` unauthenticated | 401 | 401 |
+| `/api/inventory?projectId=cairo-plaza` unauthenticated | 401 | 401 |
+
+Deployed Cloudflare version after these checks: `149a9010-96bb-4799-a4a7-3b157d8b19df`. The official Neon connection also confirmed `offer_generator` with six expected core tables and five projects. **That checks Neon from the connected database tool, not from inside the Worker.**
+
+**Not yet confirmed**: interactive Google OAuth callback and real signed-in session, Worker-to-Neon query through Auth.js, authenticated live Google Sheet/Drive retrieval, a valid PDF offer generated with the real project and payment plan, and complete CAD display in the browser. Keep the migration PR in draft and do not delete Vercel until these tests pass.
