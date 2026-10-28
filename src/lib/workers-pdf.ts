@@ -54,7 +54,14 @@ function row(page:PDFPage,index:number,values:string[],y:number,regular:PDFFont)
 }
 async function embeddedLogo(pdf:PDFDocument,url?:string|null):Promise<PDFImage|null> {
   if(!url)return null;
-  try{
+  try {
+    const data=/^data:image\/(png|jpeg);base64,([A-Za-z0-9+/]+={0,2})$/.exec(url);
+    if(data) {
+      const raw=atob(data[2]);
+      if(raw.length>2_500_000)return null;
+      const bytes=Uint8Array.from(raw,ch=>ch.charCodeAt(0));
+      return data[1]==="png"?await pdf.embedPng(bytes):await pdf.embedJpg(bytes);
+    }
     const parsed=new URL(url);
     const hostname=parsed.hostname.toLowerCase();
     const configured=(process.env.ALLOWED_LOGO_HOSTS||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
