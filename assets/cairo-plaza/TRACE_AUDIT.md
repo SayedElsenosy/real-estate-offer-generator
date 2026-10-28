@@ -1,27 +1,25 @@
-# Cairo Plaza — Floorplan SVG coverage and verification
+# Cairo Plaza — architectural SVG geometry progress
 
-Last audited baseline: **89 DRAFT polygons**. Original PDF: `cairo plaza floors printing copy(3).pdf` (8 pages); readonly inventory: `Price List.xlsx` Sheet1.
+Latest source-based mapping: **163 DRAFT unit polygons**. Original eight-page architectural PDF and the read-only Price List.xlsx have not been edited.
 
-| Floor | Proposed unit boundaries | Extracted text-label markers | Untraced extracted labels | State |
-|---|---:|---:|---:|---|
-| Basement (-1) | 9 | 17 | 8 | DRAFT |
-| Ground (0) | 0 | 0 | N/A — vector glyphs | DRAFT |
-| First (1) | 0 | 0 | N/A — vector glyphs | DRAFT |
-| Second (2) | 51 | 67 | 16 | DRAFT |
-| Third (3) | 0 | 0 | N/A — vector glyphs | DRAFT |
-| Fourth (4) | 0 | 0 | N/A — vector glyphs | DRAFT |
-| Fifth (5) | 0 | 0 | N/A — vector glyphs | DRAFT |
-| Sixth (6) | 29 | 37 | 8 | DRAFT |
-| **Total** | **89** | **121** | **32** | **NOT APPROVED** |
+| Architectural floor | Draft polygons | Label reconciliation |
+| --- | ---: | --- |
+| Basement (-1) | 17 | All 17 PDF-extracted unit labels matched to candidate shapes |
+| Ground (0) | 0 | Flattened vector labels; assignment to precise unit outlines still incomplete |
+| First (1) | 0 | Flattened vector labels; assignment to precise unit outlines still incomplete |
+| Second (2) | 67 | All 67 PDF-extracted unit labels matched to candidate shapes |
+| Third (3) | 14 | Side-wing visible office labels reconciled; remainder of floor untraced |
+| Fourth (4) | 14 | Side-wing visible office labels reconciled; remainder of floor untraced |
+| Fifth (5) | 14 | Side-wing visible office labels reconciled; remainder of floor untraced |
+| Sixth (6) | 37 | All 37 PDF-extracted unit labels matched to candidate shapes |
+| **Total** | **163** | **NOT APPROVED** |
 
-All eight original floor images are loaded in Neon. The latest eight irregular office polygons, traced with the original vector PDF and a calibrated 10-point coordinate grid, add six on floor 2 and two on floor 6 to the prior set of 81.
+Source-based geometries are in `assets/cairo-plaza/trace-drafts-163.json`. Prior milestones are preserved for audit history. New visually read third, fourth, and fifth floor unit codes were traced from the respective original architectural floor artwork. The earlier 121 machine-readable PDF labels (basement, second, sixth) match corresponding polygon candidates.
 
-**Geometric QA**: 89/89 candidate polygons are valid, contain the extracted source label center, fit inside the PDF's viewBox (2267.72 × 1700.79), and have no overlap greater than 1 square PDF point with other candidates in the same floor.
+Automated structural QA: all candidate unit polygon IDs are unique per floor, outlines are valid, each is contained within the PDF viewBox, and no two mapped polygons overlap by more than 2 PDF points of area. For the original 121 source-text markers, every label location falls inside its proposed corresponding outline.
 
-**Inventory QA**: of 89 traced unit codes, 14 appear in the reference inventory snapshot and 75 do not. The latter are **SOLD OUT** by the adopted mapping rule and cannot be offered. A source drawing's historic red fill does not override live stock status. Recheck inventory on every quotation.
+This is a **candidate boundary map**, not certified CAD geometry. Architectural wall corners and unit-ID assignments still require comprehensive source drawing verification before client-facing click selection. All eight floors remain `reviewStatus='DRAFT'` in Neon. The application deliberately excludes draft geometry from the customer PDF and click selection.
 
-**Safety gate**: each floor remains DRAFT. Client clicking / final PDF maps must use only APPROVED geometric boundaries. Current untraced labels (32) and the five other floors with vector-only glyph codes prevent architectural completeness; do not claim all units are mapped or grant automatic approval.
+**Business rule:** any labeled unit drawn in the architecture but absent from the current live inventory displays **Sold Out** in red and cannot be offered. An old printed red fill is historical and does not override the live Google Drive inventory. Never modify the source spreadsheet.
 
-Trace source: `assets/cairo-plaza/trace-drafts-89.json`; original earlier milestones `trace-drafts-51.json`, `-69.json`, `-81.json`. A ZIP review package with eight overlay images and row-by-row audit is also generated.
-
-**Note**: the geometry is suitable for informed architectural review, but not a substitute for signed-off source CAD or detailed boundary signoff. No original file was edited.
+**Outstanding:** resolve ground and first floor labels, missing inner/front-wing units on other floors, and all stock-to-outline reconciliations before architectural approval. Do not infer a unit code or footprint from room placement alone.
