@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { currentAdmin } from "@/lib/guards";
+import { getLiveInventory } from "@/lib/sheets";
 
 export const runtime = "nodejs";
 const shapeSchema = z.object({
@@ -31,7 +32,8 @@ function validBackground(background: string | null | undefined): boolean {
   return bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255;
 }
 export async function POST(req: NextRequest) {
-  if (!await currentAdmin())
+  const admin = await currentAdmin();
+  if (!admin)
     return NextResponse.json({ error: "Admin access required" }, { status: 403 });
   try {
     const length = Number(req.headers.get("content-length") || 0);
@@ -63,6 +65,17 @@ export async function POST(req: NextRequest) {
           " drawing labels still lack unit outlines. Complete all boundaries before approval.");
       if (!input.backgroundData && !existingFloor?.backgroundData)
         throw new Error("Cannot approve floor geometry without the original architectural reference image.");
+      if (input.projectId === "cairo-plaza") {
+        const project = await db().project.findUnique({ where: { id: input.projectId } });
+        if (!project?.spreadsheetId)
+          throw new Error("Live inventory must be connected before approving the architecture.");
+        const liveUnits = await getLiveInventory(admin.id, project.spreadsheetId, project.sheetRange, project.name);
+        const untracedStock = liveUnits.filter(unit =>
+          unit.floor === input.floor && !codes.includes(unit.code.toUpperCase()));
+        if (untracedStock.length)
+          throw new Error("Cannot approve incomplete floor: " + untracedStock.length +
+            " current inventory units have no reviewed boundaries.");
+      }
     }
     const data = {
       projectId: input.projectId, name: input.name, floor: input.floor || null,
