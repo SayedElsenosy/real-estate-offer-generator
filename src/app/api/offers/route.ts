@@ -47,7 +47,9 @@ export async function POST(req: NextRequest) {
     const date = new Date();
     const schedules = plans.map(plan => calculateSchedule(unit.price, {
       name: plan.name, downPaymentPct: plan.downPaymentPct.toString(), months: plan.months,
-      maintenancePct: plan.maintenancePct.toString(), startOffsetMonths: plan.startOffsetMonths
+      maintenancePct: plan.maintenancePct.toString(), startOffsetMonths: plan.startOffsetMonths, deliveryDate: plan.deliveryDate,
+      deliveryCollectionEnabled: plan.deliveryCollectionEnabled,
+      deliveryCollectionPct: plan.deliveryCollectionPct.toString()
     }, date));
     const match = project.floorPlans.find(f => f.floor === unit.floor && f.reviewStatus === "APPROVED");
     const rawShapes = match?.shapes as { unitCode: string; d: string }[] | undefined;
@@ -66,11 +68,8 @@ export async function POST(req: NextRequest) {
       project: project.name, unit, issuedAt, floor: geometry, schedules
     });
     const pdfBytes = await renderToBuffer(pdfNode as unknown as Parameters<typeof renderToBuffer>[0]);
-    await db().offer.create({ data: {
-      userId: user.id, projectId, unitCode: unit.code, currency: "EGP", issuedAt: date,
-      unitSnapshot: JSON.parse(JSON.stringify(unit)), planSnapshots: JSON.parse(JSON.stringify(plans)),
-      scheduleSnapshots: JSON.parse(JSON.stringify(schedules))
-    } });
+    // PDF is generated in-memory and streamed directly to the browser.
+    // Never persist quotation PDF, unit snapshot, schedules, or quote history.
     const safeCode = unit.code.replace(/[^a-z0-9_-]/gi, "_");
     return new Response(new Uint8Array(pdfBytes), {
       headers: { "Content-Type": "application/pdf", "Content-Disposition": 'attachment; filename="Offer-' + safeCode + '.pdf"',
@@ -81,11 +80,6 @@ export async function POST(req: NextRequest) {
   }
 }
 export async function GET() {
-  const user = await currentUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const offers = await db().offer.findMany({
-    where: { userId: user.id }, orderBy: { issuedAt: "desc" }, take: 40,
-    select: { id: true, unitCode: true, issuedAt: true, currency: true, status: true, project: { select: { name: true } } }
-  });
-  return NextResponse.json({ offers });
+  return NextResponse.json({ error: "Offer history is disabled. Downloaded proposals are not stored." },
+    { status: 410, headers: { "Cache-Control": "no-store" } });
 }
