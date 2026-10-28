@@ -6,14 +6,14 @@ import { FloorPlanEditor } from "@/components/FloorPlanEditor";
 import { useLanguage } from "@/components/LanguageProvider";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
 
-type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; deliveryMonths: number | null; deliveryCollectionEnabled: boolean; deliveryCollectionPct: string };
+type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; installmentIntervalMonths: number; deliveryMonths: number | null; deliveryCollectionEnabled: boolean; deliveryCollectionPct: string };
 type Shape = { unitCode: string; d: string };
 type Floor = { id: string; name: string; floor: string | null; viewBox: string; shapes: Shape[] };
 type Project = {
   id: string; name: string; spreadsheetId: string | null; sheetRange: string;
   companyName: string; logoUrl: string | null; paymentPlans: Plan[]; floorPlans: Floor[];
 };
-const blankPlan = { id: "", name: "", downPaymentPct: "10", maintenancePct: "8", months: "80", startOffsetMonths: "1", deliveryMonths: "", deliveryCollectionEnabled: false, deliveryCollectionPct: "0" };
+const blankPlan = { id: "", name: "", downPaymentPct: "10", maintenancePct: "8", months: "80", startOffsetMonths: "1", installmentIntervalMonths: "1", deliveryMonths: "", deliveryCollectionEnabled: false, deliveryCollectionPct: "0" };
 const blankFloor = { id: "", name: "", floor: "", viewBox: "0 0 1000 700", shapes: [] as Shape[] };
 function extractPaths(source: string): { viewBox: string; shapes: Shape[] } {
   const document = new DOMParser().parseFromString(source, "image/svg+xml");
@@ -186,10 +186,10 @@ export default function AdminPanel({ email, projects }: { email: string; project
       <section className="panel"><div className="eyebrow">{tr("FINANCIAL CONFIGURATION")}</div><h2 style={{marginTop:12}}>{tr("Payment plan manager")}</h2>
         <p className="muted">{tr("Define reusable payment structures, then select multiple scenarios when issuing an offer.")}</p>
         {project.paymentPlans.map(p=><div className="unit" key={p.id}>
-          <span><b>{p.name}</b><small>{p.downPaymentPct}% {tr("Down payment %")} · {p.months} {tr("Total term including down payment (months)")} · {tr("Monthly payments")} · {tr("First payment is the down payment")}{p.deliveryMonths ? " · "+tr("Delivery after")+" "+p.deliveryMonths+" "+tr("months") : ""}</small></span>
+          <span><b>{p.name}</b><small>{p.downPaymentPct}% {tr("Down payment %")} · {p.months} {tr("Total term including down payment (months)")} · {tr(p.installmentIntervalMonths===3?"Quarterly installments":"Monthly payments")} · {tr("First payment is the down payment")}{p.deliveryMonths ? " · "+tr("Delivery after")+" "+p.deliveryMonths+" "+tr("months") : ""}</small></span>
           <div className="actionline">
             <button className="btn soft" type="button" disabled={busy}
-              onClick={()=>setPlan({id:p.id,name:p.name,downPaymentPct:p.downPaymentPct,months:String(p.months),maintenancePct:p.maintenancePct,startOffsetMonths:String(p.startOffsetMonths),deliveryMonths:p.deliveryMonths ? String(p.deliveryMonths) : "",deliveryCollectionEnabled:p.deliveryCollectionEnabled,deliveryCollectionPct:p.deliveryCollectionPct})}>
+              onClick={()=>setPlan({id:p.id,name:p.name,downPaymentPct:p.downPaymentPct,months:String(p.months),maintenancePct:p.maintenancePct,startOffsetMonths:String(p.startOffsetMonths),installmentIntervalMonths:String(p.installmentIntervalMonths||1),deliveryMonths:p.deliveryMonths ? String(p.deliveryMonths) : "",deliveryCollectionEnabled:p.deliveryCollectionEnabled,deliveryCollectionPct:p.deliveryCollectionPct})}>
               {tr("Edit")}
             </button>
             <button className="btn danger" type="button" disabled={busy} onClick={()=>void deletePlan(p.id)}>{tr("Delete")}</button>
@@ -204,7 +204,20 @@ export default function AdminPanel({ email, projects }: { email: string; project
             <label className="fieldlabel">{tr("Maintenance %")}<input className="field" type="number" min="0" max="100" step="0.01" value={plan.maintenancePct} onChange={e=>setPlan({...plan,maintenancePct:e.target.value})}/></label>
             <label className="fieldlabel">{tr("Next payment after down payment (months)")}<input className="field" type="number" min="0" max="120" value={plan.startOffsetMonths} onChange={e=>setPlan({...plan,startOffsetMonths:e.target.value})}/></label>
           </div>
-          <p className="notice">{tr("All installments are monthly. The down payment is the first payment and counts within the full term.")}</p>
+          <label className="fieldlabel">{tr("Installment frequency")}
+            <select className="field" value={plan.installmentIntervalMonths}
+              onChange={event=>{
+                const cadence=event.target.value;
+                const first=cadence==="3"
+                  ? String(Math.max(3,Number(plan.startOffsetMonths)||3))
+                  : "1";
+                setPlan({...plan,installmentIntervalMonths:cadence,startOffsetMonths:first});
+              }}>
+              <option value="1">{tr("Monthly — every month")}</option>
+              <option value="3">{tr("Quarterly — every 3 months")}</option>
+            </select>
+          </label>
+          <p className="notice">{tr("The down payment is the first payment within the term. Later installments follow the selected frequency. The schedule and PDF use the same cadence.")}</p>
           <label className="fieldlabel">{tr("Delivery after (months)")}
             <input className="field" type="number" min="1" max={Math.max(1,Number(plan.months)-1)} step="1"
               value={plan.deliveryMonths}
@@ -222,7 +235,7 @@ export default function AdminPanel({ email, projects }: { email: string; project
                 onChange={e=>setPlan({...plan,deliveryCollectionPct:e.target.value})}/>
             </label>
           </>}
-          <p className="muted">{tr("The delivery percentage is spread across the monthly payments before delivery, not billed as a separate delivery installment. The remaining balance is spread over the months after delivery.")}</p>
+          <p className="muted">{tr("The pre-delivery percentage is distributed across the installments before delivery, with no separate payment at delivery. The remainder is distributed after delivery.")}</p>
           <div className="actionline"><button className="btn" disabled={busy||!plan.name} onClick={savePlan}>{tr(plan.id?"Update payment plan":"Add payment plan")}</button><button className="btn soft" onClick={()=>setPlan(blankPlan)}>{tr("New plan")}</button></div>
         </div>
       </section>
