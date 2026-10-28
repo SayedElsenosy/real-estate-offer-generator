@@ -68,11 +68,13 @@ export function calculateSchedule(priceInput: string, terms: PaymentTerms, issue
   const rows: ScheduleRow[] = hasDownPayment
     ? [{ number: 1, type: "DOWN_PAYMENT", due: issueDate.toISOString().slice(0, 10), amount: down.toFixed(2) }]
     : [];
-  for (let i = 0; i < futureInstallmentCount; i++) {
-    rows.push({ number: i + (hasDownPayment ? 2 : 1), type: "INSTALLMENT",
-      due: shiftMonths(issueDate, terms.startOffsetMonths + i * interval),
-      amount: (i === futureInstallmentCount - 1
-        ? remainder.minus(ordinary.mul(futureInstallmentCount - 1)) : ordinary).toFixed(2) });
+  if (remainder.gt(0)) {
+    for (let i = 0; i < futureInstallmentCount; i++) {
+      rows.push({ number: i + (hasDownPayment ? 2 : 1), type: "INSTALLMENT",
+        due: shiftMonths(issueDate, terms.startOffsetMonths + i * interval),
+        amount: (i === futureInstallmentCount - 1
+          ? remainder.minus(ordinary.mul(futureInstallmentCount - 1)) : ordinary).toFixed(2) });
+    }
   }
   if (terms.deliveryCollectionEnabled && deliveryDate) {
     rows.push({ number: null, type: "DELIVERY", due: deliveryDate, amount: delivery.toFixed(2) });
