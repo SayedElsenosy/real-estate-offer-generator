@@ -17,9 +17,10 @@ const inputSchema = z.object({
   deliveryCollectionPct: z.coerce.number().min(0).max(100).default(0)
 }).superRefine((input, context) => {
   const target = input.deliveryCollectionEnabled ? input.deliveryCollectionPct : 0;
-  if (input.deliveryCollectionEnabled &&
-    (input.deliveryMonths<2 || input.deliveryMonths>=input.months))
-    context.addIssue({code:"custom",message:"Delivery month must be between 2 and the last month of the payment term.",path:["deliveryMonths"]});
+  if (input.deliveryMonths>0 && input.deliveryMonths>=input.months)
+    context.addIssue({code:"custom",message:"Delivery month must be less than the payment term.",path:["deliveryMonths"]});
+  if (input.deliveryCollectionEnabled && input.deliveryMonths<2)
+    context.addIssue({code:"custom",message:"Delivery month must be at least 2 to split pre-delivery payments.",path:["deliveryMonths"]});
   if (input.deliveryCollectionEnabled && target<input.downPaymentPct)
     context.addIssue({code:"custom",message:"Pre-delivery target cannot be smaller than the down payment.",path:["deliveryCollectionPct"]});
   if (input.deliveryCollectionEnabled && input.startOffsetMonths>0 &&
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
       maintenancePct: payload.maintenancePct.toString(), startOffsetMonths: payload.startOffsetMonths,
       installmentIntervalMonths: 1,
       deliveryDate: null,
-      deliveryMonths: payload.deliveryCollectionEnabled ? payload.deliveryMonths : null,
+      deliveryMonths: payload.deliveryMonths > 0 ? payload.deliveryMonths : null,
       deliveryCollectionEnabled: payload.deliveryCollectionEnabled,
       deliveryCollectionPct: (payload.deliveryCollectionEnabled ? payload.deliveryCollectionPct : 0).toString(),
       updatedAt: new Date() };
