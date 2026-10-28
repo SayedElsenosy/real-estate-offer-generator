@@ -1,5 +1,4 @@
 import React from "react";
-import { renderToBuffer } from "@react-pdf/renderer";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
@@ -7,7 +6,7 @@ import { currentUser } from "@/lib/guards";
 import { getLiveInventory, isAvailable } from "@/lib/sheets";
 import { calculateSchedule } from "@/lib/payment";
 import { unitKey } from "@/lib/unit-code";
-import { OfferDocument, type FloorGeometry } from "@/lib/pdf";
+import type { FloorGeometry } from "@/lib/pdf";
 import { CAIRO_PLAZA_PROJECT_ID, hasAuthoritativeCairoDwgSource } from "@/lib/cairo-architectural-source";
 
 export const runtime = "nodejs";
@@ -66,6 +65,11 @@ export async function POST(req: NextRequest) {
         return { unitCode: current?.code || shape.unitCode, d: shape.d, status };
       }) } : null;
     const issuedAt = date.toISOString().slice(0, 10);
+    // PDF dependencies are loaded only after authentication and validation.
+    // Do not initialize the Node-focused renderer for GET/unauthenticated requests on Workers.
+    const [{ renderToBuffer }, { OfferDocument }] = await Promise.all([
+      import("@react-pdf/renderer"), import("@/lib/pdf")
+    ]);
     const pdfNode = React.createElement(OfferDocument, {
       company: project.companyName, logo: trustedLogo(project.logoUrl),
       project: project.name, unit, issuedAt, floor: geometry, schedules
