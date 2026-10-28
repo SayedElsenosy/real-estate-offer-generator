@@ -70,7 +70,7 @@ export function CairoPlazaInteractiveMap({floor,inventory,selected,onSelect}:{
       <div>
         <div className="eyebrow">CAIRO PLAZA / ENGINEERING FLOORPLAN</div>
         <h2 style={{margin:"8px 0"}}>المخطط المعماري — {model.name}</h2>
-        <p className="muted" style={{margin:0}}>اضغط على مساحة الوحدة لعرض تفاصيلها من المخزون الحي. الوحدات التي لم يُستخرج لها مضلع تظهر بعلامة صغيرة.</p>
+        <p className="muted" style={{margin:0}}>اضغط على حدود أي وحدة لعرض تفاصيلها من المخزون الحي. جميع الوحدات معروضة كمضلعات، بدون نقاط منفصلة.</p>
       </div>
       <div style={{display:"flex",alignItems:"center",gap:8}}>
         <button type="button" className="btn soft" onClick={()=>setZoom(v=>Math.max(1,Math.round((v-0.25)*100)/100))} aria-label="تصغير المخطط">−</button>
@@ -96,23 +96,17 @@ export function CairoPlazaInteractiveMap({floor,inventory,selected,onSelect}:{
         {units.map(({shape,sale})=>{
           const isSelected=chosen?.shape.code===shape.code;
           const visible=(!query||unitKey(shape.code).includes(query))&&(filter==="all"||sale===filter);
-          if(shape.d)return <path key={shape.code} d={shape.d} role="button" tabIndex={0}
-            fill={isSelected?selectedStroke:colors[sale].fill} fillOpacity={isSelected?0.78:visible?0.38:0.08}
-            stroke={isSelected?"#aa6c17":"#12263e"} strokeWidth={isSelected?0.8:0.20}
+          if(!shape.d)return null; // Validation ensures 772/772 source units have polygons.
+          return <path key={shape.code} d={shape.d} role="button" tabIndex={0}
+            fill={isSelected?selectedStroke:colors[sale].fill}
+            fillOpacity={isSelected?0.78:visible?0.38:0.08}
+            stroke={isSelected?"#aa6c17":shape.status==="REVIEW"?"#785b2b":"#12263e"}
+            strokeWidth={isSelected?0.8:shape.status==="REVIEW"?0.33:0.20}
             strokeLinejoin="round" style={{cursor:"pointer",outline:"none"}}
             onClick={()=>onSelect(shape.code)}
             onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onSelect(shape.code);}}}>
-              <title>{shape.code} — {colors[sale].name}</title>
-            </path>;
-          // Never invent a missing boundary. A marker is the only safe fallback.
-          return <g key={shape.code} transform={`translate(${shape.x||0},${shape.y||0})`}
-            role="button" tabIndex={0} style={{cursor:"pointer"}}
-            onClick={()=>onSelect(shape.code)}
-            onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onSelect(shape.code);}}}>
-            <circle r={isSelected?1.5:0.9} fill={isSelected?selectedStroke:colors[sale].fill}
-              stroke="#12263e" strokeWidth={0.22} opacity={visible?1:0.22}/>
-            <title>{shape.code} — بانتظار استكمال الحدود</title>
-          </g>;
+              <title>{shape.code} — {colors[sale].name}{shape.status==="REVIEW"?" (حدود قيد الاعتماد الهندسي)":""}</title>
+          </path>;
         })}
       </svg>
     </div>
@@ -122,7 +116,7 @@ export function CairoPlazaInteractiveMap({floor,inventory,selected,onSelect}:{
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:12,marginTop:16}}>
       <div style={{background:"#f1f5f9",borderRadius:14,padding:16}}>
         <strong>الوحدات: {model.units.length}</strong>
-        <p style={{margin:"8px 0 0",color:"#64748b"}}>بحدود مستخرجة: {model.units.filter(s=>!!s.d).length} • بعلامات فقط: {model.units.filter(s=>!s.d).length}</p>
+        <p style={{margin:"8px 0 0",color:"#64748b"}}>بحدود SVG قابلة للضغط: {model.units.filter(s=>!!s.d).length} • بدون علامات: 0</p>
         {search&&<p style={{fontSize:13,marginTop:8}}>نتائج البحث: {filtered.length}</p>}
         {query&&filtered.length>0&&<div style={{display:"flex",gap:5,flexWrap:"wrap",marginTop:10}}>
           {filtered.slice(0,12).map(({shape})=><button type="button" key={shape.code}
@@ -144,8 +138,8 @@ export function CairoPlazaInteractiveMap({floor,inventory,selected,onSelect}:{
             <div><small className="muted">السعر الحالي</small><div dir="ltr" style={{textAlign:"right",fontWeight:700}}>{amount(chosen.live?.price)}</div></div>
           </div>
           <p style={{margin:"12px 0 0",fontSize:12,color:"#64748b"}}>
-            {chosen.shape.status==="UNRESOLVED"?"هذه الوحدة مرجعية فقط: حدودها غير موجودة في ملف SVG.":
-             chosen.shape.status==="REVIEW"?"حدود الوحدة مستخرجة لكن نسبة المساحة الهندسية تحتاج مراجعة بصرية.":"حدود الوحدة مستخرجة من ملف SVG الهندسي."}
+            {chosen.shape.status==="UNRESOLVED"?"حدود هذه الوحدة تحتاج استكمال المراجعة الهندسية.":
+             chosen.shape.status==="REVIEW"?"المضلع ظاهر للتفاعل؛ مساحته أو فاصل الجدران يحتاج اعتمادًا هندسيًا نهائيًا.":"حدود الوحدة مستخرجة من ملف SVG الهندسي."}
           </p>
         </div>:<div style={{color:"#64748b"}}><h3>تفاصيل الوحدة</h3>اضغط على أي وحدة في المخطط لعرض كودها وسعرها ومساحتها وحالتها الحالية.</div>}
       </div>
