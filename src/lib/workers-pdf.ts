@@ -116,9 +116,10 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
   pair(intro,"Inventory status",unit.status,H-445,regular,bold);
   pair(intro,"UNIT PRICE","EGP "+unit.price,H-489,regular,bold);
   const priceValue=new Decimal(String(unit.price).replace(/[,\s]/g,""));
-  const areaValue=new Decimal(String(unit.area).replace(/[,\s]/g,""));
+  const cleanArea=String(unit.area||"").replace(/[,\s]/g,"");
+  const areaValue=new Decimal(/^\d+(?:\.\d+)?$/.test(cleanArea)?cleanArea:"0");
   const sqmPrice=priceValue.isFinite()&&areaValue.isFinite()&&areaValue.gt(0)
-    ?priceValue.div(areaValue).toDecimalPlaces(2,Decimal.ROUND_HALF_UP).toFormat(2):"—";
+    ?priceValue.div(areaValue).toDecimalPlaces(2,Decimal.ROUND_HALF_UP).toFixed(2):"—";
   pair(intro,"PRICE PER SQM","EGP "+sqmPrice,H-533,regular,bold);
   intro.drawText("Prices and availability are rechecked against the live project source before issue.",{
     x:LEFT,y:195,font:regular,size:9,color:gray
