@@ -91,6 +91,7 @@ model PaymentPlan {
   months            Int
   maintenancePct    Decimal  @default(0) @db.Decimal(7, 4)
   startOffsetMonths Int      @default(1)
+  installmentIntervalMonths Int @default(1)
   deliveryDate      String?  @db.VarChar(10)
   deliveryCollectionEnabled Boolean @default(false)
   deliveryCollectionPct Decimal @default(0) @db.Decimal(7, 4)
