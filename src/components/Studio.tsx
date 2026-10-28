@@ -150,6 +150,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
               <p className="muted">{tr("The original architectural image and reviewed unit boundaries will appear here after a floor is saved in Workspace Settings.")}</p>
             </div></div>}
           {floor?.reviewStatus !== "APPROVED" && floor?.backgroundData && <p className="notice">{tr("Draft review: proposed boundaries are shown as dashed blue lines alongside source code-label markers. Red = SOLD OUT if absent from live inventory. These outlines are NOT selectable until approved.")}</p>}
+          {projectId === "cairo-plaza" && <p className="notice">{tr("Cairo Plaza engineering DWG registered; accurate interactive maps will appear after CAD verification.")}</p>}
           <p className="muted">{tr("Gold: selected. Green: available. Grey: reserved. Red: SOLD OUT if the drawn unit is absent from current inventory. Only approved outlines are interactive.")}</p>
         </section>
       </div>
