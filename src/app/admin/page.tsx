@@ -5,7 +5,6 @@ import { db } from "@/lib/db";
 import AdminPanel from "@/components/AdminPanel";
 import { CAIRO_PLAZA_PROJECT_ID, hasAuthoritativeCairoDwgSource } from "@/lib/cairo-architectural-source";
 import { T } from "@/components/LanguageProvider";
-import { ShareLinkButton } from "@/components/ShareLinkButton";
 export const dynamic = "force-dynamic";
 export default async function AdminPage() {
   if (!authReady) redirect("/");
@@ -17,5 +16,5 @@ export default async function AdminPage() {
     ? {...project, floorPlans: project.floorPlans.map(f => hasAuthoritativeCairoDwgSource(f) ? f
         : {...f, shapes: [], markers: [], backgroundData: null, reviewStatus: "DRAFT"})}
     : project);
-  return <><div style={{padding:"18px 28px",background:"#f6f8fb",color:"#172b47"}}><strong>رابط الدخول الخاص من أي جهاز</strong><p>يمكن مشاركة الرابط للدخول إلى الاستوديو والمخططات بدون حساب Google، ولا يمنح صلاحية الإدارة.</p><ShareLinkButton /></div><AdminPanel email={session.user.email} projects={JSON.parse(JSON.stringify(safeProjects))} /></>;
+  return <AdminPanel email={session.user.email} projects={JSON.parse(JSON.stringify(safeProjects))} />;
 }
