@@ -6,6 +6,7 @@ export type PaymentTerms = {
   months: number;
   maintenancePct: string;
   startOffsetMonths: number;
+  installmentIntervalMonths?: 1 | 3;
   deliveryMonths?: number;
   deliveryCollectionEnabled?: boolean;
   deliveryCollectionPct?: string | null;
@@ -38,7 +39,7 @@ function distribute(amount: Decimal, count: number): Decimal[] {
   return Array.from({length:count},(_,i)=>i===count-1
     ? amount.minus(ordinary.mul(count-1)) : ordinary);
 }
-/** Monthly offers. Down payment occupies the initial slot (month 0).
+/** Installments are monthly or quarterly. Down payment occupies month 0.
  * Delivery allocation is a TARGET amount paid cumulatively BEFORE delivery:
  * no separate cash collection or row is due on delivery.
  */
@@ -49,6 +50,9 @@ export function calculateSchedule(priceInput:string,terms:PaymentTerms,issueDate
     throw Error("Payment term must be between 1 and 360 months.");
   if (!Number.isInteger(terms.startOffsetMonths)||terms.startOffsetMonths<0||terms.startOffsetMonths>120)
     throw Error("Invalid first installment offset.");
+  const interval=terms.installmentIntervalMonths ?? 1;
+  if (interval!==1 && interval!==3)
+    throw Error("Installment frequency must be monthly or quarterly.");
   const downPct=new Decimal(terms.downPaymentPct);
   const maintenancePct=new Decimal(terms.maintenancePct);
   const preDeliveryPct=terms.deliveryCollectionEnabled
@@ -72,10 +76,14 @@ export function calculateSchedule(priceInput:string,terms:PaymentTerms,issueDate
   const preDeliveryTarget=terms.deliveryCollectionEnabled
     ? money(price.mul(preDeliveryPct).div(100)) : down;
   const hasDown=down.gt(0);
-  const firstFutureOffset=terms.startOffsetMonths===0?1:terms.startOffsetMonths;
+  // The deposit occupies the first payment slot inside the agreed term.
+  // Future installments follow the chosen cadence (month 1 or 3, 6, 9...)
+  // without extending past the agreed duration. Explicit late start offsets
+  // remain supported for legacy plans.
+  const firstFutureOffset=Math.max(interval,terms.startOffsetMonths||interval);
   const lastOffset=terms.months-(hasDown?1:0);
   const offsets:number[]=[];
-  for(let month=firstFutureOffset;month<=lastOffset;month++)offsets.push(month);
+  for(let month=firstFutureOffset;month<=lastOffset;month+=interval)offsets.push(month);
   if (!offsets.length && !price.eq(down))
     throw Error("The selected duration contains no future installment dates.");
   const before=offsets.filter(month=>terms.deliveryCollectionEnabled && month<deliveryMonths);
@@ -103,7 +111,7 @@ export function calculateSchedule(priceInput:string,terms:PaymentTerms,issueDate
   if (!total.eq(price.plus(maintenance)))
     throw Error("Payment schedule did not balance exactly to the unit price.");
   return {
-    name:terms.name,durationMonths:terms.months,installmentIntervalMonths:1,
+    name:terms.name,durationMonths:terms.months,installmentIntervalMonths:interval,
     paymentCount:count,futureInstallmentCount:count-(hasDown?1:0),
     totalPrice:price.toFixed(2),downPayment:down.toFixed(2),
     deliveryMonths,deliveryDate:deliveryMonths>0?shiftMonths(issueDate,deliveryMonths):null,
