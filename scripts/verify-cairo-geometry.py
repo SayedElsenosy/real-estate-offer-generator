@@ -14,7 +14,7 @@ args.add_argument('--inventory', type=Path)
 options = args.parse_args()
 old = json.loads((ASSETS / 'trace-drafts-347.json').read_text())
 new = json.loads((ASSETS / 'trace-drafts-361.json').read_text())
-added = json.loads((ASSETS / 'new-source-perimeters.json').read_text())
+added = json.loads((ASSETS / 'review-2026-10-28' / 'new-source-perimeters.json').read_text())
 def key(code): return unicodedata.normalize('NFKC', code).strip().upper()
 def points(path):
     assert not re.search(r'[^\d\s,.+\-eEMLZ]', path), 'Unsupported path command'
