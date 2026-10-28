@@ -5,6 +5,7 @@ import { unitKey } from "@/lib/unit-code";
 export type CadLabel = {code:string;floor:string;x:number;y:number};
 type Segment={d:string};
 type CadPreview={labels:CadLabel[];lines:Segment[]};
+const EXPECTED_DXF_SHA = "855b5b71af07fcadfda33b5a9d15dba2738b008d85ed28009d8c456088740fbb";
 const floorOf:Record<string,string>={BA:"-1",GR:"0",FR:"1","2ND":"2","3RD":"3","4TH":"4","5TH":"5","6TH":"6"};
 const CODE=/\b[A-Z]\/(?:BA|GR|FR|2ND|3RD|4TH|5TH|6TH)\/[A-Z0-9]+\/[0-9]{1,3}(?:-?[A-Z])?\b/gi;
 type Pair={code:number;value:string};
@@ -89,7 +90,11 @@ export function CadDxfPreview({floor,inventory,selected,onSelect}:{floor:string;
     setBusy(true);setError("");
     try{
       if(file.size>50_000_000)throw Error("DXF is over 50 MB.");
-      const result=parseCadDxf(await file.text());
+      const raw=await file.arrayBuffer();
+      const digest=await crypto.subtle.digest("SHA-256",raw);
+      const actual=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("");
+      if(actual!==EXPECTED_DXF_SHA)throw Error("DXF differs from the registered engineering source; preview rejected.");
+      const result=parseCadDxf(new TextDecoder("utf-8").decode(raw));
       setCad(result);
     }catch(e){setError(e instanceof Error?e.message:String(e));setCad(null);}
     finally{setBusy(false);}
