@@ -167,8 +167,9 @@ export default function AdminPanel({ email, projects }: { email: string; project
             {Number(plan.months)>0 && Number(plan.installmentIntervalMonths)>0 && Number(plan.downPaymentPct)>=0
               ? tr("Estimated payment breakdown") + ": " +
                 (Number(plan.downPaymentPct)>0 ? "1 " + tr("down payment") + " + " : "") +
-                (Math.ceil(Number(plan.months)/Number(plan.installmentIntervalMonths))-
-                  (Number(plan.downPaymentPct)>0 ? 1 : 0)) + " " + tr("future installments")
+                (Number(plan.downPaymentPct) + (plan.deliveryCollectionEnabled ? Number(plan.deliveryCollectionPct) : 0) >= 100 ? 0 :
+                  Math.max(0,Math.ceil(Number(plan.months)/Number(plan.installmentIntervalMonths))-
+                    (Number(plan.downPaymentPct)>0 ? 1 : 0))) + " " + tr("future installments")
               : null}
           </p>
           <label className="fieldlabel">{tr("Delivery date")}<input className="field" type="date" value={plan.deliveryDate}
