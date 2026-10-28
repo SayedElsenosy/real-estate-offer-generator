@@ -6,6 +6,7 @@ import type { ScheduleRow } from "@/lib/payment";
 export type FloorGeometry = { viewBox: string; backgroundData: string | null; shapes: { unitCode: string; d: string; status: "AVAILABLE" | "UNAVAILABLE" | "SOLD_OUT" }[] } | null;
 export type OfferSchedule = {
   name: string; totalPrice: string; downPayment: string; maintenance: string;
+  deliveryDate: string | null; deliveryCollection: string; deliveryCollectionPct: string;
   totalIncludingMaintenance: string; rows: ScheduleRow[]
 };
 const st = StyleSheet.create({
@@ -75,6 +76,8 @@ export function OfferDocument({ company, logo, project, unit, issuedAt, floor, s
       <Text>{schedule.name} / {unit.code}</Text>
       <CellRow label="Price" value={"EGP " + schedule.totalPrice} />
       <CellRow label="Down payment" value={"EGP " + schedule.downPayment} />
+      {schedule.deliveryDate && <CellRow label="Expected delivery date" value={schedule.deliveryDate} />}
+      {Number(schedule.deliveryCollectionPct) > 0 && <CellRow label={"Collection on delivery (" + Number(schedule.deliveryCollectionPct) + "%)"} value={"EGP " + schedule.deliveryCollection} />}
       <CellRow label="Maintenance deposit" value={"EGP " + schedule.maintenance} />
       <CellRow label="Total with maintenance" value={"EGP " + schedule.totalIncludingMaintenance} />
       <View style={st.th} fixed>
@@ -82,7 +85,7 @@ export function OfferDocument({ company, logo, project, unit, issuedAt, floor, s
       </View>
       {schedule.rows.map((row, i) => <View key={i} style={st.tr} wrap={false}>
         <Text style={st.c1}>{row.number}</Text>
-        <Text style={st.c2}>{row.type.replace("_", " ")}</Text>
+        <Text style={st.c2}>{row.type === "DELIVERY" ? "DELIVERY COLLECTION" : row.type.replace("_", " ")}</Text>
         <Text style={st.c3}>{row.due}</Text>
         <Text style={st.c4}>{row.amount}</Text>
       </View>)}
