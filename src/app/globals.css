@@ -67,3 +67,18 @@ p{line-height:1.6}
 .pitem:last-child{border:0}
 @media(max-width:1100px){.main{padding:25px}.grid2{grid-template-columns:1fr}.sidebar{padding:25px 14px}}
 @media(max-width:760px){.shell{display:block}.sidebar{padding:20px;gap:13px}.sidebar-bottom{display:none}.menu{flex-direction:row;overflow-x:auto}.menu a{white-space:nowrap}.main{padding:20px}.metrics,.twofields{grid-template-columns:1fr}.header-line{display:block}.header-line .pill{margin-top:12px}h1{font-size:28px}}
+
+
+/* Arabic is the default. The language switch updates html[dir] on the client. */
+html[dir="rtl"] body { font-family: Tahoma, Arial, "Segoe UI", sans-serif; }
+html[dir="rtl"] .unit { text-align: right; }
+html[dir="rtl"] .field, html[dir="rtl"] input:not([type="date"]) { text-align: right; }
+html[dir="rtl"] input[type="date"], html[dir="rtl"] input[type="number"] { direction: ltr; text-align: start; }
+html[dir="rtl"] .side-cap, html[dir="rtl"] .eyebrow { letter-spacing: .4px; text-transform: none; }
+html[dir="rtl"] h1, html[dir="rtl"] h2 { letter-spacing: normal; }
+.lang-toggle { width:100%; min-height:42px; padding:10px 13px; color:#fff; background:#263e59; border:1px solid #45617e; border-radius:9px; display:flex; align-items:center; justify-content:center; gap:10px; font-weight:700; }
+.lang-toggle:hover { background:#33516e; }
+.btn.danger { background:#aa3846; color:#fff; }
+.btn.danger:hover { background:#852631; }
+.unit .actionline { flex-shrink:0; }
+@media(max-width:760px){.lang-toggle{width:auto;align-self:flex-start}}
