@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export default async function StudioPage() {
   const user = await currentUser();
   if (!user) redirect("/");
-  const projects = await db().project.findMany({ include: { paymentPlans: true }, orderBy: { name: "asc" } });
+  const projects = await db().project.findMany({ select: {id:true,slug:true,name:true,paymentPlans:true}, orderBy: { name: "asc" } });
   return <Studio projects={JSON.parse(JSON.stringify(projects))}
     email={(await hasSharedAccess()) ? "Private link access" : (user.email || "")} />;
 }
