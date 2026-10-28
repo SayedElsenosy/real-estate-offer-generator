@@ -9,7 +9,7 @@ type Floor = {
   markers?: {code:string;x:number;y:number}[];
   backgroundData?: string | null; reviewStatus?: string;
 };
-type InventoryUnit = { code: string; status: string };
+type InventoryUnit = { code: string; status: string; floor: string };
 const CODES = [
   { floor: "-1", label: "Basement", image: "01_basement_preview.png" },
   { floor: "0", label: "Ground", image: "02_ground_preview.png" },
