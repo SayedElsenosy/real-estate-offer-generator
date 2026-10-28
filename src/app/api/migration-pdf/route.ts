@@ -1,12 +1,14 @@
 import { createPropertyOfferPdf } from "@/lib/workers-pdf";
 import { getCairoOfferLocation } from "@/lib/cairo-offer-location";
 import type { NextRequest } from "next/server";
+import { currentAdmin } from "@/lib/guards";
 import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 // Temporary no-personal-data smoke test. Removed once rendering passes.
 export async function GET(req:NextRequest) {
+  if (!(await currentAdmin())) return NextResponse.json({ error:"Not Found" }, {status:404});
   try {
     const verifyMap=req.nextUrl.searchParams.get("map")==="1";
     const location=verifyMap?await getCairoOfferLocation("I/GR/SH/01B","Ground"):null;
