@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
     const schedules = plans.map(plan => calculateSchedule(unit.price, {
       name: plan.name, downPaymentPct: plan.downPaymentPct.toString(), months: plan.months,
       maintenancePct: plan.maintenancePct.toString(), startOffsetMonths: plan.startOffsetMonths,
+      installmentIntervalMonths: plan.installmentIntervalMonths===3?3:1,
       deliveryMonths: plan.deliveryMonths ?? undefined,
       maintenanceDueDate: maintenanceDueDate || null,
       deliveryCollectionEnabled: plan.deliveryCollectionEnabled,
