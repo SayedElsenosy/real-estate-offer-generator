@@ -2,9 +2,9 @@
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
 
-export function Sidebar({ email, active }: { email?: string | null; active: "home" | "studio" | "admin" }) {
+export function Sidebar({ email, active }: { email?: string | null; active: "home" | "studio" | "plans" | "admin" }) {
   const {language,setLanguage,tr}=useLanguage();
-  const items = [{ href: "/", text: "Overview", key: "home" }, { href: "/studio", text: "Offer Studio", key: "studio" }, { href: "/admin", text: "Workspace Settings", key: "admin" }] as const;
+  const items = [{ href: "/", text: "Overview", key: "home" }, { href: "/studio", text: "Offer Studio", key: "studio" }, { href: "/plans", text: "Interactive Plans", key: "plans" }, { href: "/admin", text: "Workspace Settings", key: "admin" }] as const;
   return <aside className="sidebar">
     <Link href="/" className="brand" dir="ltr">OFFER <em>ATELIER</em></Link>
     <div className="side-cap">{tr("REAL ESTATE PROPOSALS")}</div>
