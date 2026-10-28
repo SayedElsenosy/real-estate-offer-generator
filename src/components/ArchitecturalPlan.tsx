@@ -75,7 +75,7 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
   const visible=entries.filter(e=>enabled.includes(e.state)&&unitKey(e.shape.unitCode).includes(unitKey(search)));
   const choice=entries.find(e=>unitKey(e.shape.unitCode)===unitKey(selected));
   const vb=(floor?.viewBox||"0 0 1000 1000").split(/\s+/).map(Number);
-  return <div className="shell"><Sidebar active="plans" email={email}/><main className="main">
+  return <div className="shell"><Sidebar active="plans" email={email} shared={email==="Private link access"}/><main className="main">
     <header className="header-line"><div>
       <div className="eyebrow">ENGINEERING / ARCHITECTURAL PLANS</div>
       <h1>المخططات التفاعلية</h1>
