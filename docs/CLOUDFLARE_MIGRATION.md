@@ -131,3 +131,16 @@ The final build with these repairs and TypeScript checking passed:
 - The migration branch remains a draft PR. Vercel is retained as fallback.
 
 **Remaining manual acceptance**: the account holder must repeat a real Google OAuth login and then open Cairo Plaza and another spreadsheet-driven project's inventory and download a real PDF offer. These user-authenticated interactions cannot be established by anonymous smoke tests. Do not treat the public database readiness check as ongoing; its temporary endpoint has been removed.
+
+
+## Private-link entry (2026-10-28)
+
+The account holder approved bearer-link access from **any device without Google sign-in**. This mode is **not** the same as opening the ordinary public site URL. The actual private link contains an unguessable credential in the URL fragment (`/access#key=...`), so the credential is not transmitted in GET URLs or referrers. A same-origin POST verifies the link and issues a signed HttpOnly/Secure/SameSite=Lax device cookie. Devices retain this access for at most 365 days, renewable by reopening the link.
+
+- The share credential is generated and stored only in Cloudflare's `SHARED_ACCESS_TOKEN` secret, never in GitHub.
+- `SHARED_ACCESS_OWNER_EMAIL` points only to the pre-existing Google-authorized owner account in Neon. The owner's Drive/Sheets OAuth tokens remain server-side and are not sent to shared browsers.
+- The real owner can copy the complete private link with the **نسخ رابط الدخول الخاص** button on the dashboard or admin settings, authenticated by their Google admin session.
+- Shared access can view live inventory, floorplans and create downloadable PDF offers. Administrative writes still require a real Google owner session. Google OAuth sign-in is restricted to the configured owner account.
+- Revocation: rotating `SHARED_ACCESS_TOKEN` in Cloudflare invalidates the link **and all existing shared device cookies**. Any new value must be at least 40 characters of high-entropy ASCII. The owner can then copy the newly generated link in the dashboard.
+- Build `5c6b1df0-f631-4f4e-8e79-99c529e67737` passed TypeScript, Worker deployment, 12 non-sensitive HTTP checks including anonymous and invalid link denial, and parallel requests. Deployed version `6ad02a42-9161-4f09-a5a6-7fcc57f35fc3`.
+- **Manual acceptance needed:** use the button on an authenticated owner's browser to copy a link, open it on a fresh browser/device and verify cookie redemption, live inventory and quotation PDF. Automated checks intentionally do not ingest the secret or impersonate a real user.
