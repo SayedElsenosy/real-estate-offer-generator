@@ -1,43 +1,44 @@
-# Cairo Plaza — strict SR / SH mapping audit
+# Cairo Plaza — Exact code, floor and architectural PDF trace audit
 
-Date: 2026-10-28. Source: owner-controlled `Price List.xlsx`, **Sheet1** (read-only); original 8-page architectural PDF; mapped candidate geometry in `assets/cairo-plaza/trace-drafts-296.json`.
+**Source files used:** `cairo plaza floors printing copy(3).pdf` (eight original floor drawings), `Price List.xlsx` / Sheet1 (private, read-only). Updated 2026-10-28.
 
-## Definitive code rule
+## Current cumulative source-based draft geometry
 
-A drawing unit and an inventory row match only when **the complete normalized unit code and floor match**. Normalization may ignore casing and Unicode compatibility only. **SR is not SH, on ANY floor.** They are distinct property types. Never rewrite `SR` to `SH` based on same unit number, adjacent walls, similar gross area or a previous guessed alias. No inventory sheet data is modified.
-
-Drawing-only units with no exact live inventory match follow the adopted *Sold Out* display rule and cannot be selected for an offer. This is a display/business classification, **not a claim that a distinct SR unit was sold to someone**. An inventory row not mapped to a precise polygon remains selectable from the ordinary stock list if Available, but cannot use unapproved floor geometry.
-
-## Verified raw inventory and draft geometry
-
-- Original Sheet1: **153** inventory rows (not 153 approved floor polygons).
-- Source-traced draft polygons: **296** across eight plans, all `DRAFT`.
-- Strict code + floor match: **75** inventory rows have corresponding draft outlines.
-- **78** inventory rows have no strict-match draft outline (not to be merged with another type).
-- **14** of those 78 have an *opposite-type same-number* candidate polygon (SR vs SH). This is specifically **NOT** a verified match.
-
-| Floor | Stock rows | Candidate polygons | Strict matching inventory rows | Unmapped inventory rows |
+| Floor | Draft SVG boundaries | Stock rows | Exact code+floor stock matches | Unmatched stock |
 |---|---:|---:|---:|---:|
-| Basement (-1) | 11 | 17 | 4 | 7 |
-| Ground (0) | 57 | 69 | 28 | 29 |
-| First (1) | 38 | 53 | 15 | 23 |
-| Second (2) | 8 | 67 | 8 | 0 |
-| Third (3) | 9 | 25 | 9 | 0 |
-| Fourth (4) | 10 | 14 | 2 | 8 |
-| Fifth (5) | 18 | 14 | 7 | 11 |
-| Sixth (6) | 2 | 37 | 2 | 0 |
-| **Total** | **153** | **296** | **75** | **78** |
+| Basement -1 | 17 | 11 | 4 | 7 |
+| Ground 0 | 89 | 57 | 48 | 9 |
+| First 1 | 65 | 38 | 27 | 11 |
+| Second 2 | 67 | 8 | 8 | 0 |
+| Third 3 | 25 | 9 | 9 | 0 |
+| Fourth 4 | 22 | 10 | 10 | 0 |
+| Fifth 5 | 25 | 18 | 18 | 0 |
+| Sixth 6 | 37 | 2 | 2 | 0 |
+| **Total** | **347** | **153** | **126** | **27** |
 
-**Important:** The inventory contains a confusing cross-floor casefold duplicate: `C/GR/SH/16b` on floor 0 vs `C/GR/sh/16B` on floor 1. Floor context resolves them, and exact inventory IDs must be preserved; never collapse them to one record.
+51 additional code+floor+gross-area-backed source-wall draft shapes were added after the 296 baseline:
+- Fourth and fifth: 19 accurately identified office labels, each source gross-area matched the original inventory.
+- Ground: 16 corner retail units, including distinct SR and SH units with identical numbers where applicable.
+- First: 12 additional source-confirmed shops and retail units, preserving different types.
+- Ground B wing: 4 source-confirmed shops, including a Reserved unit.
 
-### The fourteen SR / SH collision candidates requiring source-specific review
+Source geometry: `assets/cairo-plaza/trace-drafts-347.json` (all floors); `trace-drafts-296.json` (prior baseline). Eight original artwork backgrounds remain in Neon `FloorPlan.backgroundData`. All 347 path proposals are `reviewStatus='DRAFT'`, **not certified geometric floor outlines**. The automated QA checked distinct full identifiers, valid geometry, PDF page bounds, and no polygon overlap greater than one PDF-page square unit per floor. A shape's PDF area is **not** the architectural GSA.
 
-Basement: `A/BA/SH/01`, `03`, `04`, `05`, `06`, `07`, `08` have opposite-type `A/BA/SR/*` polygons, which are **not** their outlines.
+## Strict rules
 
-Ground: `A/GR/SH/18`, `19`, `20`, `21` have `A/GR/SR/*` polygons, **not** their outlines.
+- **SR and SH are separate unit types on every floor**, even with the same suffix and area. No automatic swapping, rewriting or aliasing.
+- Live source-stock matches require the **complete unit code plus the same floor** (case-insensitive only). The original sheet has a cross-floor code ambiguity such as `C/GR/SH/16B`; preserve the authoritative floor field, do not merge.
+- A drawing-only code absent in inventory is colored **Sold Out** and cannot be offered. This is an agreed UI designation, not an independently proven sale.
+- Source drawing red fill is historical; real-time status is read from the original Google Sheet/Excel viewer access.
+- No draft geometry is customer-selectable or included in generated PDF floor map sections. Do not remove the review approval gate.
+- Never write to or alter the original source PDF or stock sheet.
 
-First: `A/FR/SR/06`, `07` have `A/FR/SH/*` polygons; `A/FR/SH/21` has an `A/FR/SR/21` polygon. These are **not** matches.
+## Remaining 27 stock rows
 
-## Geometry and client-offer safeguards
+- Basement: **7** `A/BA/SH/*` rows for which source PDF shows distinct `A/BA/SR/*` polygons: they are **not matches**.
+- Ground: **9** stock rows (B, D, F, H, I wings) still lack unambiguous source PDF walls/labels.
+- First: **11** stock rows still lack full code+floor verified geometry. In particular stock has `A/FR/SR/22a` (67 sqm) and `A/FR/SR/22b` (65 sqm), but the source PDF renders a single unsplit `A/FR/SR/22` (131 sqm); do not assign two independent boundaries without the actual subdivision drawing. Another confusing stock row has `C/GR/SH/16B` on floor 1: do not silently relabel it.
 
-The saved SVG candidates are still subject to human architectural validation. No floor is approved. Client-facing clickable unit boundaries and floorplan PDF attachments must remain disabled for DRAFT geometry. Preserve the source drawing and stock data unchanged. Audit history must not imply any inferred alias was ever approved.
+The review package contains `qa/units_without_verified_outline.csv` with the **exact 27 unresolved stock records**, and `qa/draft_unit_paths.csv` with all candidate mapping and status snapshots.
+
+**Next architectural milestone:** obtain an actual source drawing or independent verified plan showing the 27 precise missing units/splits and have a qualified reviewer approve the final footprint boundaries before publishing selectable SVG units.
