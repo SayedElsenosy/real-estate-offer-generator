@@ -8,7 +8,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { calculateSchedule, type PaymentTerms } from "@/lib/payment";
 
 type Unit = { code: string; price: string; area: string; floor: string; status: string; project: string };
-type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; deliveryMonths?: number|null; deliveryCollectionPct?: string; deliveryCollectionEnabled?: boolean };
+type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; installmentIntervalMonths?: number; deliveryMonths?: number|null; deliveryCollectionPct?: string; deliveryCollectionEnabled?: boolean };
 type Project = { id: string; slug: string; name: string; paymentPlans: Plan[] };
 function isAvailable(status: string): boolean {
   const normalized = String(status).normalize("NFKC").trim().toLowerCase().replace(/\s+/g,"");
@@ -40,6 +40,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
       return {rows:selectedPlans.map(plan=>calculateSchedule(unit.price,{
         name:plan.name,downPaymentPct:plan.downPaymentPct,months:plan.months,
         maintenancePct:plan.maintenancePct,startOffsetMonths:plan.startOffsetMonths,
+        installmentIntervalMonths:plan.installmentIntervalMonths===3?3:1,
         deliveryMonths:plan.deliveryMonths??undefined,
         deliveryCollectionEnabled:plan.deliveryCollectionEnabled,
         deliveryCollectionPct:plan.deliveryCollectionPct,
@@ -49,7 +50,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
       },date)),error:""};
     }catch(err){return {rows:[] as ReturnType<typeof calculateSchedule>[],
       error:err instanceof Error?err.message:"Invalid payment plan"};}
-  },[unit,selectedPlans.map(p=>p.id+":"+p.months+":"+p.deliveryMonths).join("|"),maintenanceDueDate]);
+  },[unit,selectedPlans.map(p=>p.id+":"+p.months+":"+p.deliveryMonths+":"+p.installmentIntervalMonths).join("|"),maintenanceDueDate]);
   const visibleUnits = useMemo(() => units.filter(item =>
     (item.code + " " + item.floor).toLowerCase().includes(search.toLowerCase())).slice(0, 100), [units, search]);
   function selectUnit(code: string, floorCode?: string) {
@@ -130,7 +131,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
           {project?.paymentPlans.map(plan => <label className="planrow" key={plan.id}>
             <input type="checkbox" checked={chosenPlans.includes(plan.id)} disabled={!unit || (chosenPlans.length >= 5 && !chosenPlans.includes(plan.id))}
               onChange={event => toggle(plan.id, event.target.checked)} />
-            <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% {tr("Down payment %")} · {plan.months} {tr("months")} · {tr("Monthly payments")} · {plan.maintenancePct}% {tr("Maintenance %")}{plan.deliveryMonths ? " · "+tr("Delivery after")+" "+plan.deliveryMonths+" "+tr("months") : ""}{plan.deliveryCollectionEnabled ? " · "+plan.deliveryCollectionPct+"% "+tr("Paid by delivery") : ""}</small></span>
+            <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% {tr("Down payment %")} · {plan.months} {tr("months")} · {tr(plan.installmentIntervalMonths===3?"Quarterly installments":"Monthly payments")} · {plan.maintenancePct}% {tr("Maintenance %")}{plan.deliveryMonths ? " · "+tr("Delivery after")+" "+plan.deliveryMonths+" "+tr("months") : ""}{plan.deliveryCollectionEnabled ? " · "+plan.deliveryCollectionPct+"% "+tr("Paid by delivery") : ""}</small></span>
           </label>)}
           {!project?.paymentPlans.length && <div className="notice">{tr("No plans yet. An administrator can add a plan (such as 10% down / 80 months) in Workspace Settings.")}</div>}
           {(selectedPlans.some(p=>Number(p.maintenancePct)>0))&&
