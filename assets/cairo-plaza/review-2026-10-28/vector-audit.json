@@ -1,0 +1,16 @@
+{
+  "new": 14,
+  "previous": 347,
+  "total": 361,
+  "baselineEqualsNeon": true,
+  "newOverlapPairs": [
+    {
+      "floor": "0",
+      "a": "H/GR/SH/21",
+      "b": "H/GR/SH/22",
+      "areaPdfPointsSquared": 0.004041644752391325
+    }
+  ],
+  "baselineOverlapPairs": [],
+  "invalid": []
+}

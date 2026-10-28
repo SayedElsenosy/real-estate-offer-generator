@@ -1,5 +1,7 @@
 # Cairo Plaza — Exact code, floor and architectural PDF trace audit
 
+> **Superseded baseline:** the source-vector audit on 2026-10-28 added 14 exact code/floor/printed-GSA matches. Current state is **361 DRAFT paths, 140/153 inventory matches, 13 unresolved**. See [the full audit](review-2026-10-28/REPORT.md), [visual comparisons](review-2026-10-28/index.html), and [current geometry](trace-drafts-361.json). The historical 347-path audit below is retained as provenance, not the current count. None of the maps is approved.
+
 **Source files used:** `cairo plaza floors printing copy(3).pdf` (eight original floor drawings), `Price List.xlsx` / Sheet1 (private, read-only). Updated 2026-10-28.
 
 ## Current cumulative source-based draft geometry
