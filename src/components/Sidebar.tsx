@@ -12,6 +12,6 @@ export function Sidebar({ email, active, shared = false }: { email?: string | nu
     <button type="button" className="lang-toggle" aria-label={language==="ar"?"Switch to English":"التحويل إلى العربية"} onClick={()=>setLanguage(language==="ar"?"en":"ar")}>
       <span>🌐</span> {language==="ar"?"English":"العربية"}
     </button>
-    <div className="sidebar-bottom">{email ? <><div className="side-cap">{tr("SIGNED IN")}</div><div dir="ltr">{email}</div></> : "Neon PostgreSQL + Vercel"}<p>{tr("Independent property offers platform")}</p></div>
+    <div className="sidebar-bottom">{email ? <><div className="side-cap">{tr("SIGNED IN")}</div><div dir="ltr">{email}</div></> : "Neon PostgreSQL + Cloudflare"}<p>{tr("Independent property offers platform")}</p></div>
   </aside>;
 }
