@@ -30,7 +30,7 @@ const zero=calculateSchedule("1000000",{...terms,downPaymentPct:"0",maintenanceP
 assert.equal(zero.rows.filter(r=>r.type==="INSTALLMENT").length,80);
 assert.equal(zero.preDeliveryTotal,"250000.00");
 assert.equal(zero.postDeliveryTotal,"750000.00");
-assert.throws(()=>calculateSchedule("1000000",{...terms,deliveryMonths:80},date),/Delivery months/);
+assert.throws(()=>calculateSchedule("1000000",{...terms,deliveryMonths:80},date),/Delivery month/);
 assert.throws(()=>calculateSchedule("1000000",{...terms,deliveryCollectionPct:"5"},date),/smaller/);
 assert.throws(()=>calculateSchedule("1000000",{...terms,maintenanceDueDate:null},date),/maintenance/);
 console.log("PASS: monthly pre/post delivery allocation, 80 slots, exact totals, no delivery lump sum, maintenance dates");
