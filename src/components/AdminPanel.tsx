@@ -112,29 +112,29 @@ export default function AdminPanel({ email, projects }: { email: string; project
     }catch(e){setNotice(e instanceof Error?e.message:"SVG save failed")}finally{setBusy(false)}
   }
   return <div className="shell"><Sidebar active="admin" email={email} /><main className="main">
-    <div className="header-line"><div><div className="eyebrow">ADMINISTRATION / WORKSPACE SETTINGS</div><h1>Project configuration</h1><p className="muted">Connect each project's inventory and configure client-facing financial offers.</p></div><Link href="/studio" className="btn soft">Back to Offer Studio</Link></div>
+    <div className="header-line"><div><div className="eyebrow">{tr("ADMINISTRATION / WORKSPACE SETTINGS")}</div><h1>{tr("Project configuration")}</h1><p className="muted">{tr("Connect each project's inventory and configure client-facing financial offers.")}</p></div><Link href="/studio" className="btn soft">{tr("Back to Offer Studio")}</Link></div>
     {notice && <div className={"notice" + (notice.toLowerCase().includes("saved") ? " good" : "")} style={{marginBottom:20}}>{notice}</div>}
-    <div className="panel" style={{marginBottom:20}}><div className="between"><div><div className="eyebrow">ACTIVE PROJECT</div><h2 style={{marginTop:10,marginBottom:0}}>{project?.name || "No project"}</h2></div>
+    <div className="panel" style={{marginBottom:20}}><div className="between"><div><div className="eyebrow">{tr("ACTIVE PROJECT")}</div><h2 style={{marginTop:10,marginBottom:0}}>{project?.name || "No project"}</h2></div>
       <select className="field" style={{maxWidth:300}} value={id} onChange={e=>{setId(e.target.value);setPlan(blankPlan);setFloor(blankFloor);setNotice("");}}>
         {items.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></div></div>
     {project && <div className="grid2"><div className="stack">
-      <section className="panel"><div className="eyebrow">READ-ONLY INVENTORY SOURCE</div><h2 style={{marginTop:12}}>Google Drive / Google Sheets connection</h2>
-        <p className="muted">Cairo Plaza reads the Excel file directly from Google Drive, using Sheet1. Other projects read native Google Sheets. Each account only needs Viewer/Reader access; no file is edited.</p>
+      <section className="panel"><div className="eyebrow">{tr("READ-ONLY INVENTORY SOURCE")}</div><h2 style={{marginTop:12}}>{tr("Google Drive / Google Sheets connection")}</h2>
+        <p className="muted">{tr("Cairo Plaza reads the Excel file directly from Google Drive, using Sheet1. Other projects read native Google Sheets. Each account only needs Viewer/Reader access; no file is edited.")}</p>
         <div className="stack" style={{gap:13}}>
-          <label className="fieldlabel">Google Drive file ID<input className="field" value={project.spreadsheetId || ""} placeholder="1AbCdEf..." onChange={e=>changeProject("spreadsheetId",e.target.value)}/></label>
-          <label className="fieldlabel">Tab / range<input className="field" value={project.sheetRange} onChange={e=>changeProject("sheetRange",e.target.value)}/></label>
-          <label className="fieldlabel">Company name on offers<input className="field" value={project.companyName} onChange={e=>changeProject("companyName",e.target.value)}/></label>
-          <label className="fieldlabel">Company logo URL (HTTPS)<input className="field" value={project.logoUrl||""} onChange={e=>changeProject("logoUrl",e.target.value)}/></label>
-          <button className="btn" onClick={saveProject} disabled={busy}>Save project settings</button>
+          <label className="fieldlabel">{tr("Google Drive file ID")}<input className="field" value={project.spreadsheetId || ""} placeholder="1AbCdEf..." onChange={e=>changeProject("spreadsheetId",e.target.value)}/></label>
+          <label className="fieldlabel">{tr("Tab / range")}<input className="field" value={project.sheetRange} onChange={e=>changeProject("sheetRange",e.target.value)}/></label>
+          <label className="fieldlabel">{tr("Company name on offers")}<input className="field" value={project.companyName} onChange={e=>changeProject("companyName",e.target.value)}/></label>
+          <label className="fieldlabel">{tr("Company logo URL (HTTPS)")}<input className="field" value={project.logoUrl||""} onChange={e=>changeProject("logoUrl",e.target.value)}/></label>
+          <button className="btn" onClick={saveProject} disabled={busy}>{tr("Save project settings")}</button>
         </div>
-        <div className="notice" style={{marginTop:18}}>Cairo Plaza: Excel Sheet1 (column A code, G area, E floor, L status, M total price). The other projects use their verified live sheet layouts.</div>
+        <div className="notice" style={{marginTop:18}}>{tr("Cairo Plaza: Excel Sheet1 (column A code, G area, E floor, L status, M total price). The other projects use their verified live sheet layouts.")}</div>
       </section>
       {id === "cairo-plaza" && <BulkFloorImporter projectId={id} floors={project.floorPlans} />}
       <FloorPlanEditor key={id} projectId={id} floors={project.floorPlans} />
 
     </div><div className="stack">
-      <section className="panel"><div className="eyebrow">FINANCIAL CONFIGURATION</div><h2 style={{marginTop:12}}>Payment plan manager</h2>
-        <p className="muted">Define reusable payment structures, then select multiple scenarios when issuing an offer.</p>
+      <section className="panel"><div className="eyebrow">{tr("FINANCIAL CONFIGURATION")}</div><h2 style={{marginTop:12}}>{tr("Payment plan manager")}</h2>
+        <p className="muted">{tr("Define reusable payment structures, then select multiple scenarios when issuing an offer.")}</p>
         {project.paymentPlans.map(p=><div className="unit" key={p.id}>
           <span><b>{p.name}</b><small>{p.downPaymentPct}% {tr("Down payment %")} · {p.months} {tr("Installment months")}{p.deliveryDate ? " · " + tr("Delivery date") + ": " + p.deliveryDate : ""}</small></span>
           <div className="actionline">
@@ -147,12 +147,12 @@ export default function AdminPanel({ email, projects }: { email: string; project
         </div>)}
         <div className="separator"/>
         <div className="stack" style={{gap:13}}>
-          <label className="fieldlabel">Plan name<input className="field" placeholder="10% down / 80 months" value={plan.name} onChange={e=>setPlan({...plan,name:e.target.value})}/></label>
+          <label className="fieldlabel">{tr("Plan name")}<input className="field" placeholder={tr("Plan name")} value={plan.name} onChange={e=>setPlan({...plan,name:e.target.value})}/></label>
           <div className="twofields">
-            <label className="fieldlabel">Down payment %<input className="field" type="number" min="0" max="100" step="0.01" value={plan.downPaymentPct} onChange={e=>setPlan({...plan,downPaymentPct:e.target.value})}/></label>
-            <label className="fieldlabel">Installment months<input className="field" type="number" min="1" max="360" value={plan.months} onChange={e=>setPlan({...plan,months:e.target.value})}/></label>
-            <label className="fieldlabel">Maintenance %<input className="field" type="number" min="0" max="100" step="0.01" value={plan.maintenancePct} onChange={e=>setPlan({...plan,maintenancePct:e.target.value})}/></label>
-            <label className="fieldlabel">First installment offset<input className="field" type="number" min="0" max="120" value={plan.startOffsetMonths} onChange={e=>setPlan({...plan,startOffsetMonths:e.target.value})}/></label>
+            <label className="fieldlabel">{tr("Down payment %")}<input className="field" type="number" min="0" max="100" step="0.01" value={plan.downPaymentPct} onChange={e=>setPlan({...plan,downPaymentPct:e.target.value})}/></label>
+            <label className="fieldlabel">{tr("Installment months")}<input className="field" type="number" min="1" max="360" value={plan.months} onChange={e=>setPlan({...plan,months:e.target.value})}/></label>
+            <label className="fieldlabel">{tr("Maintenance %")}<input className="field" type="number" min="0" max="100" step="0.01" value={plan.maintenancePct} onChange={e=>setPlan({...plan,maintenancePct:e.target.value})}/></label>
+            <label className="fieldlabel">{tr("First installment offset")}<input className="field" type="number" min="0" max="120" value={plan.startOffsetMonths} onChange={e=>setPlan({...plan,startOffsetMonths:e.target.value})}/></label>
           </div>
           <label className="fieldlabel">{tr("Delivery date")}<input className="field" type="date" value={plan.deliveryDate}
             onChange={e=>setPlan({...plan,deliveryDate:e.target.value})} /></label>
@@ -166,15 +166,15 @@ export default function AdminPanel({ email, projects }: { email: string; project
               onChange={e=>setPlan({...plan,deliveryCollectionPct:e.target.value})}/>
           </label>}
           <p className="muted">{tr("Delivery collection is optional. When enabled, it is deducted from the installment balance.")}</p>
-          <div className="actionline"><button className="btn" disabled={busy||!plan.name} onClick={savePlan}>{plan.id?"Update payment plan":"Add payment plan"}</button><button className="btn soft" onClick={()=>setPlan(blankPlan)}>New plan</button></div>
+          <div className="actionline"><button className="btn" disabled={busy||!plan.name} onClick={savePlan}>{plan.id?"Update payment plan":"Add payment plan"}</button><button className="btn soft" onClick={()=>setPlan(blankPlan)}>{tr("New plan")}</button></div>
         </div>
       </section>
-      <section className="panel"><div className="eyebrow">SECURITY RULES</div><h2 style={{marginTop:12}}>Authorized-only processing</h2>
-        <div className="pitem"><span>Google OAuth</span><b>Read-only Sheets</b></div>
-        <div className="pitem"><span>Administrative changes</span><b>Allowlisted admins</b></div>
-        <div className="pitem"><span>Unit prices</span><b>Verified live</b></div>
+      <section className="panel"><div className="eyebrow">{tr("SECURITY RULES")}</div><h2 style={{marginTop:12}}>{tr("Authorized-only processing")}</h2>
+        <div className="pitem"><span>Google OAuth</span><b>{tr("Read-only Sheets")}</b></div>
+        <div className="pitem"><span>{tr("Administrative changes")}</span><b>{tr("Allowlisted admins")}</b></div>
+        <div className="pitem"><span>{tr("Unit prices")}</span><b>{tr("Verified live")}</b></div>
         <div className="pitem"><span>{tr("Issued offers")}</span><b>{tr("Not saved")}</b></div>
-        <p className="muted">Logos are embedded in PDFs only when their domain is explicitly listed in ALLOWED_LOGO_HOSTS.</p>
+        <p className="muted">{tr("Logos are embedded in PDFs only when their domain is explicitly listed in ALLOWED_LOGO_HOSTS.")}</p>
       </section>
     </div></div>}
   </main></div>;
