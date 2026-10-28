@@ -3,13 +3,13 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
 import { unitKey } from "@/lib/unit-code";
+import { useLanguage } from "@/components/LanguageProvider";
 
 type Unit = { code: string; price: string; area: string; floor: string; status: string; project: string };
-type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number };
+type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; deliveryDate?: string | null; deliveryCollectionPct?: string; deliveryCollectionEnabled?: boolean };
 type Project = { id: string; slug: string; name: string; paymentPlans: Plan[] };
 type Shape = { unitCode: string; d: string };
 type Floor = { id: string; name: string; floor: string | null; viewBox: string; shapes: Shape[]; markers?: {code:string;x:number;y:number}[]; backgroundData?: string | null; reviewStatus?: string };
-type History = { id: string; unitCode: string; issuedAt: string; status: string; project: { name: string } };
 function isAvailable(status: string): boolean {
   const normalized = String(status).normalize("NFKC").trim().toLowerCase().replace(/\s+/g,"");
   return ["available","avail","forsale","متاح","متاحة","متوفر","متوفرة"].includes(normalized);
@@ -19,6 +19,7 @@ function nicePrice(value: string) {
   return Number.isFinite(x) && x > 0 ? x.toLocaleString("en-EG") + " EGP" : value || "—";
 }
 export default function Studio({ projects, email }: { projects: Project[]; email: string }) {
+  const { tr } = useLanguage();
   const [projectId, setProjectId] = useState(projects[0]?.id || "");
   const [units, setUnits] = useState<Unit[]>([]);
   const [floors, setFloors] = useState<Floor[]>([]);
@@ -29,9 +30,8 @@ export default function Studio({ projects, email }: { projects: Project[]; email
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
-  const [history, setHistory] = useState<History[]>([]);
   const project = projects.find(p => p.id === projectId);
-  const unit = units.find(value => value.code === selected);
+  const unit = units.find(value => value.code === selected && value.floor === floorNumber);
   const floor = floors.find(f => f.floor === (unit?.floor ?? floorNumber)) || floors[0];
   const vb = floor?.viewBox?.trim().split(/\s+/).map(Number) || [0,0,1000,700];
   const visibleUnits = useMemo(() => units.filter(item =>
@@ -49,10 +49,6 @@ export default function Studio({ projects, email }: { projects: Project[]; email
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [projectId]);
-  useEffect(() => {
-    fetch("/api/offers", { cache: "no-store" }).then(r => r.ok ? r.json() : null)
-      .then(result => { if (result?.offers) setHistory(result.offers); }).catch(() => {});
-  }, []);
   function selectUnit(code: string, floorCode?: string) {
     const candidates = units.filter(u => unitKey(u.code) === unitKey(code) && (floorCode === undefined || u.floor === floorCode));
     const exact = candidates.find(u => u.code === code);
@@ -78,8 +74,6 @@ export default function Studio({ projects, email }: { projects: Project[]; email
       element.download = "Property-Offer-" + unit.code.replace(/[^a-z0-9_-]/gi, "_") + ".pdf";
       element.click();
       setTimeout(() => URL.revokeObjectURL(objectURL), 3000);
-      const r = await fetch("/api/offers", { cache: "no-store" });
-      if (r.ok) setHistory((await r.json()).offers || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not generate proposal");
     } finally { setGenerating(false); }
@@ -102,7 +96,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
       <div className="stack">
         <section className="panel"><div className="panelhead"><div><div className="eyebrow">CURRENT INVENTORY</div><h2 style={{marginTop:10}}>Find your property</h2></div><span className="pill">{units.length} total</span></div>
           <input className="field" placeholder="Search Unit Code or floor..." value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:15}} />
-          <div className="list">{visibleUnits.map(value => <button type="button" key={value.code} className={"unit" + (value.code === selected ? " active" : "")}
+          <div className="list">{visibleUnits.map(value => <button type="button" key={value.code+"::"+value.floor} className={"unit" + (value.code === selected ? " active" : "")}
             disabled={!isAvailable(value.status)} onClick={() => selectUnit(value.code, value.floor)}>
             <span><b>{value.code}</b><small>Floor {value.floor || "—"} · {value.area || "—"} sqm</small></span>
             <span style={{textAlign:"right"}}><b>{nicePrice(value.price)}</b><small>{value.status}</small></span>
@@ -170,7 +164,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
           {project?.paymentPlans.map(plan => <label className="planrow" key={plan.id}>
             <input type="checkbox" checked={chosenPlans.includes(plan.id)} disabled={!unit || (chosenPlans.length >= 5 && !chosenPlans.includes(plan.id))}
               onChange={event => toggle(plan.id, event.target.checked)} />
-            <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% down · {plan.months} months · {plan.maintenancePct}% maintenance</small></span>
+            <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% {tr("Down payment %")} · {plan.months} {tr("Installment months")} · {plan.maintenancePct}% {tr("Maintenance %")}{plan.deliveryDate ? " · " + tr("Delivery date") + ": " + plan.deliveryDate : ""}{plan.deliveryCollectionEnabled ? " · " + plan.deliveryCollectionPct + "% " + tr("Collection at delivery %") : ""}</small></span>
           </label>)}
           {!project?.paymentPlans.length && <div className="notice">No plans yet. An administrator can add a plan (such as 10% down / 80 months) in Workspace Settings.</div>}
           <button className="btn gold" style={{width:"100%",marginTop:18}} disabled={!unit || chosenPlans.length===0 || generating} onClick={issueOffer}>
@@ -178,10 +172,10 @@ export default function Studio({ projects, email }: { projects: Project[]; email
           </button>
           <p className="muted" style={{fontSize:11}}>The server checks live price and availability again before producing the PDF.</p>
         </section>
-        <section className="panel"><div className="panelhead"><div><div className="eyebrow">YOUR RECENT ACTIVITY</div><h2 style={{marginTop:10}}>Issued offers</h2></div></div>
-          {history.length ? history.slice(0,6).map(item => <div className="pitem" key={item.id}><span><b>{item.unitCode}</b><small style={{display:"block",marginTop:5,color:"#8492a2"}}>{item.project.name}</small></span><span className="muted">{new Date(item.issuedAt).toLocaleDateString("en-GB")}</span></div>)
-            : <p className="muted">The first issued offers will appear here after successful PDF generation.</p>}
-          <div className="separator"/><Link href="/admin" style={{fontSize:12,color:"#aa8450"}}>Configure Sheets, plans and floor layouts</Link>
+        <section className="panel">
+          <div className="eyebrow">{tr("PROPOSAL DELIVERY")}</div>
+          <p className="muted">{tr("We request read-only access to Sheets and Drive (for Cairo Plaza's original Excel file). No public sharing or publish-to-web is necessary. Every issued proposal preserves a snapshot of its terms.")}</p>
+          <Link href="/admin" style={{fontSize:12,color:"#aa8450"}}>{tr("Configure Sheets, plans and floor layouts")}</Link>
         </section>
       </div>
     </div>
