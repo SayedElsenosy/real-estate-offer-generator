@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-28",
+  "projectId": "cairo-plaza",
+  "inventorySource": "Sheet1 (read only)",
+  "status": "DRAFT",
+  "source": "cairo plaza floors printing copy(3).pdf",
+  "pageIndexScheme": "floor integer + 2 = one-based PDF page",
+  "base": "361 prior DRAFT source candidates",
+  "result": "362 DRAFT; 141/153 stock rows matched by full code+floor, 12 unresolved",
+  "validation": "source vector paths compared with original PDF, source-stroke alignment, overlap tolerance 0.1 PDF pt²; NOT certified geometric outlines",
+  "corrections": [
+    {
+      "floor": "1",
+      "unitCode": "A/FR/SH/11",
+      "drawingIndex": 202466,
+      "d": "M 1090.978027 1367.077393 L 1090.891968 1307.510376 L 1135.833008 1307.445435 L 1135.920044 1367.012451 Z",
+      "action": "REPLACE_BAD_DRAFT_WITH_SOURCE_VECTOR"
+    },
+    {
+      "floor": "1",
+      "unitCode": "A/FR/SH/12",
+      "drawingIndex": 202465,
+      "d": "M 1047.101562 1367.141113 L 1047.014526 1307.574097 L 1090.891602 1307.510132 L 1090.977539 1367.077148 Z",
+      "action": "REPLACE_BAD_DRAFT_WITH_SOURCE_VECTOR"
+    },
+    {
+      "floor": "1",
+      "unitCode": "A/FR/SH/13",
+      "drawingIndex": 202464,
+      "d": "M 1003.097595 1307.637695 L 1003.183594 1367.204712 L 1047.101562 1367.140747 L 1047.014648 1307.573730 Z",
+      "action": "REPLACE_BAD_DRAFT_WITH_SOURCE_VECTOR"
+    },
+    {
+      "floor": "1",
+      "unitCode": "A/FR/SH/14",
+      "drawingIndex": 202479,
+      "d": "M 1003.097595 1307.637695 L 1003.183594 1367.204712 L 959.307617 1367.268677 L 959.220581 1307.701660 Z",
+      "action": "REPLACE_BAD_DRAFT_WITH_SOURCE_VECTOR"
+    },
+    {
+      "floor": "1",
+      "unitCode": "A/FR/SH/15",
+      "drawingIndex": 202463,
+      "d": "M 901.743225 1307.784668 L 901.829224 1367.351685 L 959.307251 1367.268677 L 959.221252 1307.701660 Z",
+      "action": "REPLACE_BAD_DRAFT_WITH_SOURCE_VECTOR"
+    },
+    {
+      "floor": "1",
+      "unitCode": "A/FR/SH/16",
+      "drawingIndex": 202462,
+      "d": "M 901.829712 1367.351929 L 901.743713 1307.784912 L 835.866699 1307.879883 L 835.953735 1367.447876 Z",
+      "action": "REPLACE_BAD_DRAFT_WITH_SOURCE_VECTOR"
+    },
+    {
+      "floor": "0",
+      "unitCode": "A/GR/SH/19",
+      "drawingIndex": 164885,
+      "d": "M 545.444214 1224.726196 L 521.828186 1191.357178 L 589.190186 1143.862183 L 612.725220 1177.110229 Z",
+      "action": "REPLACE_BAD_DRAFT_WITH_SOURCE_VECTOR"
+    },
+    {
+      "floor": "0",
+      "unitCode": "F/GR/SH/24",
+      "drawingIndex": 163571,
+      "d": "M 1087.894775 366.408081 L 1087.819824 304.353088 L 1132.923828 304.298096 L 1132.948730 324.657074 L 1156.110840 324.629089 L 1157.643799 324.627075 L 1157.646729 327.551086 L 1161.065796 327.537079 L 1161.073730 334.808075 L 1160.095825 334.809082 L 1160.134766 366.320068 Z",
+      "sourceEndpointGapPdfPt": 0.6760261407519443,
+      "action": "ADD_DRAFT_WITH_RECORDED_NEAR_CLOSED_GAP"
+    }
+  ]
+}
