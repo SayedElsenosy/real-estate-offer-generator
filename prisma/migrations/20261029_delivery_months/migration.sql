@@ -10,5 +10,7 @@ SET "deliveryMonths" = LEAST(months - 1, GREATEST(2,
 ))
 WHERE "deliveryMonths" IS NULL
   AND "deliveryCollectionEnabled" = TRUE
-  AND "deliveryDate" ~ '^\\d{4}-\\d{2}-\\d{2}$'
+  AND  "deliveryDate" ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}
+  AND months > 2;
+
   AND months > 2;
