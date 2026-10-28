@@ -67,7 +67,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
     try {
       const response = await fetch("/api/offers", { method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId, unitCode: unit.code, planIds: chosenPlans }) });
+        body: JSON.stringify({ projectId, unitCode: unit.code, unitFloor: unit.floor, planIds: chosenPlans }) });
       if (!response.ok) {
         const message = await response.json();
         throw new Error(message.error || "PDF generation failed");
