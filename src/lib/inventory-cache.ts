@@ -42,7 +42,4 @@ export async function getRecentInventory(
   entries.set(key, { units, lastReadAt, expiresAt: lastReadAt + REVALIDATE_MS,revision });
   while (entries.size > MAX_ENTRIES) entries.delete(entries.keys().next().value!);
   return { units, lastReadAt, source: "live" };
-});
-  while (entries.size > MAX_ENTRIES) entries.delete(entries.keys().next().value!);
-  return { units, lastReadAt, source: "live" };
 }
