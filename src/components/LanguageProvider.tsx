@@ -4,6 +4,12 @@ import { createContext, useContext, useEffect, useState } from "react";
 type Language = "ar" | "en";
 const translationMap: Record<string, string> = {
   "Monthly payments": "أقساط شهرية",
+  "Quarterly installments": "أقساط ربع سنوية",
+  "Installment frequency": "دورية الأقساط",
+  "Monthly — every month": "شهري — كل شهر",
+  "Quarterly — every 3 months": "ربع سنوي — كل 3 شهور",
+  "The down payment is the first payment within the term. Later installments follow the selected frequency. The schedule and PDF use the same cadence.": "المقدم أول دفعة ضمن المدة الإجمالية، والأقساط التالية حسب الدورية المختارة؛ ويظهر نفس الجدول في المعاينة وملف PDF.",
+  "The pre-delivery percentage is distributed across the installments before delivery, with no separate payment at delivery. The remainder is distributed after delivery.": "تتوزع النسبة المطلوبة قبل الاستلام على الأقساط المستحقة قبله، بدون دفعة مستقلة عند الاستلام، ويتوزع المتبقي على الأقساط بعده.",
   "Delivery after": "الاستلام بعد",
   "Paid by delivery": "نسبة المسدد حتى الاستلام",
   "Split installments before and after delivery": "تقسيم الأقساط قبل وبعد الاستلام",
