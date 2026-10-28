@@ -4,6 +4,7 @@
 const origin = "https://real-estate-offer-generator.sayedelsenosy65.workers.dev";
 const probes = [
   {path:"/api/migration-health", name:"worker health", expected:200, match:body=>body.cloudflareMigration===true},
+  {path:"/api/migration-health?db=1", name:"Neon Prisma Auth.js and project model queries", expected:200, match:body=>body.database==="reachable"},
   {path:"/api/auth/providers", name:"Google auth provider registered", expected:200, match:body=>Boolean(body.google?.signinUrl)},
   {path:"/api/auth/session", name:"unauthenticated auth session", expected:200},
   {path:"/", name:"home page", expected:200},
