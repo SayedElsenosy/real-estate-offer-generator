@@ -4,6 +4,10 @@ import { createContext, useContext, useEffect, useState } from "react";
 type Language = "ar" | "en";
 const translationMap: Record<string, string> = {
   "Overview": "الرئيسية",
+  "Auto-refresh every 3 seconds while this tab is open": "تحديث تلقائي كل 3 ثوانٍ أثناء فتح التبويب",
+  "Checking for changes…": "جارٍ التحقق من التغييرات…",
+  "Inventory synchronized": "المخزون متزامن",
+  "Refresh now": "تحديث الآن",
   "Offer Studio": "إنشاء عروض الأسعار",
   "Workspace Settings": "إعدادات النظام",
   "REAL ESTATE PROPOSALS": "عروض عقارية احترافية",
