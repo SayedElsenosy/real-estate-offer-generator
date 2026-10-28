@@ -26,8 +26,11 @@ function header(page:PDFPage,company:string,title:string,sub:string,bold:PDFFont
   page.drawText(shorten(company.toUpperCase(),48), {x:LEFT,y:H-43,size:11,font:bold,color:gold});
   page.drawText(shorten(title,30),{x:LEFT,y:H-83,size:25,font:bold,color:white});
   page.drawText(shorten(sub,68),{x:LEFT,y:H-104,size:9,font:regular,color:rgb(0.85,0.89,0.94)});
-  if(logo){const r=Math.min(105/logo.width,73/logo.height);
-    page.drawImage(logo,{x:RIGHT-logo.width*r,y:H-93,width:logo.width*r,height:logo.height*r});}
+  if(logo){
+    page.drawRectangle({x:RIGHT-112,y:H-105,width:119,height:92,color:white});
+    const r=Math.min(101/logo.width,70/logo.height);
+    page.drawImage(logo,{x:RIGHT-4-logo.width*r,y:H-94,width:logo.width*r,height:logo.height*r});
+  }
   page.drawText(shorten(company,72),{x:LEFT,y:36,size:8,font:regular,color:gray});
   page.drawText("Live inventory quotation  |  Subject to availability and contract",{
     x:LEFT,y:22,size:7.6,font:regular,color:gray
