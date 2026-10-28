@@ -1,0 +1,16 @@
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+const read=(name)=>readFileSync("src/"+name,"utf8");
+const admin=read("components/AdminPanel.tsx");
+const page=read("app/admin/page.tsx");
+const lang=read("components/LanguageProvider.tsx");
+const share=read("components/ShareLinkButton.tsx");
+assert.match(admin,/items\.find\(p=>p\.id==="cairo-plaza"\)\?\.id\s*\|\|\s*items\[0\]/);
+assert.match(admin,/<details className="panel"/);
+assert.match(admin,/<ShareLinkButton\s*\/>/);
+assert.doesNotMatch(page,/ShareLinkButton|padding:"18px 28px"/);
+assert.match(page,/return <AdminPanel/);
+assert.match(lang,/useState<Language>\("en"\)/);
+assert.doesNotMatch(lang,/localStorage\.getItem\("offer_atelier_language_v2"\)/);
+assert.match(share,/useLanguage\(\)/);
+console.log("PASS: Cairo Plaza default in Admin, private link within layout, English initial locale, bilingual sharing.");
