@@ -56,3 +56,38 @@ The available GitHub connector only exposes pull-request-triggered workflow runs
 ## Existing Cloudflare inventory
 
 `cairo-plaza-web` is an existing, unrelated D1-backed Worker; its credentials and D1 database must not be reused or overwritten. Likewise, preserve `bunyra-new` untouched.
+
+
+## Actual Cloudflare deployment (2026-10-28)
+
+**Staging Worker deployed and post-deploy HTTP smoke test passed.**
+
+- Cloudflare account: `d2984372ee07c2652fce20b126c98f2e`
+- Worker: `real-estate-offer-generator`
+- Live staging URL: https://real-estate-offer-generator.sayedelsenosy65.workers.dev
+- Non-sensitive smoke endpoint: `/api/migration-health`
+- Final verified build UUID: `8fc597c1-93c3-4625-a470-9375b97bf7e1`; status `success`
+- Deployed Worker version: `cc98f274-3203-4b8b-92dc-fb8de68fd77c`
+- GitHub migration branch: `cloudflare-workers-migration` (draft PR #1)
+- Cloudflare Builds connected to this GitHub branch; production `main` was not switched.
+- Cloudflare `AUTH_SECRET` was generated cryptographically on the Cloudflare side and stored as a secret; its value was not printed.
+- `AUTH_TRUST_HOST` and `NEXTAUTH_URL` are configured for the new Worker address in `wrangler.jsonc`.
+
+### Remaining production-blocking secrets
+
+The connected Vercel API **masks the values** of its sensitive variables, including when decrypt is requested. Therefore their values were **not** copied to Cloudflare. Neon can return a connection string through its connected API, but cross-connector secret transfer was denied by the environment's security controls; do not attempt to bypass this safeguard.
+
+The operator must use the Cloudflare dashboard **Workers & Pages > real-estate-offer-generator > Settings > Variables and Secrets** to enter the following values, each as **Secret**:
+
+- `DATABASE_URL`: connection string from the existing **Real Estate Offer Generator** Neon project (`twilight-meadow-13667195`), not BUNYRA's database.
+- `GOOGLE_CLIENT_ID`: existing Google OAuth client ID.
+- `GOOGLE_CLIENT_SECRET`: corresponding Google OAuth client secret.
+- `ADMIN_EMAILS`: original administrative email list; preserve all original admins.
+
+`AUTH_SECRET` is already configured; do not overwrite it unless rotating intentionally.
+
+Add **exactly** this authorized Google OAuth redirect URI to the corresponding Google Cloud OAuth client:
+
+`https://real-estate-offer-generator.sayedelsenosy65.workers.dev/api/auth/callback/google`
+
+Then test sign-in, refresh-token acquisition, Sheets/Drive reads, Neon database reads, Cairo Plaza CAD map, and PDF offer generation under authenticated accounts. Do not delete or disconnect Vercel until all end-to-end checks pass.
