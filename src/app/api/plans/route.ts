@@ -12,11 +12,27 @@ const inputSchema = z.object({
   months: z.coerce.number().int().min(1).max(360),
   maintenancePct: z.coerce.number().min(0).max(100),
   startOffsetMonths: z.coerce.number().int().min(0).max(120),
+  installmentIntervalMonths: z.coerce.number().int().refine(value => value === 1 || value === 3, "Choose monthly or quarterly installments.").default(1),
   deliveryMonths: z.coerce.number().int().min(0).max(360).default(0),
   deliveryCollectionEnabled: z.boolean().default(false),
   deliveryCollectionPct: z.coerce.number().min(0).max(100).default(0)
 }).superRefine((input, context) => {
   const target = input.deliveryCollectionEnabled ? input.deliveryCollectionPct : 0;
+  // Validate that the selected frequency provides enough due dates for every
+  // nonzero allocation before persisting a plan that cannot produce an offer.
+  const interval = input.installmentIntervalMonths;
+  const first = Math.max(interval, input.startOffsetMonths || interval);
+  const final = input.months - (input.downPaymentPct > 0 ? 1 : 0);
+  const dates:number[] = [];
+  for (let month=first;month<=final;month+=interval) dates.push(month);
+  const beforeCount=dates.filter(month=>month<input.deliveryMonths).length;
+  const afterCount=dates.filter(month=>month>=input.deliveryMonths).length;
+  if (input.downPaymentPct<100 && dates.length===0)
+    context.addIssue({code:"custom",message:"The chosen term is too short for this installment frequency.",path:["months"]});
+  if (input.deliveryCollectionEnabled && target>input.downPaymentPct && beforeCount===0)
+    context.addIssue({code:"custom",message:"No installment date exists before delivery with this frequency. Increase delivery months or choose monthly payments.",path:["deliveryMonths"]});
+  if (input.deliveryCollectionEnabled && target<100 && afterCount===0)
+    context.addIssue({code:"custom",message:"No installment date exists after delivery with this frequency. Increase the plan duration or move delivery earlier.",path:["months"]});
   if (input.deliveryMonths>0 && input.deliveryMonths>=input.months)
     context.addIssue({code:"custom",message:"Delivery month must be less than the payment term.",path:["deliveryMonths"]});
   if (input.deliveryCollectionEnabled && input.deliveryMonths<2)
@@ -38,7 +54,7 @@ export async function POST(req: NextRequest) {
     const data = { projectId: payload.projectId, name: payload.name,
       downPaymentPct: payload.downPaymentPct.toString(), months: payload.months,
       maintenancePct: payload.maintenancePct.toString(), startOffsetMonths: payload.startOffsetMonths,
-      installmentIntervalMonths: 1,
+      installmentIntervalMonths: payload.installmentIntervalMonths,
       deliveryDate: null,
       deliveryMonths: payload.deliveryMonths > 0 ? payload.deliveryMonths : null,
       deliveryCollectionEnabled: payload.deliveryCollectionEnabled,
