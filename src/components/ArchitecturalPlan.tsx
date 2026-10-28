@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { CadDxfPreview } from "@/components/CadDxfPreview";
 import { unitKey } from "@/lib/unit-code";
+import cairoCad from "@/data/cairo-plaza-labels.json";
 
 type Project = { id: string; name: string };
 type Unit = { code: string; floor: string; status: string; area: string; price: string };
@@ -98,8 +99,27 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
       <p className="muted" style={{marginTop:12}}>{project?.name||"No project selected"} · {loading?"Loading inventory...":error?"Inventory unavailable":(result?.units?.length||0)+" inventory units"}</p>
       {error&&<div className="notice" role="alert">تعذر قراءة المخزون: {error}. مش هنعتبر أي وحدة Sold Out قبل التأكد من حالة الشيت.</div>}
     </div>
-    {projectId==="cairo-plaza" && result && !error &&
-      <CadDxfPreview floor={floorNumber} inventory={result.units||[]} selected={selected} onSelect={setSelected}/>}
+    {projectId==="cairo-plaza" && result && !error && <>
+      <section className="panel" style={{marginBottom:18}}>
+        <h2>المرجع الهندسي لـ Cairo Plaza — الدور {floorNumber}</h2>
+        <p className="muted">بيانات مواضع أكواد الوحدات مستخرجة من المخطط الهندسي DXF المعتمد كمصدر. المعاينة دي مش حدود وحدات معتمدة؛ لازم مراجعة حدود كل وحدة هندسيًا قبل اعتماد مضلعها.</p>
+        <div style={{overflow:"auto",background:"#fff",border:"1px solid #dbe3eb",borderRadius:12}}>
+          <svg viewBox="0 0 214 155" aria-label="CAD-derived unit code positions" style={{display:"block",width:"100%",minWidth:580,background:"#fff"}}>
+            {(cairoCad.labelsByFloor[floorNumber as keyof typeof cairoCad.labelsByFloor]||[]).map((anchor,i)=>{
+              const unit=matches.get(unitKey(anchor.code));
+              const state=unit?statusOf(unit.status):"soldout";
+              return <g key={anchor.code+"-"+i} transform={`translate(${anchor.x} ${anchor.y})`}
+                onClick={()=>setSelected(anchor.code)} style={{cursor:"pointer"}}>
+                <circle r={1.7} fill={palette[state]} stroke="#172943" strokeWidth={0.24}/>
+                <title>{anchor.code} — {unit?.status||"Not in live inventory"}</title>
+              </g>;
+            })}
+          </svg>
+        </div>
+        <div style={{fontSize:12,color:"#64748b",marginTop:10}}>الأخضر متاح، الأصفر محجوز، الأحمر غير موجود في بيانات المخزون. العلامات مرجعية فقط وليست مساحات الوحدات.</div>
+      </section>
+      <CadDxfPreview floor={floorNumber} inventory={result.units||[]} selected={selected} onSelect={setSelected}/>
+    </>}
     {projectId==="cairo-plaza" && !error && !result && <div className="panel">جاري تحميل بيانات مخزون كايرو بلازا لعرض ألوان الوحدات.</div>}
     {floor && result && !error ? <section className="panel" style={{marginTop:20}}>
       <h2>حدود الوحدات المعتمدة — {floor.name}</h2>
