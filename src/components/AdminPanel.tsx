@@ -4,15 +4,16 @@ import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
 import { FloorPlanEditor } from "@/components/FloorPlanEditor";
 import { BulkFloorImporter } from "@/components/BulkFloorImporter";
+import { useLanguage } from "@/components/LanguageProvider";
 
-type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number };
+type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; deliveryDate: string | null; deliveryCollectionEnabled: boolean; deliveryCollectionPct: string };
 type Shape = { unitCode: string; d: string };
 type Floor = { id: string; name: string; floor: string | null; viewBox: string; shapes: Shape[] };
 type Project = {
   id: string; name: string; spreadsheetId: string | null; sheetRange: string;
   companyName: string; logoUrl: string | null; paymentPlans: Plan[]; floorPlans: Floor[];
 };
-const blankPlan = { id: "", name: "", downPaymentPct: "10", maintenancePct: "8", months: "80", startOffsetMonths: "1" };
+const blankPlan = { id: "", name: "", downPaymentPct: "10", maintenancePct: "8", months: "80", startOffsetMonths: "1", deliveryDate: "", deliveryCollectionEnabled: false, deliveryCollectionPct: "0" };
 const blankFloor = { id: "", name: "", floor: "", viewBox: "0 0 1000 700", shapes: [] as Shape[] };
 function extractPaths(source: string): { viewBox: string; shapes: Shape[] } {
   const document = new DOMParser().parseFromString(source, "image/svg+xml");
@@ -38,6 +39,7 @@ function extractPaths(source: string): { viewBox: string; shapes: Shape[] } {
   return { viewBox, shapes: paths };
 }
 export default function AdminPanel({ email, projects }: { email: string; projects: Project[] }) {
+  const { tr } = useLanguage();
   const [items, setItems] = useState(projects);
   const [id, setId] = useState(items[0]?.id || "");
   const [plan, setPlan] = useState(blankPlan);
@@ -68,9 +70,29 @@ export default function AdminPanel({ email, projects }: { email: string; project
         body:JSON.stringify({ ...plan, id:plan.id || undefined, projectId:id })});
       const result = await r.json();
       if (!r.ok) throw Error(result.error);
-      setNotice("Payment plan saved. Reload this page to view the refreshed list.");
+      const saved = result.plan as Plan;
+      setItems(old => old.map(p => p.id === id ? {
+        ...p, paymentPlans: plan.id ? p.paymentPlans.map(x => x.id === saved.id ? saved : x) : [...p.paymentPlans, saved]
+      } : p));
+      setNotice(tr("Payment plan saved."));
       setPlan(blankPlan);
     } catch(e){setNotice(e instanceof Error?e.message:"Save failed")}finally{setBusy(false)}
+  }
+  async function deletePlan(planId: string) {
+    if (!window.confirm(tr("Confirm deletion of this payment plan? This cannot be undone."))) return;
+    setBusy(true); setNotice("");
+    try {
+      const response = await fetch("/api/plans", {
+        method: "DELETE", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId:id, id:planId })
+      });
+      const result = await response.json();
+      if (!response.ok) throw Error(result.error || tr("Could not delete plan"));
+      setItems(old => old.map(p => p.id === id ? { ...p, paymentPlans:p.paymentPlans.filter(x => x.id !== planId) } : p));
+      if (plan.id === planId) setPlan(blankPlan);
+      setNotice(tr("Payment plan deleted."));
+    } catch (error) { setNotice(error instanceof Error ? error.message : tr("Could not delete plan")); }
+    finally { setBusy(false); }
   }
   async function readSvg(file: File) {
     try {
@@ -113,9 +135,16 @@ export default function AdminPanel({ email, projects }: { email: string; project
     </div><div className="stack">
       <section className="panel"><div className="eyebrow">FINANCIAL CONFIGURATION</div><h2 style={{marginTop:12}}>Payment plan manager</h2>
         <p className="muted">Define reusable payment structures, then select multiple scenarios when issuing an offer.</p>
-        {project.paymentPlans.map(p=><button type="button" className="unit" key={p.id} onClick={()=>setPlan({id:p.id,name:p.name,downPaymentPct:p.downPaymentPct,months:String(p.months),maintenancePct:p.maintenancePct,startOffsetMonths:String(p.startOffsetMonths)})}>
-          <span><b>{p.name}</b><small>{p.downPaymentPct}% down · {p.months} installments</small></span><span className="muted">Edit</span>
-        </button>)}
+        {project.paymentPlans.map(p=><div className="unit" key={p.id}>
+          <span><b>{p.name}</b><small>{p.downPaymentPct}% {tr("Down payment %")} · {p.months} {tr("Installment months")}{p.deliveryDate ? " · " + tr("Delivery date") + ": " + p.deliveryDate : ""}</small></span>
+          <div className="actionline">
+            <button className="btn soft" type="button" disabled={busy}
+              onClick={()=>setPlan({id:p.id,name:p.name,downPaymentPct:p.downPaymentPct,months:String(p.months),maintenancePct:p.maintenancePct,startOffsetMonths:String(p.startOffsetMonths),deliveryDate:p.deliveryDate || "",deliveryCollectionEnabled:p.deliveryCollectionEnabled,deliveryCollectionPct:p.deliveryCollectionPct})}>
+              {tr("Edit")}
+            </button>
+            <button className="btn danger" type="button" disabled={busy} onClick={()=>void deletePlan(p.id)}>{tr("Delete")}</button>
+          </div>
+        </div>)}
         <div className="separator"/>
         <div className="stack" style={{gap:13}}>
           <label className="fieldlabel">Plan name<input className="field" placeholder="10% down / 80 months" value={plan.name} onChange={e=>setPlan({...plan,name:e.target.value})}/></label>
@@ -125,6 +154,18 @@ export default function AdminPanel({ email, projects }: { email: string; project
             <label className="fieldlabel">Maintenance %<input className="field" type="number" min="0" max="100" step="0.01" value={plan.maintenancePct} onChange={e=>setPlan({...plan,maintenancePct:e.target.value})}/></label>
             <label className="fieldlabel">First installment offset<input className="field" type="number" min="0" max="120" value={plan.startOffsetMonths} onChange={e=>setPlan({...plan,startOffsetMonths:e.target.value})}/></label>
           </div>
+          <label className="fieldlabel">{tr("Delivery date")}<input className="field" type="date" value={plan.deliveryDate}
+            onChange={e=>setPlan({...plan,deliveryDate:e.target.value})} /></label>
+          <label className="fieldlabel" style={{display:"flex",alignItems:"center",gap:9}}>
+            <input type="checkbox" checked={plan.deliveryCollectionEnabled}
+              onChange={e=>setPlan({...plan,deliveryCollectionEnabled:e.target.checked,deliveryCollectionPct:e.target.checked?plan.deliveryCollectionPct:"0"})}/>
+            {tr("Collect a percentage at delivery")}
+          </label>
+          {plan.deliveryCollectionEnabled && <label className="fieldlabel">{tr("Collection at delivery %")}
+            <input className="field" type="number" min="0.01" max="100" step="0.01" value={plan.deliveryCollectionPct}
+              onChange={e=>setPlan({...plan,deliveryCollectionPct:e.target.value})}/>
+          </label>}
+          <p className="muted">{tr("Delivery collection is optional. When enabled, it is deducted from the installment balance.")}</p>
           <div className="actionline"><button className="btn" disabled={busy||!plan.name} onClick={savePlan}>{plan.id?"Update payment plan":"Add payment plan"}</button><button className="btn soft" onClick={()=>setPlan(blankPlan)}>New plan</button></div>
         </div>
       </section>
@@ -132,7 +173,7 @@ export default function AdminPanel({ email, projects }: { email: string; project
         <div className="pitem"><span>Google OAuth</span><b>Read-only Sheets</b></div>
         <div className="pitem"><span>Administrative changes</span><b>Allowlisted admins</b></div>
         <div className="pitem"><span>Unit prices</span><b>Verified live</b></div>
-        <div className="pitem"><span>Issued offers</span><b>Snapshot in Neon</b></div>
+        <div className="pitem"><span>{tr("Issued offers")}</span><b>{tr("Not saved")}</b></div>
         <p className="muted">Logos are embedded in PDFs only when their domain is explicitly listed in ALLOWED_LOGO_HOSTS.</p>
       </section>
     </div></div>}
