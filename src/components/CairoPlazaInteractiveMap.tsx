@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { unitKey } from "@/lib/unit-code";
 import { useLanguage } from "@/components/LanguageProvider";
 import basement from "@/data/cairo-svg-floor--1.json";
@@ -33,7 +33,7 @@ function stateOf(value:string):SaleStatus{
   return "closed";
 }
 function amount(value?:string){const n=Number(String(value||"").replace(/[,\s]/g,""));return Number.isFinite(n)&&n>0?n.toLocaleString("en-EG")+" EGP":"—";}
-export function CairoPlazaInteractiveMap({floor,inventory,selected,onSelect}:{
+export const CairoPlazaInteractiveMap = memo(function CairoPlazaInteractiveMap({floor,inventory,selected,onSelect}:{
   floor:string;inventory:LiveUnit[];selected:string;onSelect:(code:string)=>void;
 }){
   const {language}=useLanguage();
@@ -72,7 +72,7 @@ export function CairoPlazaInteractiveMap({floor,inventory,selected,onSelect}:{
   return <section className="panel" style={{marginBottom:20}}>
     <div style={{display:"flex",gap:16,justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",marginBottom:14}}>
       <div>
-        <div className="eyebrow">CAIRO PLAZA / ENGINEERING FLOORPLAN</div>
+        <div className="eyebrow">{t("CAIRO PLAZA / ENGINEERING FLOORPLAN","كايرو بلازا / المخطط الهندسي")}</div>
         <h2 style={{margin:"8px 0"}}>{t("Architectural plan","المخطط المعماري")} — {floorName}</h2>
         <p className="muted" style={{margin:0}}>{t("Click a unit outline for its live details. All units are shown as selectable shapes, with no marker dots.","اضغط على حدود أي وحدة لعرض تفاصيلها من المخزون الحي. جميع الوحدات معروضة كمضلعات، بدون نقاط منفصلة.")}</p>
       </div>
@@ -149,4 +149,4 @@ export function CairoPlazaInteractiveMap({floor,inventory,selected,onSelect}:{
       </div>
     </div>
   </section>;
-}
+});
