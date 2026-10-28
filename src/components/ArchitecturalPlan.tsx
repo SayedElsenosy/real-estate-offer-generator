@@ -138,6 +138,6 @@ export default function ArchitecturalPlan({email}:{email:string}) {
       </div>}
     </div>
     <div className="panel" style={{marginTop:20}}><label className="fieldlabel">CAD preview floor<select className="field" value={previewFloor} onChange={e=>{setPreviewFloor(e.target.value);setSelected("");}}>{[["-1","Basement"],["0","Ground"],["1","First"],["2","Second"],["3","Third"],["4","Fourth"],["5","Fifth"],["6","Sixth"]].map(([id,name])=><option key={id} value={id}>{name} ({id})</option>)}</select></label></div>
-    <CadDxfPreview floor={previewFloor} inventory={data?.units||[]} selected={selected} onSelect={setSelected}/>
+    {data && !error ? <CadDxfPreview floor={previewFloor} inventory={data.units||[]} selected={selected} onSelect={setSelected}/> : <div className="notice" style={{marginTop:16}}>CAD preview requires an active Sheet1 connection to distinguish Sold Out units from an unavailable inventory.</div>}
   </main></div>;
 }
