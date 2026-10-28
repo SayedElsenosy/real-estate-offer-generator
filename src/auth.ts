@@ -3,6 +3,7 @@ import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "@/lib/db";
 import type { Adapter } from "next-auth/adapters";
+import { sharedOwnerEmail } from "@/lib/shared-access";
 
 // Auth.js is initialized once per Worker isolate, but a Prisma/Neon client
 // cannot safely be reused across Cloudflare request contexts. Preserve every
@@ -55,5 +56,13 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       }
     })
   ] : [],
+  callbacks: {
+    // A normal Google OAuth login can only grant the configured owner access.
+    // Everyone else must use the separate, restricted private link.
+    async signIn({ user }) {
+      const owner = sharedOwnerEmail();
+      return Boolean(owner && user.email?.trim().toLowerCase() === owner);
+    }
+  },
   pages: { signIn: "/" }
 });
