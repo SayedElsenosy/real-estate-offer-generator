@@ -18,7 +18,7 @@ const probes = [
 let failures=0;
 for(const probe of probes){
   try{
-    const response=await fetch(new URL(probe.path,origin),{redirect:"manual",method:probe.method||"GET",body:probe.method==="POST"?"{}":undefined,headers:{"Cache-Control":"no-cache",...(probe.method==="POST"?{"Content-Type":"application/json"}:{})},signal:AbortSignal.timeout(20000)});
+    const response=await fetch(new URL(probe.path,origin),{redirect:"manual",method:probe.method||"GET",body:probe.method==="POST"?"{}":undefined,headers:{"Cache-Control":"no-cache",...(probe.method==="POST"?{"Content-Type":"application/json","Origin":origin}:{})},signal:AbortSignal.timeout(20000)});
     let body=null;
     if(probe.match){try{body=await response.json();}catch{}}
     const ok=response.status===probe.expected&&(!probe.match||probe.match(body??{}));
