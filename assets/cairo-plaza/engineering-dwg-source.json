@@ -15,5 +15,31 @@
   "previousPdfArchitecturalSource": "RETIRED_DO_NOT_USE",
   "previousPdfGeometry": "LEGACY_DRAFT_ARCHIVED_NOT_ACTIVE",
   "sourceFormatReadStatus": "Requires an AC1027-compatible CAD decoder before extracting layer, entity, per-floor unit boundaries and SVG.",
-  "note": "This manifest identifies the authoritative upload. It does not mean that its geometry has been extracted or approved. Quotations remain downloadable PDFs; only the old architectural source PDF is retired."
+  "note": "The original DWG has been supplied and its SHA-256 reverified; a separate DXF file has been parsed successfully. The DXF has not yet been geometrically verified against the DWG and CAD-derived unit boundaries are not yet architect-approved. Quotation PDFs remain downloadable; only architectural PDF floorplan inputs are retired.",
+  "receivedDxf": {
+    "fileName": "معماري كايرو بلازا.dxf",
+    "sha256": "855b5b71af07fcadfda33b5a9d15dba2738b008d85ed28009d8c456088740fbb",
+    "bytes": 31300000,
+    "version": "AC1015 (DXF R2000; confirmed by ezdxf)",
+    "status": "PARSED_NOT_YET_MATCHED_TO_DWG_GEOMETRY",
+    "modelspaceEntities": 28341,
+    "modelspaceTypes": {
+      "LINE": 10236,
+      "LWPOLYLINE": 8864,
+      "INSERT": 6819,
+      "MTEXT": 937,
+      "TEXT": 827,
+      "HATCH": 518,
+      "ARC": 70,
+      "POLYLINE": 32,
+      "DIMENSION": 23,
+      "CIRCLE": 14,
+      "SPLINE": 1
+    },
+    "closedLwpolylineCount": 2755,
+    "blockDefinitions": 598,
+    "unitCodeTextMatches": 772,
+    "uniqueUnitCodeTextMatches": 770,
+    "remarks": "Includes native CAD layers and labels for basement through sixth floor. Entity and code counts do not verify boundary-to-inventory mapping or establish that this DXF was exported from the registered DWG. Do not auto-approve any unit shape."
+  }
 }
