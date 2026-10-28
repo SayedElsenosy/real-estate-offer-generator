@@ -2,6 +2,8 @@ import Link from "next/link";
 import { auth, authReady, signIn, signOut } from "@/auth";
 import { Sidebar } from "@/components/Sidebar";
 import { hasSharedAccess } from "@/lib/shared-access";
+import { isAdmin } from "@/auth";
+import { ShareLinkButton } from "@/components/ShareLinkButton";
 import { T } from "@/components/LanguageProvider";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +24,7 @@ export default async function Home() {
            authReady ? <form action={async () => { "use server"; await signIn("google", { redirectTo: "/studio" }); }}><button className="btn gold"><T text="Continue with Google" /></button></form> :
            <div className="notice"><T text="Google OAuth and Neon environment credentials have not been configured on this deployment. The application will enable sign-in after these are configured on the current deployment." /></div>}
         </div>
+        {session?.user?.email && isAdmin(session.user.email) ? <div className="panel"><h2>رابط الدخول الخاص</h2><p>انسخ الرابط وافتحه على أي جهاز من غير تسجيل دخول جديد.</p><ShareLinkButton /></div> : null}
         <div className="panel"><div className="eyebrow"><T text="SOURCE OF TRUTH" /></div><h2 style={{marginTop:12}}><T text="Always work with current inventory" /></h2><p className="muted"><T text="We request read-only access to Sheets and Drive (for Cairo Plaza's original Excel file). No public sharing or publish-to-web is necessary. Every issued proposal preserves a snapshot of its terms." /></p></div>
       </section>
       <section className="panel"><div className="eyebrow"><T text="DEVELOPMENT COLLECTION" /></div><h2 style={{marginTop:12}}><T text="Project portfolio" /></h2>
