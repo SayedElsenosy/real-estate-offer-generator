@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
 import { FloorPlanEditor } from "@/components/FloorPlanEditor";
 import { useLanguage } from "@/components/LanguageProvider";
+import { ShareLinkButton } from "@/components/ShareLinkButton";
 
 type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; deliveryMonths: number | null; deliveryCollectionEnabled: boolean; deliveryCollectionPct: string };
 type Shape = { unitCode: string; d: string };
@@ -40,7 +41,7 @@ function extractPaths(source: string): { viewBox: string; shapes: Shape[] } {
 export default function AdminPanel({ email, projects }: { email: string; projects: Project[] }) {
   const { tr } = useLanguage();
   const [items, setItems] = useState(projects);
-  const [id, setId] = useState(items[0]?.id || "");
+  const [id, setId] = useState(items.find(p=>p.id==="cairo-plaza")?.id || items[0]?.id || "");
   const [plan, setPlan] = useState(blankPlan);
   const [floor, setFloor] = useState(blankFloor);
   const [notice, setNotice] = useState("");
@@ -137,6 +138,11 @@ export default function AdminPanel({ email, projects }: { email: string; project
   }
   return <div className="shell"><Sidebar active="admin" email={email} /><main className="main">
     <div className="header-line"><div><div className="eyebrow">{tr("ADMINISTRATION / WORKSPACE SETTINGS")}</div><h1>{tr("Project configuration")}</h1><p className="muted">{tr("Connect each project's inventory and configure client-facing financial offers.")}</p></div><Link href="/studio" className="btn soft">{tr("Back to Offer Studio")}</Link></div>
+    <details className="panel" style={{marginBottom:20}}>
+      <summary style={{cursor:"pointer",fontWeight:700}}>{tr("Private access link for other devices")}</summary>
+      <p className="muted" style={{marginTop:12}}>{tr("Share the private link to open the studio and floor plans on another device without Google sign-in. The link does not grant administrator rights.")}</p>
+      <ShareLinkButton />
+    </details>
     {notice && <div className={"notice" + ((notice.toLowerCase().includes("saved") || notice.startsWith("تم")) ? " good" : "")} style={{marginBottom:20}}>{notice}</div>}
     <div className="panel" style={{marginBottom:20}}><div className="between"><div><div className="eyebrow">{tr("ACTIVE PROJECT")}</div><h2 style={{marginTop:10,marginBottom:0}}>{project?.name || tr("No project")}</h2></div>
       <select className="field" style={{maxWidth:300}} value={id} onChange={e=>{setId(e.target.value);setPlan(blankPlan);setFloor(blankFloor);setNotice("");}}>
