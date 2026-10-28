@@ -150,6 +150,11 @@ export default function Studio({ projects, email }: { projects: Project[]; email
             <div className="floor-blank"><div><div className="symbol">⌗</div><h2>Floor plan not published</h2>
               <p className="muted">The original architectural image and reviewed unit boundaries will appear here after a floor is saved in Workspace Settings.</p>
             </div></div>}
+          {floor && <div className="between" style={{marginTop:12,flexWrap:"wrap"}}>
+            <span className="pill">{floor.shapes.length} proposed outlines</span>
+            <span className="pill">{(floor.markers || []).filter(marker=>!floor.shapes.some(shape=>shape.unitCode===marker.code)).length} source labels not yet outlined</span>
+            <span className="pill">{floor.shapes.filter(shape=>!units.some(unit=>unit.code===shape.unitCode)).length} drawing-only / Sold Out candidates</span>
+          </div>}
           {floor?.reviewStatus !== "APPROVED" && floor?.backgroundData && <p className="notice">Draft review: ${floor.shapes.length} traced outline candidates (dashed blue lines), plus source code-label markers. Red = SOLD OUT if absent from live inventory. These outlines are NOT selectable until approved.</p>}
           <p className="muted">Gold: selected. Green: available. Grey: reserved. Red: SOLD OUT if the drawn unit is absent from current inventory. Only approved outlines are interactive.</p>
         </section>
