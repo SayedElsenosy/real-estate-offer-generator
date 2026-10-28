@@ -5,9 +5,10 @@ import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
 import { unitKey } from "@/lib/unit-code";
 import { useLanguage } from "@/components/LanguageProvider";
+import { calculateSchedule, type PaymentTerms } from "@/lib/payment";
 
 type Unit = { code: string; price: string; area: string; floor: string; status: string; project: string };
-type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; installmentIntervalMonths?: number; deliveryDate?: string | null; deliveryCollectionPct?: string; deliveryCollectionEnabled?: boolean };
+type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; deliveryMonths?: number|null; deliveryCollectionPct?: string; deliveryCollectionEnabled?: boolean };
 type Project = { id: string; slug: string; name: string; paymentPlans: Plan[] };
 function isAvailable(status: string): boolean {
   const normalized = String(status).normalize("NFKC").trim().toLowerCase().replace(/\s+/g,"");
@@ -27,8 +28,27 @@ export default function Studio({ projects, email }: { projects: Project[]; email
   const [generating, setGenerating] = useState(false);
   const [offerError,setOfferError] = useState("");
   const [search, setSearch] = useState("");
+  const [maintenanceDueDate,setMaintenanceDueDate]=useState("");
   const project = projects.find(p => p.id === projectId);
   const unit = units.find(value => value.code === selected && value.floor === floorNumber);
+  const selectedPlans=project?.paymentPlans.filter(plan=>chosenPlans.includes(plan.id))||[];
+  const schedules=useMemo(()=>{
+    if(!unit||!selectedPlans.length)return {rows:[] as ReturnType<typeof calculateSchedule>[],error:""};
+    try{
+      const date=new Date();const today=date.toISOString().slice(0,10);
+      return {rows:selectedPlans.map(plan=>calculateSchedule(unit.price,{
+        name:plan.name,downPaymentPct:plan.downPaymentPct,months:plan.months,
+        maintenancePct:plan.maintenancePct,startOffsetMonths:plan.startOffsetMonths,
+        deliveryMonths:plan.deliveryMonths??undefined,
+        deliveryCollectionEnabled:plan.deliveryCollectionEnabled,
+        deliveryCollectionPct:plan.deliveryCollectionPct,
+        // Show the payment table before a deposit date is chosen; the actual
+        // downloaded offer always requires the user's explicit date.
+        maintenanceDueDate:maintenanceDueDate||today
+      },date)),error:""};
+    }catch(err){return {rows:[] as ReturnType<typeof calculateSchedule>[],
+      error:err instanceof Error?err.message:"Invalid payment plan"};}
+  },[unit,selectedPlans.map(p=>p.id+":"+p.months+":"+p.deliveryMonths).join("|"),maintenanceDueDate]);
   const visibleUnits = useMemo(() => units.filter(item =>
     (item.code + " " + item.floor).toLowerCase().includes(search.toLowerCase())).slice(0, 100), [units, search]);
   function selectUnit(code: string, floorCode?: string) {
@@ -41,11 +61,15 @@ export default function Studio({ projects, email }: { projects: Project[]; email
   }
   async function issueOffer() {
     if (!unit || !chosenPlans.length || generating) return;
+    if (selectedPlans.some(p=>Number(p.maintenancePct)>0) && !maintenanceDueDate){
+      setOfferError(tr("Please select the maintenance deposit date."));return;
+    }
+    if(schedules.error){setOfferError(schedules.error);return;}
     setGenerating(true); setOfferError("");
     try {
       const response = await fetch("/api/offers", { method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId, unitCode: unit.code, unitFloor: unit.floor, planIds: chosenPlans }) });
+        body: JSON.stringify({ projectId, unitCode: unit.code, unitFloor: unit.floor, planIds: chosenPlans,maintenanceDueDate:maintenanceDueDate||null }) });
       if (!response.ok) {
         const message = await response.json();
         throw new Error(message.error || "PDF generation failed");
@@ -105,10 +129,51 @@ export default function Studio({ projects, email }: { projects: Project[]; email
           {project?.paymentPlans.map(plan => <label className="planrow" key={plan.id}>
             <input type="checkbox" checked={chosenPlans.includes(plan.id)} disabled={!unit || (chosenPlans.length >= 5 && !chosenPlans.includes(plan.id))}
               onChange={event => toggle(plan.id, event.target.checked)} />
-            <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% {tr("Down payment %")} · {plan.months} {tr("Total term including down payment (months)")} · {tr("Every")} {plan.installmentIntervalMonths || 1} {tr("months")} · {plan.maintenancePct}% {tr("Maintenance %")}{plan.deliveryDate ? " · " + tr("Delivery date") + ": " + plan.deliveryDate : ""}{plan.deliveryCollectionEnabled ? " · " + plan.deliveryCollectionPct + "% " + tr("Collection at delivery %") : ""}</small></span>
+            <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% {tr("Down payment %")} · {plan.months} {tr("months")} · {tr("Monthly payments")} · {plan.maintenancePct}% {tr("Maintenance %")}{plan.deliveryCollectionEnabled ? " · "+tr("Delivery after")+" "+(plan.deliveryMonths||"—")+" "+tr("months")+" · "+plan.deliveryCollectionPct+"% "+tr("Paid by delivery") : ""}</small></span>
           </label>)}
           {!project?.paymentPlans.length && <div className="notice">{tr("No plans yet. An administrator can add a plan (such as 10% down / 80 months) in Workspace Settings.")}</div>}
-          <button className="btn gold" style={{width:"100%",marginTop:18}} disabled={!unit || !isAvailable(unit.status) || !!error || loading || chosenPlans.length===0 || generating} onClick={issueOffer}>
+          {(selectedPlans.some(p=>Number(p.maintenancePct)>0))&&
+            <label className="fieldlabel" style={{marginTop:16}}>{tr("Maintenance deposit due date")}
+              <input type="date" className="field" value={maintenanceDueDate}
+                onChange={e=>setMaintenanceDueDate(e.target.value)}/>
+            </label>}
+          {unit && selectedPlans.length>0 && <div style={{marginTop:18}}>
+            <h3 style={{marginBottom:8}}>{tr("Live payment schedule preview")}</h3>
+            {schedules.error&&<div className="notice" role="alert">{schedules.error}</div>}
+            {!maintenanceDueDate&&selectedPlans.some(p=>Number(p.maintenancePct)>0)&&
+              <p className="muted">{tr("Select the maintenance date before exporting. The schedule currently uses today as a temporary preview.")}</p>}
+            {schedules.rows.map((schedule,i)=><div key={selectedPlans[i].id}
+              style={{marginBottom:16,border:"1px solid #e2e8f0",borderRadius:12,overflow:"hidden"}}>
+              <div style={{padding:12,background:"#f6f8fb"}}>
+                <strong>{schedule.name}</strong>
+                <div className="muted" style={{fontSize:12,marginTop:6}}>
+                  {tr("Collected before delivery")}: {nicePrice(schedule.preDeliveryTotal)} ·
+                  {tr("Balance after delivery")}: {nicePrice(schedule.postDeliveryTotal)}
+                </div>
+                <div className="muted" style={{fontSize:12,marginTop:5}}>
+                  {schedule.deliveryMonths>0?tr("Delivery after")+" "+schedule.deliveryMonths+" "+tr("months"):""}
+                  {" · "}{tr("Total including maintenance")}: {nicePrice(schedule.totalIncludingMaintenance)}
+                </div>
+              </div>
+              <div style={{overflow:"auto",maxHeight:440}}>
+                <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+                  <thead style={{position:"sticky",top:0,background:"#eaf0f5"}}>
+                    <tr><th style={{padding:8,textAlign:"start"}}>#</th>
+                      <th style={{padding:8,textAlign:"start"}}>{tr("Payment type")}</th>
+                      <th style={{padding:8,textAlign:"start"}}>{tr("Due date")}</th>
+                      <th style={{padding:8,textAlign:"end"}}>{tr("Amount (EGP)")}</th></tr>
+                  </thead>
+                  <tbody>{schedule.rows.map((row,j)=><tr key={row.type+row.due+j} style={{borderBottom:"1px solid #edf0f4"}}>
+                    <td style={{padding:8}}>{row.number??"—"}</td>
+                    <td style={{padding:8}}>{tr(row.type==="DOWN_PAYMENT"?"Down payment":row.type==="MAINTENANCE"?"Maintenance":"Installment")}</td>
+                    <td style={{padding:8}}>{row.due}</td>
+                    <td style={{padding:8,textAlign:"end"}}>{nicePrice(row.amount)}</td>
+                  </tr>)}</tbody>
+                </table>
+              </div>
+            </div>)}
+          </div>}
+          <button className="btn gold" style={{width:"100%",marginTop:18}} disabled={!unit || !isAvailable(unit.status) || !!error || !!schedules.error || loading || chosenPlans.length===0 || generating || (selectedPlans.some(p=>Number(p.maintenancePct)>0)&&!maintenanceDueDate)} onClick={issueOffer}>
             {tr(generating ? "Rendering proposal…" : "Generate premium PDF offer")}
           </button>
           <p className="muted" style={{fontSize:11}}>{tr("The server checks live price and availability again before producing the PDF.")}</p>
