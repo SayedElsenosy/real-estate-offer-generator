@@ -57,10 +57,12 @@ export function calculateSchedule(priceInput:string,terms:PaymentTerms,issueDate
     throw Error("Payment percentages must be between 0 and 100.");
   if(terms.deliveryCollectionEnabled && preDeliveryPct.lt(downPct))
     throw Error("Pre-delivery collection percentage cannot be smaller than the down payment.");
-  const deliveryMonths=terms.deliveryCollectionEnabled ? Number(terms.deliveryMonths) : 0;
-  if (terms.deliveryCollectionEnabled && (!Number.isInteger(deliveryMonths)||
-      deliveryMonths<2||deliveryMonths>=terms.months))
-    throw Error("Delivery months must be at least 2 and less than the total term.");
+  const deliveryMonths=Number(terms.deliveryMonths||0);
+  if (deliveryMonths!==0 && (!Number.isInteger(deliveryMonths)||
+      deliveryMonths<1||deliveryMonths>=terms.months))
+    throw Error("Delivery month must fall within the payment term.");
+  if (terms.deliveryCollectionEnabled && deliveryMonths<2)
+    throw Error("Delivery months must be at least 2 when splitting payments.");
   const maintenanceDate=terms.maintenanceDueDate || null;
   if(maintenancePct.gt(0) && (!maintenanceDate || !validIsoDate(maintenanceDate)))
     throw Error("Choose a valid maintenance deposit due date.");
@@ -76,8 +78,8 @@ export function calculateSchedule(priceInput:string,terms:PaymentTerms,issueDate
   for(let month=firstFutureOffset;month<=lastOffset;month++)offsets.push(month);
   if (!offsets.length && !price.eq(down))
     throw Error("The selected duration contains no future installment dates.");
-  const before=offsets.filter(month=>deliveryMonths>0 && month<deliveryMonths);
-  const after=offsets.filter(month=>deliveryMonths===0||month>=deliveryMonths);
+  const before=offsets.filter(month=>terms.deliveryCollectionEnabled && month<deliveryMonths);
+  const after=offsets.filter(month=>!terms.deliveryCollectionEnabled||month>=deliveryMonths);
   const beforeAmount=terms.deliveryCollectionEnabled ? preDeliveryTarget.minus(down) : new Decimal(0);
   const afterAmount=terms.deliveryCollectionEnabled ? price.minus(preDeliveryTarget) : price.minus(down);
   if(beforeAmount.lt(0)||afterAmount.lt(0))throw Error("Pre-delivery allocation exceeds the available price.");
@@ -108,8 +110,18 @@ export function calculateSchedule(priceInput:string,terms:PaymentTerms,issueDate
     // The historic name is kept for PDF type compatibility, but is NOT a
     // separate delivery payment; it is the cumulative pre-delivery target.
     deliveryCollection:"0.00",deliveryCollectionPct:preDeliveryPct.toFixed(4),
-    preDeliveryTotal:preDeliveryTarget.toFixed(2),
-    postDeliveryTotal:price.minus(preDeliveryTarget).toFixed(2),
+    preDeliveryTotal:(terms.deliveryCollectionEnabled
+      ? preDeliveryTarget
+      : rows.filter(row=>row.type!=="MAINTENANCE" &&
+          (deliveryMonths===0?row.type==="DOWN_PAYMENT":
+            row.due<shiftMonths(issueDate,deliveryMonths)))
+          .reduce((acc,row)=>acc.plus(row.amount),new Decimal(0))).toFixed(2),
+    postDeliveryTotal:(terms.deliveryCollectionEnabled
+      ? price.minus(preDeliveryTarget)
+      : price.minus(rows.filter(row=>row.type!=="MAINTENANCE" &&
+          (deliveryMonths===0?row.type==="DOWN_PAYMENT":
+            row.due<shiftMonths(issueDate,deliveryMonths)))
+          .reduce((acc,row)=>acc.plus(row.amount),new Decimal(0)))).toFixed(2),
     maintenanceDueDate:maintenanceDate,
     maintenance:maintenance.toFixed(2),totalIncludingMaintenance:price.plus(maintenance).toFixed(2),
     rows
