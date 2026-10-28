@@ -60,8 +60,8 @@ export default function AdminPanel({ email, projects }: { email: string; project
           companyName: project.companyName, logoUrl: project.logoUrl || null }) });
       const result = await r.json();
       if (!r.ok) throw Error(result.error);
-      setNotice("Project configuration saved.");
-    } catch (e) { setNotice(e instanceof Error ? e.message : "Save failed"); } finally { setBusy(false); }
+      setNotice(tr("Project configuration saved."));
+    } catch (e) { setNotice(e instanceof Error ? tr(e.message) : tr("Save failed")); } finally { setBusy(false); }
   }
   async function savePlan() {
     setBusy(true); setNotice("");
@@ -98,23 +98,23 @@ export default function AdminPanel({ email, projects }: { email: string; project
     try {
       const parsed = extractPaths(await file.text());
       setFloor(p => ({...p, viewBox:parsed.viewBox, shapes:parsed.shapes, name:p.name || file.name.replace(/\.svg$/i,"")}));
-      setNotice("SVG parsed into " + parsed.shapes.length + " selectable shapes. Check IDs and floor before saving. Nested SVG transforms are not supported.");
-    } catch(e){setNotice(e instanceof Error?e.message:"Unable to parse SVG")}
+      setNotice(tr("SVG parsed into ") + parsed.shapes.length + tr(" selectable shapes. Check IDs and floor before saving. Nested SVG transforms are not supported."));
+    } catch(e){setNotice(e instanceof Error?tr(e.message):tr("Unable to parse SVG"))}
   }
   async function saveFloor() {
-    if (!floor.shapes.length) return setNotice("Please import SVG geometry first.");
+    if (!floor.shapes.length) return setNotice(tr("Please import SVG geometry first."));
     setBusy(true);setNotice("");
     try {
       const r=await fetch("/api/floors",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({...floor,id:floor.id||undefined,projectId:id,floor:floor.floor||null})});
       const result=await r.json();if(!r.ok)throw Error(result.error);
-      setNotice("Interactive floor map saved. Reload this page to see the new floor configuration.");setFloor(blankFloor);
-    }catch(e){setNotice(e instanceof Error?e.message:"SVG save failed")}finally{setBusy(false)}
+      setNotice(tr("Interactive floor map saved. Reload this page to see the new floor configuration."));setFloor(blankFloor);
+    }catch(e){setNotice(e instanceof Error?tr(e.message):tr("SVG save failed"))}finally{setBusy(false)}
   }
   return <div className="shell"><Sidebar active="admin" email={email} /><main className="main">
     <div className="header-line"><div><div className="eyebrow">{tr("ADMINISTRATION / WORKSPACE SETTINGS")}</div><h1>{tr("Project configuration")}</h1><p className="muted">{tr("Connect each project's inventory and configure client-facing financial offers.")}</p></div><Link href="/studio" className="btn soft">{tr("Back to Offer Studio")}</Link></div>
-    {notice && <div className={"notice" + (notice.toLowerCase().includes("saved") ? " good" : "")} style={{marginBottom:20}}>{notice}</div>}
-    <div className="panel" style={{marginBottom:20}}><div className="between"><div><div className="eyebrow">{tr("ACTIVE PROJECT")}</div><h2 style={{marginTop:10,marginBottom:0}}>{project?.name || "No project"}</h2></div>
+    {notice && <div className={"notice" + ((notice.toLowerCase().includes("saved") || notice.startsWith("تم")) ? " good" : "")} style={{marginBottom:20}}>{notice}</div>}
+    <div className="panel" style={{marginBottom:20}}><div className="between"><div><div className="eyebrow">{tr("ACTIVE PROJECT")}</div><h2 style={{marginTop:10,marginBottom:0}}>{project?.name || tr("No project")}</h2></div>
       <select className="field" style={{maxWidth:300}} value={id} onChange={e=>{setId(e.target.value);setPlan(blankPlan);setFloor(blankFloor);setNotice("");}}>
         {items.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></div></div>
     {project && <div className="grid2"><div className="stack">
@@ -166,7 +166,7 @@ export default function AdminPanel({ email, projects }: { email: string; project
               onChange={e=>setPlan({...plan,deliveryCollectionPct:e.target.value})}/>
           </label>}
           <p className="muted">{tr("Delivery collection is optional. When enabled, it is deducted from the installment balance.")}</p>
-          <div className="actionline"><button className="btn" disabled={busy||!plan.name} onClick={savePlan}>{plan.id?"Update payment plan":"Add payment plan"}</button><button className="btn soft" onClick={()=>setPlan(blankPlan)}>{tr("New plan")}</button></div>
+          <div className="actionline"><button className="btn" disabled={busy||!plan.name} onClick={savePlan}>{tr(plan.id?"Update payment plan":"Add payment plan")}</button><button className="btn soft" onClick={()=>setPlan(blankPlan)}>{tr("New plan")}</button></div>
         </div>
       </section>
       <section className="panel"><div className="eyebrow">{tr("SECURITY RULES")}</div><h2 style={{marginTop:12}}>{tr("Authorized-only processing")}</h2>
