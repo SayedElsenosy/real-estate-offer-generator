@@ -8,6 +8,7 @@ import { getLiveInventory, isAvailable } from "@/lib/sheets";
 import { calculateSchedule } from "@/lib/payment";
 import { unitKey } from "@/lib/unit-code";
 import { OfferDocument, type FloorGeometry } from "@/lib/pdf";
+import { CAIRO_PLAZA_PROJECT_ID, hasAuthoritativeCairoDwgSource } from "@/lib/cairo-architectural-source";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -52,7 +53,8 @@ export async function POST(req: NextRequest) {
       deliveryCollectionEnabled: plan.deliveryCollectionEnabled,
       deliveryCollectionPct: plan.deliveryCollectionPct.toString()
     }, date));
-    const match = project.floorPlans.find(f => f.floor === unit.floor && f.reviewStatus === "APPROVED");
+    const match = project.floorPlans.find(f => f.floor === unit.floor && f.reviewStatus === "APPROVED" &&
+      (projectId !== CAIRO_PLAZA_PROJECT_ID || hasAuthoritativeCairoDwgSource(f)));
     const rawShapes = match?.shapes as { unitCode: string; d: string }[] | undefined;
     const geometry: FloorGeometry = match ? { viewBox: match.viewBox, backgroundData: match.backgroundData || null,
       shapes: (rawShapes || []).map(shape => {
