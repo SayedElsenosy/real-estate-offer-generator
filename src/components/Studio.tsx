@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
-import { unitKey } from "@/lib/unit-code";
+import { unitKey, inventoryKeyForDrawing } from "@/lib/unit-code";
 
 type Unit = { code: string; price: string; area: string; floor: string; status: string; project: string };
 type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number };
@@ -54,7 +54,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
       .then(result => { if (result?.offers) setHistory(result.offers); }).catch(() => {});
   }, []);
   function selectUnit(code: string, floorCode?: string) {
-    const candidates = units.filter(u => unitKey(u.code) === unitKey(code) && (floorCode === undefined || u.floor === floorCode));
+    const candidates = units.filter(u => unitKey(u.code) === inventoryKeyForDrawing(code, projectId, floorCode) && (floorCode === undefined || u.floor === floorCode));
     const exact = candidates.find(u => u.code === code);
     const match = exact || (candidates.length === 1 ? candidates[0] : undefined);
     if (!match || !isAvailable(match.status)) return;
@@ -125,7 +125,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
             <svg className="floor-svg" viewBox={floor.viewBox} role="img" aria-label="Architectural floor map with reviewed unit geometry">
               {floor.backgroundData && <image href={floor.backgroundData} x={vb[0]} y={vb[1]} width={vb[2]} height={vb[3]} preserveAspectRatio="none"/>}
               {(floor.markers || []).map((m,i)=>{
-                const candidates=units.filter(value=>value.floor===floor.floor&&unitKey(value.code)===unitKey(m.code));
+                const candidates=units.filter(value=>value.floor===floor.floor&&unitKey(value.code)===inventoryKeyForDrawing(m.code, projectId, floor.floor));
                 const u=candidates.length===1?candidates[0]:undefined;
                 const status=u?.status || "SOLD OUT";
                 return <circle key={"source-label-"+i} cx={m.x} cy={m.y} r={9}
@@ -135,12 +135,12 @@ export default function Studio({ projects, email }: { projects: Project[]; email
                   </circle>;
               })}
               {floor.shapes.map((shape,i)=>{
-                const candidates=units.filter(value=>value.floor===floor.floor&&unitKey(value.code)===unitKey(shape.unitCode));
+                const candidates=units.filter(value=>value.floor===floor.floor&&unitKey(value.code)===inventoryKeyForDrawing(shape.unitCode, projectId, floor.floor));
                 const known=candidates.length===1?candidates[0]:undefined;
                 const blocked = !known || !isAvailable(known.status);
                 const approved = floor.reviewStatus === "APPROVED";
                 return <path key={i} d={shape.d}
-                  fill={!known?"#efaaaa":blocked?"#d3d9e1":unitKey(shape.unitCode)===unitKey(selected)?"#c5a16a":"#d8e8df"}
+                  fill={!known?"#efaaaa":blocked?"#d3d9e1":inventoryKeyForDrawing(shape.unitCode, projectId, floor.floor)===unitKey(selected)?"#c5a16a":"#d8e8df"}
                   stroke={approved?"#32465d":"#1b78b9"} strokeWidth={approved?3:2.5}
                   strokeDasharray={approved?undefined:"8 5"}
                   fillOpacity={approved?.42:.16}
