@@ -49,8 +49,15 @@ In testing mode, register sign-in accounts as test users. Each account must alre
 
 Connect a Sheet in /admin using the Spreadsheet ID and a range such as Inventory!A:Z. Required column names are Unit Code and Price. Optional: Area, Floor, Status.
 
-## Floorplan import
-Export the architectural PDF to an SVG containing simple path/polygon/rect elements. Set the id or data-unit-code attribute of each unit to its exact Unit Code from Google Sheets. Import the SVG in /admin and provide the floor name/code; the browser extracts only the unit geometry. SVG transforms and groups need flattening in the source export.
+## Architectural floorplan workflow (DWG only)
+
+Cairo Plaza's sole authoritative architectural source is the engineering-department DWG registered in `assets/cairo-plaza/engineering-dwg-source.json`. The retired PDF artwork, old SVG extracts, JPEG floor images, ZIP bundles, and legacy polygons are **not** acceptable inputs for publishing Cairo Plaza geometry. Keep legacy audit files for historical comparison only; do not import or approve them.
+
+The original DWG binary is **not checked into this repository**. To extract unit shapes, supply the verified original DWG to an AC1027-capable CAD application, export a DXF preserving blocks, entity layers and labels, and use `scripts/analyze-cairo-engineering-cad.py` to inventory the exported drawing. The script requires the registered SHA-256 and only inventories entities: its output is not approved unit geometry. Map unit polygons against exact full codes, floor and inventory, visually inspect boundaries against the authoritative CAD source and obtain architectural sign-off before setting any floor to APPROVED. Never infer missing outlines or normalize SR/SH, hyphens, or leading zeros.
+
+The `/api/floors` endpoint rejects Cairo Plaza submissions that do not carry the registered DWG fingerprint and requires confirmed, complete geometry before approval. Do not treat a supplied fingerprint alone as proof of CAD-derived geometry; architectural review is still mandatory.
+
+The quotation **output** remains a downloadable PDF, generated in memory without saving a quote. This is separate from the retired **PDF architectural input**.
 
 ## Database
 Prisma schema matches eight tables already provisioned in the dedicated Neon offer_generator database. It is intentionally separate from BUNYRA.
@@ -80,11 +87,11 @@ The native XLSX has **Column 1** (not `Unit Code`) in cell A1. That column conta
 
 ## Cairo Plaza geometric review — 2026-10-28
 
-The current [source-vector audit](assets/cairo-plaza/review-2026-10-28/REPORT.md) contains **361 DRAFT unit outline candidates** across eight floors. Exactly **140 of 153** authoritative Sheet1 inventory rows have an outline candidate matched by full unit code and floor; **13 remain unresolved**. The [review files](assets/cairo-plaza/review-2026-10-28/) contain individual QA screenshots, source vector evidence, and per-floor draft SVGs. All geometries remain **DRAFT**, not architect-certified: draft shapes cannot be used as interactive offer selectors or as highlighted unit maps in customer PDFs.
+The historical, retired [PDF-based vector audit](assets/cairo-plaza/review-2026-10-28/REPORT.md) contains **361 DRAFT unit outline candidates** across eight floors. Exactly **140 of 153** authoritative Sheet1 inventory rows have an outline candidate matched by full unit code and floor; **13 remain unresolved**. The [review files](assets/cairo-plaza/review-2026-10-28/) contain individual QA screenshots, source vector evidence, and per-floor draft SVGs. All geometries remain **DRAFT**, not architect-certified: draft shapes cannot be used as interactive offer selectors or as highlighted unit maps in customer PDFs.
 
 The geometry baseline is [trace-drafts-361.json](assets/cairo-plaza/trace-drafts-361.json). No automatic SR/SH substitutions, split-unit guesses, or normalized aliasing beyond case differences are permitted.
 
-Geometry check (requires Python and Shapely):
+Historical PDF-geometry audit only (not a workflow for sourcing or approving new architectural boundaries; requires Python and Shapely):
 
 ```sh
 python scripts/verify-cairo-geometry.py
