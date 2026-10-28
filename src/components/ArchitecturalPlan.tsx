@@ -92,7 +92,7 @@ export default function ArchitecturalPlan({email}:{email:string}) {
         <svg viewBox={floor.viewBox} style={{width:(zoom*100)+"%",height:"auto",display:"block",minWidth:600}} role="group" aria-label={"Verified CAD floor "+floor.name}>
           {floor.backgroundData && <image href={floor.backgroundData} x={vb[0]} y={vb[1]} width={vb[2]} height={vb[3]} preserveAspectRatio="none"/>}
           {visible.map(({shape,unit,status})=><path key={shape.unitCode} d={shape.d}
-            fill={palette[status]} fillOpacity={selected===shape.unitCode?.8:.52}
+            fill={palette[status]} fillOpacity={selected===shape.unitCode ? 0.8 : 0.52}
             stroke={selected===shape.unitCode?"#ffffff":"#314259"} strokeWidth={selected===shape.unitCode?3:1.5}
             role="button" tabIndex={0} aria-label={shape.unitCode+" "+labels[status]}
             style={{cursor:"pointer",outline:"none"}}
