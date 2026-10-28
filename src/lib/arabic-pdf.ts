@@ -82,7 +82,7 @@ function tableHeading(page:PDFPage,y:number,fonts:FontSet){
 }
 function paymentRow(page:PDFPage,n:number,entry:Props["schedules"][number]["rows"][number],y:number,fonts:FontSet){
   if(n%2===0)page.drawRectangle({x:LEFT,y:y-9,width:RIGHT-LEFT,height:24,color:pale});
-  const typ=entry.type==="DOWN_PAYMENT"?"المقدم":entry.type==="MAINTENANCE"?"وديعة الصيانة":"قسط شهري";
+  const typ=entry.type==="DOWN_PAYMENT"?"المقدم":entry.type==="MAINTENANCE"?"وديعة الصيانة":"قسط";
   rightLatin(page,entry.number===null?"-":String(entry.number),RIGHT-14,y-1,fonts.latin,9);
   arabic(page,typ,RIGHT-63,y-1,fonts.regular,9,navy);
   ltr(page,date(entry.due),LEFT+176,y-1,fonts.latin,9,navy);
