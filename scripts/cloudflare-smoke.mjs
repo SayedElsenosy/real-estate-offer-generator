@@ -22,4 +22,14 @@ for(const probe of probes){
     if(!ok)failures++;
   }catch(e){failures++;console.error("FAIL: "+probe.name+" (request error: "+(e?.name||"unknown")+")");}
 }
+// Catch Worker cross-request promise/context failures that only show up with
+// overlapping requests and that a sequential test can miss.
+const concurrent = await Promise.allSettled(Array.from({length:5},async (_,i)=>{
+  const path=i%2===0?"/":"/api/auth/session";
+  const response=await fetch(new URL(path,origin),{signal:AbortSignal.timeout(20000)});
+  return response.status;
+}));
+const concurrentOk=concurrent.every(r=>r.status==="fulfilled"&&r.value===200);
+console.log((concurrentOk?"PASS":"FAIL")+": parallel home/session requests ("+concurrent.filter(r=>r.status==="fulfilled"&&r.value===200).length+"/5)");
+if(!concurrentOk)failures++;
 if(failures)process.exitCode=1;
