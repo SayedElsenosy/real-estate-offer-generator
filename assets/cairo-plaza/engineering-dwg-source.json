@@ -1,0 +1,19 @@
+{
+  "projectId": "cairo-plaza",
+  "activeArchitecturalSource": "DWG",
+  "authoritative": true,
+  "originalFileName": "معماري كايرو بلازا(1).dwg",
+  "sha256": "9c9aac1fcf2b330fbbb5e3555b86300b922ac1a33037e4ea51510ece82792c6a",
+  "bytes": 4182118,
+  "dwgVersion": "AC1027",
+  "autocadFamily": "2013–2017",
+  "received": "2026-10-28",
+  "identicalUploads": [
+    "معماري كايرو بلازا.dwg",
+    "معماري كايرو بلازا(1).dwg"
+  ],
+  "previousPdfArchitecturalSource": "RETIRED_DO_NOT_USE",
+  "previousPdfGeometry": "LEGACY_DRAFT_ARCHIVED_NOT_ACTIVE",
+  "sourceFormatReadStatus": "Requires an AC1027-compatible CAD decoder before extracting layer, entity, per-floor unit boundaries and SVG.",
+  "note": "This manifest identifies the authoritative upload. It does not mean that its geometry has been extracted or approved. Quotations remain downloadable PDFs; only the old architectural source PDF is retired."
+}
