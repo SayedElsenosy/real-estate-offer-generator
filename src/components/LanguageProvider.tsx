@@ -241,12 +241,12 @@ const translationMap: Record<string, string> = {
   "Awaiting verified DWG layer and unit-boundary extraction. Inventory and quotation calculations remain available; no inaccurate map is shown.": "جارٍ تجهيز استخراج طبقات وحدود الوحدات من DWG بشكل موثّق. المخزون وحسابات العروض مستمران في العمل دون عرض خريطة غير دقيقة.",
   "Cairo Plaza engineering DWG registered; accurate interactive maps will appear after CAD verification.": "تم اعتماد ملف DWG الهندسي لكايرو بلازا، وستظهر الخرائط التفاعلية الدقيقة بعد فحص ملف CAD."
 };
-const Context = createContext<{language:Language;setLanguage:(v:Language)=>void}>({language:"ar",setLanguage:()=>{}});
+const Context = createContext<{language:Language;setLanguage:(v:Language)=>void}>({language:"en",setLanguage:()=>{}});
 export function LanguageProvider({children}:{children:React.ReactNode}) {
-  const [language,setLanguage]=useState<Language>("ar");
+  const [language,setLanguage]=useState<Language>("en");
   useEffect(()=>{
     try {
-      if (localStorage.getItem("offer_atelier_language")==="en") setLanguage("en");
+      if (localStorage.getItem("offer_atelier_language")==="ar") setLanguage("ar");
     } catch {}
   },[]);
   useEffect(()=>{
