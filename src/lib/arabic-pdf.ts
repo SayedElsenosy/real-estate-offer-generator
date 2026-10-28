@@ -154,7 +154,7 @@ export async function createArabicOfferPdf({
   for(const schedule of schedules){
     let page=pdf.addPage([W,H]);
     header(page,company,"جدول الأقساط",schedule.name,logo,fonts);
-    rowPair(page,"مدة التقسيط شاملة المقدم",String(schedule.durationMonths)+" شهر",H-162,fonts);
+    rowPair(page,"مدة التقسيط شاملة المقدم",schedule.durationMonths,H-162,fonts);
     rowPair(page,"دورية الأقساط","شهرية",H-193,fonts,"arabic");
     rowPair(page,"عدد الدفعات",schedule.paymentCount,H-224,fonts);
     rowPair(page,"سعر الوحدة (جنيه)",amount(schedule.totalPrice),H-255,fonts);
