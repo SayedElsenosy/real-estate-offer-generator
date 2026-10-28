@@ -20,7 +20,7 @@ function nicePrice(value: string) {
 }
 export default function Studio({ projects, email }: { projects: Project[]; email: string }) {
   const { tr } = useLanguage();
-  const [projectId, setProjectId] = useState(projects[0]?.id || "");
+  const [projectId, setProjectId] = useState(projects.find(p=>p.id==="cairo-plaza")?.id || projects[0]?.id || "");
   const {units,loading,refreshing,error,refresh,lastReadAt} = useLiveInventory(projectId);
   const [floorNumber, setFloorNumber] = useState("");
   const [selected, setSelected] = useState("");
