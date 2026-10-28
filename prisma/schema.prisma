@@ -1,5 +1,8 @@
 generator client {
   provider = "prisma-client"
+  // Cloudflare Workers forbid runtime WASM compilation. Generate a
+  // Cloudflare-targeted client with a statically importable query compiler.
+  runtime  = "cloudflare"
   output   = "../src/generated/prisma"
 }
 
