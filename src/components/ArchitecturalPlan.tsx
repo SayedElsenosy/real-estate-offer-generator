@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
+import { useLiveInventory } from "@/hooks/useLiveInventory";
 import { Sidebar } from "@/components/Sidebar";
 import { CairoPlazaInteractiveMap } from "@/components/CairoPlazaInteractiveMap";
 import { unitKey } from "@/lib/unit-code";
@@ -10,9 +12,9 @@ type Unit={code:string;floor:string;status:string;area:string;price:string};
 type Shape={unitCode:string;d:string};
 type Floor={id:string;name:string;floor:string|null;viewBox:string;shapes:Shape[];backgroundData?:string|null;reviewStatus:string};
 type Result={units?:Unit[];floorPlans?:Floor[];error?:string};
-const floorOptions:[string,string][]=[
-  ["-1","Basement / البدروم"],["0","Ground / الأرضي"],["1","First / الأول"],["2","Second / الثاني"],
-  ["3","Third / الثالث"],["4","Fourth / الرابع"],["5","Fifth / الخامس"],["6","Sixth / السادس"]
+const floorOptions:[string,string,string][]=[
+  ["-1","Basement", "البدروم"],["0","Ground", "الأرضي"],["1","First", "الأول"],["2","Second", "الثاني"],
+  ["3","Third", "الثالث"],["4","Fourth", "الرابع"],["5","Fifth", "الخامس"],["6","Sixth", "السادس"]
 ];
 function stateOf(status:string):string{
   const s=status.normalize("NFKC").trim().toLowerCase().replace(/[\s_-]+/g,"");
@@ -23,36 +25,13 @@ function stateOf(status:string):string{
 export default function ArchitecturalPlan({email,projects}:{email:string;projects:Project[]}){
   const [projectId,setProjectId]=useState(projects.find(p=>p.id==="cairo-plaza")?.id||projects[0]?.id||"");
   const [floorNumber,setFloorNumber]=useState("0");
-  const [result,setResult]=useState<Result|null>(null);
-  const [error,setError]=useState("");
-  const [loading,setLoading]=useState(true);
-  const [revision,setRevision]=useState(0);
+  const {language} = useLanguage();
+  const t=(en:string,ar:string)=>language==="ar"?ar:en;
+  const {units:liveUnits,floorPlans,loading,refreshing,error,refresh,lastReadAt} =
+    useLiveInventory(projectId,projectId!=="cairo-plaza");
+  const result:Result|null = loading||error ? null : {units:liveUnits,floorPlans};
   const [selected,setSelected]=useState("");
   const [zoom,setZoom]=useState(1);
-  useEffect(()=>{
-    if(!projectId){setLoading(false);return;}
-    let stopped=false,controller:AbortController|null=null;
-    const load=async()=>{
-      controller?.abort();controller=new AbortController();
-      try{
-        const r=await fetch("/api/inventory?projectId="+encodeURIComponent(projectId),{
-          cache:"no-store",signal:controller.signal
-        });
-        const payload=await r.json() as Result;
-        if(!r.ok||payload.error)throw Error(payload.error||"Could not read live inventory");
-        if(!stopped){setResult(payload);setError("");}
-      }catch(err){
-        if(!stopped&&(err as Error).name!=="AbortError"){
-          setError(err instanceof Error?err.message:"Inventory not available");
-          setResult(null);
-        }
-      }finally{if(!stopped)setLoading(false);}
-    };
-    setLoading(true);setError("");setResult(null);
-    void load();
-    const interval=setInterval(()=>void load(),60000);
-    return ()=>{stopped=true;controller?.abort();clearInterval(interval);};
-  },[projectId,revision]);
   const current=projects.find(p=>p.id===projectId);
   const isCairo=projectId==="cairo-plaza";
   const approved=useMemo(()=> (result?.floorPlans||[]).filter(f=>
@@ -74,22 +53,22 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
     <main className="main">
       <header className="header-line">
         <div>
-          <div className="eyebrow">ENGINEERING / ARCHITECTURAL PLANS</div>
-          <h1>المخططات التفاعلية</h1>
-          <p className="muted">المخطط الهندسي في الخلفية، وحدود الوحدات فوقه مع حالتها من المخزون المباشر. اضغط على أي وحدة لمشاهدة تفاصيلها.</p>
+          <div className="eyebrow">{t("ENGINEERING / ARCHITECTURAL PLANS","الهندسة / المخططات المعمارية")}</div>
+          <h1>{t("Interactive floor plans","المخططات التفاعلية")}</h1>
+          <p className="muted">{t("View engineering floorplans with live unit availability. Select a unit to see its price, area and status.","المخطط الهندسي في الخلفية، وحدود الوحدات فوقه مع حالتها من المخزون المباشر. اضغط على أي وحدة لمشاهدة تفاصيلها.")}</p>
         </div>
-        <button type="button" className="btn soft" disabled={loading||!projectId}
-          onClick={()=>setRevision(v=>v+1)}>{loading?"جاري التحديث...":"تحديث المخزون"}</button>
+        <button type="button" className="btn soft" disabled={loading||refreshing||!projectId}
+          onClick={()=>void refresh()}>{loading||refreshing?t("Refreshing…","جاري التحديث..."):t("Refresh inventory","تحديث المخزون")}</button>
       </header>
       <section className="panel" style={{marginBottom:16}}>
         <div className="between" style={{gap:14,flexWrap:"wrap"}}>
-          <label className="fieldlabel" style={{minWidth:240,flex:1}}>المشروع / Project
+          <label className="fieldlabel" style={{minWidth:240,flex:1}}>{t("Project","المشروع")}
             <select className="field" value={projectId}
               onChange={e=>{setProjectId(e.target.value);setSelected("");setFloorNumber("0");setZoom(1);}}>
               {projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </label>
-          <label className="fieldlabel" style={{minWidth:230,flex:1}}>الدور / Floor
+          <label className="fieldlabel" style={{minWidth:230,flex:1}}>{t("Floor","الدور")}
             <select className="field" value={floorNumber}
               onChange={e=>{setFloorNumber(e.target.value);setSelected("");setZoom(1);}}>
               {isCairo?floorOptions.map(([value,label])=><option value={value} key={value}>{label}</option>):
@@ -99,19 +78,19 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
           </label>
         </div>
         <p className="muted" style={{marginTop:12}}>
-          {current?.name||"No project selected"} · {loading?"Loading live inventory…":error?"Inventory unavailable":(result?.units?.length||0)+" inventory units"}
+          {current?.name||"No project selected"} · {loading?t("Loading live inventory…","جاري تحميل المخزون…"):error?t("Inventory unavailable","المخزون غير متاح"):(result?.units?.length||0)+" "+t("inventory units","وحدة من المخزون")}
         </p>
         {error&&<div className="notice" role="alert">
-          تعذر قراءة المخزون: {error}. سيتم إيقاف تلوين الحالات لحين عودة المصدر المباشر.
+          {t("Inventory could not be refreshed: ","تعذر قراءة المخزون: ")}{error}. {t("Status colors are disabled until the live source is available.","سيتم إيقاف تلوين الحالات لحين عودة المصدر المباشر.")}
         </div>}
       </section>
       {isCairo&&result&&!error&&
         <CairoPlazaInteractiveMap floor={floorNumber} inventory={result.units||[]}
           selected={selected} onSelect={setSelected}/>}
-      {isCairo&&!result&&!error&&<section className="panel">جاري تحميل المخزون والمخططات…</section>}
+      {isCairo&&!result&&!error&&<section className="panel">{t("Loading inventory and floor plans…","جاري تحميل المخزون والمخططات…")}</section>}
       {!isCairo&&otherFloor&&result&&!error&&<section className="panel">
         <div className="between" style={{flexWrap:"wrap",gap:10}}>
-          <h2>مخطط {otherFloor.name}</h2>
+          <h2>{t("Floor plan","مخطط")} {otherFloor.name}</h2>
           <div className="actionline">
             <button className="btn soft" onClick={()=>setZoom(v=>Math.max(1,v/1.25))}>−</button>
             <span>{Math.round(zoom*100)}%</span>
@@ -138,13 +117,13 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
           </svg>
         </div>
         {currentShape&&<div className="notice" style={{marginTop:10}}>
-          <b>{currentShape.unitCode}</b> · {currentStock?.status||"غير موجودة بالمخزون"}
-          {" · "}{currentStock?.area||"—"} م² · {currentStock?.price||"—"} EGP
+          <b>{currentShape.unitCode}</b> · {currentStock?.status||"{t("Not in inventory","غير موجودة بالمخزون")}"}
+          {" · "}{currentStock?.area||"—"} {t("sqm","م²")} · {currentStock?.price||"—"} EGP
         </div>}
       </section>}
       {!isCairo&&!loading&&!error&&!otherFloor&&<section className="panel">
-        <h2>لا توجد حدود وحدات معتمدة لهذا المشروع حتى الآن</h2>
-        <p>يمكن إضافة المخطط الأصلي من إعدادات النظام.</p>
+        <h2>{t("No approved unit outlines for this project yet","لا توجد حدود وحدات معتمدة لهذا المشروع حتى الآن")}</h2>
+        <p>{t("An administrator can upload its engineering floorplan in settings.","يمكن إضافة المخطط الأصلي من إعدادات النظام.")}</p>
       </section>}
     </main>
   </div>;
