@@ -162,7 +162,7 @@ export default function AdminPanel({ email, projects }: { email: string; project
                 })}/>
             </label>
           </div>
-          <p className="muted">{tr("Installment frequency hint")}</p>
+          <p className="muted">{tr("Installment frequency hint")} — {tr("Zero offset means automatic start after one payment interval")}</p>
           <p className="notice">{tr("Down payment counts as payment number 1 within the selected term.")}{" "}
             {Number(plan.months)>0 && Number(plan.installmentIntervalMonths)>0 && Number(plan.downPaymentPct)>=0
               ? tr("Estimated payment breakdown") + ": " +
