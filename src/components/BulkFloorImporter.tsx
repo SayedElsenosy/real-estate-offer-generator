@@ -29,21 +29,21 @@ export function BulkFloorImporter({ projectId, floors }: { projectId: string; fl
     if (busy) return;
     setBusy(true);
     setDone(false);
-    setProgress("Opening Cairo Plaza floorplan archive...");
+    setProgress(tr("Opening Cairo Plaza floorplan archive..."));
     setFailures([]);
     const problems: string[] = [];
     try {
-      if (projectId !== "cairo-plaza") throw Error("This verified archive belongs only to Cairo Plaza.");
-      if (file.size > 12000000) throw Error("Maximum permitted ZIP size is 12MB.");
+      if (projectId !== "cairo-plaza") throw Error(tr("This verified archive belongs only to Cairo Plaza."));
+      if (file.size > 12000000) throw Error(tr("Maximum permitted ZIP size is 12MB."));
       const zip = await JSZip.loadAsync(file, {checkCRC32:true});
       const metadata = zip.file("manifest.json");
-      if (!metadata) throw Error("Archive is missing manifest.json.");
+      if (!metadata) throw Error(tr("Archive is missing manifest.json."));
       const manifest = JSON.parse(await metadata.async("string")) as Manifest;
       if (manifest.version !== 1 || manifest.projectId !== projectId ||
           !Array.isArray(manifest.floors) || manifest.floors.length !== 8)
-        throw Error("Not a validated 8-floor Cairo Plaza package.");
+        throw Error(tr("Not a validated 8-floor Cairo Plaza package."));
       const allFloors = new Set(manifest.floors.map(item=>item.floor));
-      if (allFloors.size !== 8) throw Error("Duplicate floors found in archive.");
+      if (allFloors.size !== 8) throw Error(tr("Duplicate floors found in archive."));
       for (let i=0; i<manifest.floors.length; i++) {
         const item = manifest.floors[i];
         const existing = floors.find(f=>f.floor===item.floor);
@@ -67,7 +67,7 @@ export function BulkFloorImporter({ projectId, floors }: { projectId: string; fl
         const markers = (item.markers || []).map(m=>({
           code: String(m.code),x:Number(m.x),y:Number(m.y)
         }));
-        setProgress("Uploading floor "+(i+1)+" of 8: "+item.name+"...");
+        setProgress(tr("Uploading floor ")+(i+1)+tr(" of 8: ")+item.name+"...");
         const response = await fetch("/api/floors", {
           method:"POST",headers:{"Content-Type":"application/json"},
           body:JSON.stringify({
@@ -83,14 +83,14 @@ export function BulkFloorImporter({ projectId, floors }: { projectId: string; fl
       }
       setFailures(problems);
       if (problems.length) {
-        setProgress("Completed with "+problems.length+" exceptions. Successful floors were saved.");
+        setProgress(tr("Completed with ")+problems.length+tr(" exceptions. Successful floors were saved."));
       } else {
         setDone(true);
-        setProgress("All 8 Cairo Plaza floor backgrounds and 121 verified text-location annotations saved as DRAFT. Refresh to inspect.");
+        setProgress(tr("All 8 Cairo Plaza floor backgrounds and 121 verified text-location annotations saved as DRAFT. Refresh to inspect."));
       }
     } catch(e) {
-      setFailures([e instanceof Error?e.message:"Archive import failed"]);
-      setProgress("Import could not finish.");
+      setFailures([e instanceof Error?tr(e.message):tr("Archive import failed")]);
+      setProgress(tr("Import could not finish."));
     } finally {setBusy(false);}
   }
   return <div className="panel" style={{marginBottom:20}}>
