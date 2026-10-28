@@ -218,7 +218,19 @@ const translationMap: Record<string, string> = {
   "Completed with ": "انتهى الاستيراد مع ",
   " exceptions. Successful floors were saved.": " استثناءات، وتم حفظ الأدوار الناجحة.",
   "All 8 Cairo Plaza floor backgrounds and 121 verified text-location annotations saved as DRAFT. Refresh to inspect.": "تم استيراد مخططات الأدوار الثمانية كمسودات للمراجعة. أعد تحميل الصفحة للفحص.",
-  "Please select a valid ZIP": "اختر ملف ZIP صالحًا."
+  "Please select a valid ZIP": "اختر ملف ZIP صالحًا.",
+  "Total term including down payment (months)": "مدة السداد شاملة المقدم (بالشهور)",
+  "Installment every (months)": "القسط كل كام شهر؟",
+  "Next payment after down payment (months)": "بداية القسط التالي بعد المقدم (بالشهور)",
+  "Down payment counts as payment number 1 within the selected term.": "المقدم هو الدفعة رقم ١ وداخل مدة السداد المحددة، وليس قسطًا إضافيًا.",
+  "Installment frequency hint": "1 = أقساط شهرية • 3 = ربع سنوية • 6 = نصف سنوية • 12 = سنوية",
+  "Every": "كل",
+  "Duration and interval leave no future installment slots; extend the duration or shorten the interval": "مدة السداد وتكرار الأقساط لا يتركان موعدًا لأي قسط لاحق؛ زوّد المدة أو قلّل الفاصل",
+  "Last installment falls outside the selected duration; adjust the offset or frequency": "آخر قسط خارج مدة السداد المحددة؛ عدّل موعد بداية الأقساط أو تكرارها",
+  "Installment interval must be an integer from 1 to 36 months": "الفاصل بين الأقساط لازم يكون عدد شهور صحيح من 1 إلى 36",
+  "The duration and interval allow only the down payment; choose a longer term or a shorter interval": "المدة الحالية تسمح بالمقدم فقط؛ زوّد المدة أو قلّل الفاصل بين الأقساط",
+  "Installment dates exceed the total duration; adjust first installment offset or interval": "مواعيد الأقساط تتجاوز مدة السداد؛ عدّل بداية الأقساط أو تكرارها",
+  "First payment is the down payment": "المقدم هو الدفعة الأولى"
 };
 const Context = createContext<{language:Language;setLanguage:(v:Language)=>void}>({language:"ar",setLanguage:()=>{}});
 export function LanguageProvider({children}:{children:React.ReactNode}) {
