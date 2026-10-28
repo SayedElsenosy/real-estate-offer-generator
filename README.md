@@ -29,6 +29,18 @@ Standalone full-stack property offer generator using Next.js (App Router), Auth.
 - Multi-page PDF offers using @react-pdf/renderer (unit details, highlighted floor map and one payment schedule per chosen plan)
 - **Download-only offers:** PDFs are generated in memory and sent to the browser without saving new offers, schedule snapshots, or PDF binaries in Neon; offer history is disabled
 
+## Interactive CAD plan page
+
+Authenticated users can open `/plans` from the sidebar. The page displays **only APPROVED floor-plan shapes linked to the registered engineering DWG SHA-256**. It has floor selection, unit-code search, zoom, a status legend and unit details. Each load/refresh reads the current private Sheet1; nothing is written back to the workbook.
+
+- CAD-drawn code **absent from Sheet1**: **Sold Out (red)**. This is a display-only fallback, never a change to the engineering geometry or to Sheet1.
+- Present in Sheet1 and Available: **green**; Reserved/Booked: **amber**; all other present non-available statuses including Closed: **grey**.
+- The full unit code and floor must match exactly, apart from Unicode normalization/letter case; never alias SH/SR, zero padding or split-unit suffixes.
+- If private Sheet1 cannot be read, the viewer **does not** infer sold-out statuses from an empty result; it displays an error and withholds the color map.
+- Drawing-only units do not become offerable. Only live inventory with available status can be used for downloadable quotation PDFs; quote PDFs remain enabled.
+
+**Extraction still outstanding:** The supplied original DWG hash has been verified and the DXF has been inspected, but this does **not** establish approved boundary-to-unit-code mapping. Existing historical PDF-based draft polygons are excluded. Until the CAD-specific polygon mapping is extracted, verified and approved per floor, the plan page deliberately shows its review-pending state instead of fabricated footprints. Upload and approval must not be inferred from CAD text-label locations alone.
+
 ## Deployment
 The linked Vercel project automatically deploys changes pushed to main.
 
