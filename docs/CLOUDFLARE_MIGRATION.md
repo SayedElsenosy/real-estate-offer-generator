@@ -39,3 +39,20 @@ Update Google OAuth Authorized Redirect URIs for the *new Worker origin*, follow
 6. After acceptance, switch users to the Worker; only then retire Vercel.
 
 Reference: https://developers.cloudflare.com/workers/framework-guides/web-apps/nextjs/
+
+## Verified Vercel variable names (metadata-only audit, 2026-10-28)
+
+The production Vercel project actually contains these seven variable **names**:
+`ADMIN_EMAILS`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`, `DATABASE_URL`, and `AUTH_TRUST_HOST`.
+
+Important: the existing authentication module accepts `NEXTAUTH_SECRET` as a fallback to `AUTH_SECRET`; it does **not** require both. For the Cloudflare Worker, prefer storing `AUTH_SECRET` while retaining the same underlying secret value. Configure `AUTH_URL` or `NEXTAUTH_URL` to the new Worker origin if required by the chosen Auth.js adapter. Do not copy the old Vercel URL into the new production config.
+
+This was a read of variable **names and types only**. Secret values were not retrieved or transferred, and Cloudflare has no production-ready Worker for this repository yet.
+
+## CI observability limitation
+
+The available GitHub connector only exposes pull-request-triggered workflow runs in its commit-run query, and the commit status endpoint reports Vercel build quota failure. Thus an empty workflow-run response does **not** prove a workflow never ran or passed. Use the GitHub Actions workflow page to inspect the actual run and logs before declaring compatibility verified.
+
+## Existing Cloudflare inventory
+
+`cairo-plaza-web` is an existing, unrelated D1-backed Worker; its credentials and D1 database must not be reused or overwritten. Likewise, preserve `bunyra-new` untouched.
