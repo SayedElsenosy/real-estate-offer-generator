@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
+import { unitKey } from "@/lib/unit-code";
 
 type Unit = { code: string; price: string; area: string; floor: string; status: string; project: string };
 type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number };
@@ -30,7 +31,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
   const [search, setSearch] = useState("");
   const [history, setHistory] = useState<History[]>([]);
   const project = projects.find(p => p.id === projectId);
-  const unit = units.find(value => value.code === selected);
+  const unit = units.find(value => unitKey(value.code) === unitKey(selected));
   const floor = floors.find(f => f.floor === (unit?.floor ?? floorNumber)) || floors[0];
   const vb = floor?.viewBox?.trim().split(/\s+/).map(Number) || [0,0,1000,700];
   const visibleUnits = useMemo(() => units.filter(item =>
@@ -53,7 +54,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
       .then(result => { if (result?.offers) setHistory(result.offers); }).catch(() => {});
   }, []);
   function selectUnit(code: string) {
-    const match = units.find(u => u.code === code);
+    const match = units.find(u => unitKey(u.code) === unitKey(code));
     if (!match || !isAvailable(match.status)) return;
     setSelected(code);
     setFloorNumber(match.floor);
@@ -99,7 +100,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
       <div className="stack">
         <section className="panel"><div className="panelhead"><div><div className="eyebrow">CURRENT INVENTORY</div><h2 style={{marginTop:10}}>Find your property</h2></div><span className="pill">{units.length} total</span></div>
           <input className="field" placeholder="Search Unit Code or floor..." value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:15}} />
-          <div className="list">{visibleUnits.map(value => <button type="button" key={value.code} className={"unit" + (value.code === selected ? " active" : "")}
+          <div className="list">{visibleUnits.map(value => <button type="button" key={value.code} className={"unit" + (unitKey(value.code) === unitKey(selected) ? " active" : "")}
             disabled={!isAvailable(value.status)} onClick={() => selectUnit(value.code)}>
             <span><b>{value.code}</b><small>Floor {value.floor || "—"} · {value.area || "—"} sqm</small></span>
             <span style={{textAlign:"right"}}><b>{nicePrice(value.price)}</b><small>{value.status}</small></span>
@@ -122,7 +123,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
             <svg className="floor-svg" viewBox={floor.viewBox} role="img" aria-label="Architectural floor map with reviewed unit geometry">
               {floor.backgroundData && <image href={floor.backgroundData} x={vb[0]} y={vb[1]} width={vb[2]} height={vb[3]} preserveAspectRatio="none"/>}
               {(floor.markers || []).map((m,i)=>{
-                const u=units.find(value=>value.code===m.code);
+                const u=units.find(value=>unitKey(value.code)===unitKey(m.code));
                 const status=u?.status || "SOLD OUT";
                 return <circle key={"source-label-"+i} cx={m.x} cy={m.y} r={9}
                   fill={u?"#c2a064":"#e34545"} fillOpacity={.72}
@@ -131,11 +132,11 @@ export default function Studio({ projects, email }: { projects: Project[]; email
                   </circle>;
               })}
               {floor.shapes.map((shape,i)=>{
-                const known = units.find(value=>value.code===shape.unitCode);
+                const known = units.find(value=>unitKey(value.code)===unitKey(shape.unitCode));
                 const blocked = !known || !isAvailable(known.status);
                 const approved = floor.reviewStatus === "APPROVED";
                 return <path key={i} d={shape.d}
-                  fill={!known?"#efaaaa":blocked?"#d3d9e1":shape.unitCode===selected?"#c5a16a":"#d8e8df"}
+                  fill={!known?"#efaaaa":blocked?"#d3d9e1":unitKey(shape.unitCode)===unitKey(selected)?"#c5a16a":"#d8e8df"}
                   stroke={approved?"#32465d":"#1b78b9"} strokeWidth={approved?3:2.5}
                   strokeDasharray={approved?undefined:"8 5"}
                   fillOpacity={approved?.42:.16}
