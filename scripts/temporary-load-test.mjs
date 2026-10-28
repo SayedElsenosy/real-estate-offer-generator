@@ -58,7 +58,14 @@ console.log("Starting temporary one-time, secret-protected Offer Atelier real pi
 let testResult=null;
 try{
   await wrangler(["secret","put","OFFER_LOAD_TEST_SECRET"],secret+"\n");
-  const single=await burst(1);
+  // A secret update creates a new Worker deployment; edge propagation can
+  // lag several seconds. Recheck the single request before a 100-way burst.
+  await new Promise(resolve=>setTimeout(resolve,12000));
+  let single=await burst(1);
+  for(let attempt=0;attempt<4&&single.success!==1&&single.statuses["404"];attempt++){
+    await new Promise(resolve=>setTimeout(resolve,4000));
+    single=await burst(1);
+  }
   if(single.success!==1){
     console.log("Single real offer failed; 100-request burst intentionally skipped.");
     testResult={single,burst100:null};
@@ -67,7 +74,7 @@ try{
     testResult={single,burst100:simultaneous};
   }
 }finally{
-  try{await wrangler(["secret","delete","OFFER_LOAD_TEST_SECRET","--yes"]);}
+  try{await wrangler(["secret","delete","OFFER_LOAD_TEST_SECRET"],"y\n");}
   catch(e){console.error("WARNING: Could not remove temporary test credential automatically. Redeploy without endpoint immediately.",String(e).slice(0,220));}
 }
 if(!testResult?.burst100 || testResult.burst100.failed>0){
