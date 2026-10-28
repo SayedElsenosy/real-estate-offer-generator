@@ -5,6 +5,9 @@ on:
   push:
     paths:
       - '.github/workflows/cloudflare-compatibility.yml'
+      - 'scripts/cloudflare-preflight.mjs'
+      - 'package.json'
+      - 'prisma/schema.prisma'
 
 permissions:
   contents: read
@@ -12,18 +15,24 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install dependencies without changing repository
-        run: npm install --ignore-scripts --no-audit --no-fund
-      - name: Run Cloudflare-recommended vinext compatibility check
+      - name: Static migration audit (no credentials)
+        run: node scripts/cloudflare-preflight.mjs
+      - name: Install dependencies without writing lockfile
+        run: npm install --no-package-lock --ignore-scripts --no-audit --no-fund
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: TypeScript check
+        run: npm run typecheck
+      - name: vinext compatibility check
         run: npx --yes vinext check
-      - name: Report instructions
+      - name: Migration status
         if: always()
         run: |
-          echo "Check the vinext compatibility report before initiating migration."
           echo "No Cloudflare secrets are used and this workflow does not deploy."
+          echo "A successful static check is NOT proof that OAuth/Neon/PDF work on Workers."
