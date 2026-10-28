@@ -49,6 +49,31 @@ export default function AdminPanel({ email, projects }: { email: string; project
   function changeProject(key: "spreadsheetId" | "sheetRange" | "companyName" | "logoUrl", value: string) {
     setItems(old => old.map(p => p.id === id ? { ...p, [key]: value } : p));
   }
+  async function readCompanyLogo(file:File) {
+    setNotice("");
+    if(!["image/png","image/jpeg"].includes(file.type) || file.size>6_000_000){
+      setNotice(tr("Choose a PNG or JPEG logo under 6 MB."));return;
+    }
+    const objectUrl=URL.createObjectURL(file);
+    try{
+      const image=new Image();
+      image.src=objectUrl;
+      await image.decode();
+      if(!image.naturalWidth||!image.naturalHeight)throw Error("Invalid image.");
+      const factor=Math.min(1,500/Math.max(image.naturalWidth,image.naturalHeight));
+      const canvas=document.createElement("canvas");
+      canvas.width=Math.max(1,Math.round(image.naturalWidth*factor));
+      canvas.height=Math.max(1,Math.round(image.naturalHeight*factor));
+      const ctx=canvas.getContext("2d");if(!ctx)throw Error("Image processing is unavailable.");
+      ctx.drawImage(image,0,0,canvas.width,canvas.height);
+      let encoded=canvas.toDataURL(file.type,0.88);
+      if(encoded.length>350000) encoded=canvas.toDataURL("image/jpeg",0.78);
+      if(encoded.length>350000)throw Error("Logo remains too large. Choose a smaller picture.");
+      changeProject("logoUrl",encoded);
+      setNotice(tr("Logo prepared. Save project settings to keep it permanently."));
+    }catch(e){setNotice(e instanceof Error?e.message:tr("Logo could not be loaded"));}
+    finally{URL.revokeObjectURL(objectUrl);}
+  }
   async function saveProject() {
     if (!project) return;
     setBusy(true); setNotice("");
@@ -123,7 +148,21 @@ export default function AdminPanel({ email, projects }: { email: string; project
           <label className="fieldlabel">{tr("Google Drive file ID")}<input className="field" value={project.spreadsheetId || ""} placeholder="1AbCdEf..." onChange={e=>changeProject("spreadsheetId",e.target.value)}/></label>
           <label className="fieldlabel">{tr("Tab / range")}<input className="field" value={project.sheetRange} onChange={e=>changeProject("sheetRange",e.target.value)}/></label>
           <label className="fieldlabel">{tr("Company name on offers")}<input className="field" value={project.companyName} onChange={e=>changeProject("companyName",e.target.value)}/></label>
-          <label className="fieldlabel">{tr("Company logo URL (HTTPS)")}<input className="field" value={project.logoUrl||""} onChange={e=>changeProject("logoUrl",e.target.value)}/></label>
+          <label className="fieldlabel">{tr("Upload company logo (PNG or JPEG)")}
+            <input className="field" type="file" accept="image/png,image/jpeg"
+              onChange={e=>{const file=e.target.files?.[0];if(file)void readCompanyLogo(file);}}/>
+          </label>
+          {project.logoUrl?.startsWith("data:image/") && <div style={{display:"flex",gap:12,alignItems:"center"}}>
+            <img src={project.logoUrl} alt={tr("Company logo preview")}
+              style={{maxWidth:120,maxHeight:80,objectFit:"contain",border:"1px solid #e2e8f0",padding:6,borderRadius:8}}/>
+            <span className="muted">{tr("Uploaded logo will be embedded directly into PDF offers.")}</span>
+          </div>}
+          <label className="fieldlabel">{tr("Or use a permanent HTTPS logo URL")}
+            <input className="field" placeholder={tr("Image URL (not a temporary Facebook link)")}
+              value={project.logoUrl?.startsWith("data:image/")?"":project.logoUrl||""}
+              onChange={e=>changeProject("logoUrl",e.target.value)}/>
+          </label>
+          <p className="muted">{tr("Temporary Facebook photo URLs expire. Upload the original logo once and save settings to keep it available in every offer.")}</p>
           <button className="btn" onClick={saveProject} disabled={busy}>{tr("Save project settings")}</button>
         </div>
         <div className="notice" style={{marginTop:18}}>{tr("Cairo Plaza: Excel Sheet1 (column A code, G area, E floor, L status, M total price). The other projects use their verified live sheet layouts.")}</div>
