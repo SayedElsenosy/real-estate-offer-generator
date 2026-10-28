@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { unitKey } from "@/lib/unit-code";
-import cairoCad from "@/data/cairo-plaza-labels.json";
+
 import { cairoBgGzip } from "@/data/cairo-bg-gzip";
 
 type Project = { id: string; name: string };
@@ -123,68 +123,9 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
       <p className="muted" style={{marginTop:12}}>{project?.name||"No project selected"} · {loading?"Loading inventory...":error?"Inventory unavailable":(result?.units?.length||0)+" inventory units"}</p>
       {error&&<div className="notice" role="alert">تعذر قراءة المخزون: {error}. مش هنعتبر أي وحدة Sold Out قبل التأكد من حالة الشيت.</div>}
     </div>
-    {projectId==="cairo-plaza" && result && !error && <>
-      <section className="panel" style={{marginBottom:18}}>
-        <div className="between" style={{flexWrap:"wrap",gap:12}}>
-          <div>
-            <h2 style={{marginBottom:5}}>مخطط Cairo Plaza — {floorOptions.find(([n])=>n===floorNumber)?.[1]||floorNumber}</h2>
-            <p className="muted" style={{margin:0}}>الخلفية من الرسم الهندسي؛ النقاط تشير لمواضع أكواد الوحدات وليست حدودًا معتمدة.</p>
-          </div>
-          <div className="actionline">
-            <button className="btn soft" type="button" aria-label="تصغير المخطط" onClick={()=>setCadZoom(z=>Math.max(1,z/1.25))}>−</button>
-            <span>{Math.round(cadZoom*100)}%</span>
-            <button className="btn soft" type="button" aria-label="تكبير المخطط" onClick={()=>setCadZoom(z=>Math.min(3.5,z*1.25))}>+</button>
-          </div>
-        </div>
-        <div style={{display:"flex",gap:14,flexWrap:"wrap",margin:"16px 0",fontSize:13}}>
-          {(["available","reserved","closed","soldout"] as State[]).map(st=><span key={st} style={{display:"inline-flex",alignItems:"center",gap:6}}>
-            <span style={{width:11,height:11,borderRadius:50,background:palette[st]}}/>
-            {st==="available"?"متاحة":st==="reserved"?"محجوزة":st==="closed"?"غير متاحة":"غير موجودة بالشيت"}
-          </span>)}
-        </div>
-        <div style={{overflow:"auto",background:"#fff",border:"1px solid #dbe3eb",borderRadius:12}}>
-          <svg viewBox="0 0 214 155" aria-label="مخطط هندسي تفاعلي لوحدات كايرو بلازا"
-            style={{display:"block",width:cadZoom*100+"%",minWidth:680,maxWidth:"none",background:"#fff"}}>
-            {cadBackground && <image href={cadBackground} x="0" y="0" width="214" height="155" preserveAspectRatio="none"/>}
-            {(cairoCad.labelsByFloor[floorNumber as keyof typeof cairoCad.labelsByFloor]||[]).map((anchor,i)=>{
-              const unit=matches.get(unitKey(anchor.code));
-              const state=unit?statusOf(unit.status):"soldout";
-              const active=unitKey(anchor.code)===unitKey(selected);
-              return <g key={anchor.code+"-"+i} transform={`translate(${anchor.x} ${anchor.y})`}
-                role="button" tabIndex={0} aria-label={`الوحدة ${anchor.code}، ${unit?.status||"غير موجودة في المخزون"}`}
-                onClick={()=>setSelected(anchor.code)}
-                onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setSelected(anchor.code);}}}
-                style={{cursor:"pointer",outline:"none"}}>
-                {active && <circle r={3.5} fill="none" stroke="#132c4d" strokeWidth={0.65}/>}
-                <circle r={active?2.25:1.5} fill={palette[state]} stroke="#112943" strokeWidth={active?0.5:0.24}/>
-                <title>{anchor.code} — {unit?.status||"غير موجودة في الشيت"}</title>
-                {active && <text y={-4.5} textAnchor="middle" fontSize="3.1" fontWeight="700"
-                  paintOrder="stroke" stroke="#fff" strokeWidth={1.5} fill="#152b46">{anchor.code}</text>}
-              </g>;
-            })}
-          </svg>
-        </div>
-        {!cadBackground && <p className="muted" style={{fontSize:12,marginTop:9}}>جارٍ إظهار المرجع الهندسي لهذا الدور. بيانات الوحدات والألوان متاحة حتى لو الصورة غير محمّلة.</p>}
-        {selectedCadAnchor && <div className="panel" role="dialog" aria-label="تفاصيل الوحدة المختارة" style={{position:"fixed",bottom:18,left:18,zIndex:80,width:360,maxWidth:"calc(100vw - 36px)",maxHeight:"min(74vh,420px)",overflowY:"auto",background:"#fff",boxShadow:"0 15px 45px #14273d33",border:"1px solid #dbe3eb",borderRadius:16,padding:18}}>
-          <div className="between" style={{gap:10,flexWrap:"wrap"}}>
-            <h3 style={{margin:0}}>تفاصيل الوحدة — <span dir="ltr">{selectedCadAnchor.code}</span></h3>
-            <button type="button" aria-label="إغلاق تفاصيل الوحدة" onClick={()=>setSelected("")} style={{border:0,background:"#edf1f5",borderRadius:8,padding:"5px 10px",cursor:"pointer"}}>✕</button>
-            <span className="pill" style={{background:palette[selectedState]+"22",border:"1px solid "+palette[selectedState],color:"#1b314c"}}>
-              {selectedLiveUnit?.status||"غير موجودة في الشيت"}
-            </span>
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12,marginTop:15}}>
-            <div><div className="muted">المشروع</div><strong>Cairo Plaza</strong></div>
-            <div><div className="muted">الدور</div><strong>{floorOptions.find(([n])=>n===floorNumber)?.[1]||floorNumber}</strong></div>
-            <div><div className="muted">كود الوحدة</div><strong dir="ltr">{selectedCadAnchor.code}</strong></div>
-            <div><div className="muted">المساحة</div><strong>{selectedLiveUnit?.area?selectedLiveUnit.area+" م²":"غير مسجلة في المخزون"}</strong></div>
-            <div><div className="muted">السعر الحالي</div><strong>{selectedLiveUnit?.price?money(selectedLiveUnit.price):"غير متاح"}</strong></div>
-            <div><div className="muted">الحالة</div><strong>{selectedLiveUnit?.status||"غير موجودة في الشيت"}</strong></div>
-          </div>
-          {!selectedLiveUnit && <p style={{color:"#a94442",fontSize:13,marginTop:12}}>الوحدة موجودة بالرسم الهندسي لكن لم نجد لها صفًا مطابقًا وفريدًا في مخزون الشيت الحالي؛ لن نفترض سعرًا أو مساحة.</p>}
-        </div>}
-      </section>
-    </>}
+    {projectId==="cairo-plaza" && result && !error &&
+      <CairoPlazaInteractiveMap floor={floorNumber} inventory={result.units||[]}
+        selected={selected} onSelect={setSelected}/>}
     {projectId==="cairo-plaza" && !error && !result && <div className="panel">جاري تحميل بيانات مخزون كايرو بلازا لعرض ألوان الوحدات.</div>}
     {floor && result && !error ? <section className="panel" style={{marginTop:20}}>
       <h2>حدود الوحدات المعتمدة — {floor.name}</h2>
@@ -209,6 +150,6 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
       <h2>مفيش مخطط منشور للمشروع ده حاليًا</h2>
       <p className="muted">المشروع محدد بشكل صحيح، لكن لازم يتضاف له مخطط هندسي معتمد من إعدادات النظام قبل عرضه.</p>
     </div>}
-    {projectId==="cairo-plaza" && result && !error && !floor && <p className="muted">المعاينة بالأعلى هي المتاحة حاليًا؛ حدود الوحدات النهائية لسه قيد المراجعة الهندسية.</p>}
+    
   </main></div>;
 }
