@@ -91,7 +91,7 @@ export function OfferDocument({ company, logo, project, unit, issuedAt, floor, s
       </View>
       {schedule.rows.map((row, i) => <View key={i} style={st.tr} wrap={false}>
         <Text style={st.c1}>{row.number === null ? "—" : String(row.number)}</Text>
-        <Text style={st.c2}>{row.type === "DOWN_PAYMENT" ? "DOWN PAYMENT (PAYMENT 1)" : row.type === "DELIVERY" ? "DELIVERY COLLECTION" : row.type.replace("_", " ")}</Text>
+        <Text style={st.c2}>{row.type === "DOWN_PAYMENT" ? "DOWN PAYMENT (PAYMENT 1)"  : row.type.replace("_", " ")}</Text>
         <Text style={st.c3}>{row.due}</Text>
         <Text style={st.c4}>{row.amount}</Text>
       </View>)}
