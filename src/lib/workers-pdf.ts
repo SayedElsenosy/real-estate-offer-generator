@@ -1,9 +1,12 @@
-import { PDFDocument, StandardFonts, rgb, type PDFPage, type PDFFont } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb, type PDFPage, type PDFFont, type PDFImage } from "pdf-lib";
+import Decimal from "decimal.js";
+import { unitKey } from "@/lib/unit-code";
+import type { PdfUnitLocation } from "@/lib/cairo-offer-location";
 import type { InventoryUnit } from "@/lib/sheets";
 import type { OfferSchedule, FloorGeometry } from "@/lib/pdf";
 
-type Props = { company:string; project:string; unit:InventoryUnit; issuedAt:string;
-  floor:FloorGeometry; schedules:OfferSchedule[] };
+type Props = { company:string; logoUrl?:string|null; project:string; unit:InventoryUnit; issuedAt:string;
+  floor:FloorGeometry; location?:PdfUnitLocation|null; schedules:OfferSchedule[] };
 const W=595.28,H=841.89, LEFT=43,RIGHT=W-43;
 const navy=rgb(0.09,0.16,0.26), gold=rgb(0.70,0.53,0.29), gray=rgb(0.47,0.55,0.64),
   pale=rgb(0.94,0.96,0.98), white=rgb(1,1,1), line=rgb(0.88,0.91,0.94);
@@ -17,12 +20,14 @@ function printable(value:unknown, fallback="-") {return ascii(value)||fallback;}
 function shorten(value:unknown, max=86) {
   const text=printable(value);return text.length>max ? text.slice(0,max-3)+"..." : text;
 }
-function header(page:PDFPage,company:string,title:string,sub:string,bold:PDFFont,regular:PDFFont) {
+function header(page:PDFPage,company:string,title:string,sub:string,bold:PDFFont,regular:PDFFont,logo:PDFImage|null) {
   page.drawRectangle({x:0,y:H-118,width:W,height:118,color:navy});
   page.drawRectangle({x:LEFT,y:H-56,width:35,height:3,color:gold});
-  page.drawText("OFFER  ATELIER", {x:LEFT,y:H-43,size:11,font:bold,color:gold});
-  page.drawText(shorten(title,39),{x:LEFT,y:H-83,size:26,font:bold,color:white});
-  page.drawText(shorten(sub,94),{x:LEFT,y:H-104,size:9,font:regular,color:rgb(0.85,0.89,0.94)});
+  page.drawText(shorten(company.toUpperCase(),48), {x:LEFT,y:H-43,size:11,font:bold,color:gold});
+  page.drawText(shorten(title,30),{x:LEFT,y:H-83,size:25,font:bold,color:white});
+  page.drawText(shorten(sub,68),{x:LEFT,y:H-104,size:9,font:regular,color:rgb(0.85,0.89,0.94)});
+  if(logo){const r=Math.min(105/logo.width,73/logo.height);
+    page.drawImage(logo,{x:RIGHT-logo.width*r,y:H-93,width:logo.width*r,height:logo.height*r});}
   page.drawText(shorten(company,72),{x:LEFT,y:36,size:8,font:regular,color:gray});
   page.drawText("Live inventory quotation  |  Subject to availability and contract",{
     x:LEFT,y:22,size:7.6,font:regular,color:gray
@@ -47,16 +52,60 @@ function row(page:PDFPage,index:number,values:string[],y:number,regular:PDFFont)
     x:xs[i],y:y-1,size:8.2,font:regular,color:navy
   }));
 }
-export async function createPropertyOfferPdf({company,project,unit,issuedAt,floor,schedules}:Props):Promise<Uint8Array> {
+async function embeddedLogo(pdf:PDFDocument,url?:string|null):Promise<PDFImage|null> {
+  if(!url)return null;
+  try{
+    const parsed=new URL(url);
+    const hostname=parsed.hostname.toLowerCase();
+    const configured=(process.env.ALLOWED_LOGO_HOSTS||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
+    // Existing project logos are sourced from Facebook's read-only CDN.
+    // Only explicitly configured hosts or known public image CDN hosts qualify.
+    const allowed=hostname.endsWith(".fbcdn.net")||hostname==="fbcdn.net"||configured.includes(hostname);
+    if(parsed.protocol!=="https:"||!allowed)return null;
+    const response=await fetch(parsed.toString(),{redirect:"manual",cache:"no-store",
+      signal:AbortSignal.timeout(6000)});
+    if(!response.ok)return null;
+    const type=(response.headers.get("content-type")||"").toLowerCase();
+    if(!/image\/(jpeg|png)/.test(type))return null;
+    if(Number(response.headers.get("content-length")||0)>2_500_000)return null;
+    const bytes=new Uint8Array(await response.arrayBuffer());
+    if(bytes.length>2_500_000)return null;
+    return type.includes("png")?await pdf.embedPng(bytes):await pdf.embedJpg(bytes);
+  }catch{return null;}
+}
+function cairoLocation(page:PDFPage,plan:PdfUnitLocation) {
+  const viewX=214,viewY=155;
+  const frameW=RIGHT-LEFT-18,frameH=306;
+  const scale=Math.min(frameW/viewX,frameH/viewY);
+  const x=LEFT+9+(frameW-viewX*scale)/2;
+  const y=327+326-10;
+  // Draw underlying engineering CAD as native PDF vector paths.
+  // svgPath automatically flips its Y axis to match SVG top-down coordinates.
+  for(const line of plan.cadPaths){
+    if(!/^\s*[Mm]/.test(line.d))continue;
+    page.drawSvgPath(line.d,{x,y,scale,borderColor:rgb(0.73,0.77,0.80),borderWidth:0.045});
+  }
+  for(const unit of plan.unitPaths){
+    if(unitKey(unit.code)===unitKey(plan.selectedCode))continue;
+    page.drawSvgPath(unit.d,{x,y,scale,borderColor:rgb(0.20,0.41,0.43),borderWidth:0.12});
+  }
+  const selected=plan.unitPaths.find(u=>unitKey(u.code)===unitKey(plan.selectedCode));
+  if(selected){
+    page.drawSvgPath(selected.d,{x,y,scale,color:rgb(0.94,0.74,0.28),
+      borderColor:rgb(0.61,0.34,0.09),borderWidth:0.65});
+  }
+}
+export async function createPropertyOfferPdf({company,logoUrl,project,unit,issuedAt,floor,location,schedules}:Props):Promise<Uint8Array> {
   const pdf=await PDFDocument.create();
   const regular=await pdf.embedFont(StandardFonts.Helvetica);
   const bold=await pdf.embedFont(StandardFonts.HelveticaBold);
+  const logo=await embeddedLogo(pdf,logoUrl);
   pdf.setTitle("Property Offer - "+printable(unit.code));
   pdf.setSubject("Live real estate offer; not stored by Offer Atelier");
   pdf.setAuthor(printable(company,"Offer Atelier"));
   pdf.setProducer("Offer Atelier / Cloudflare Workers");
   const intro=pdf.addPage([W,H]);
-  header(intro,company,"PROPERTY OFFER",printable(project),bold,regular);
+  header(intro,company,"PROPERTY OFFER",printable(project),bold,regular,logo);
   intro.drawRectangle({x:LEFT,y:H-191,width:RIGHT-LEFT,height:45,color:pale});
   intro.drawText("UNIT "+shorten(unit.code,40),{x:LEFT+18,y:H-174,size:19,font:bold,color:navy});
   pair(intro,"Offer date",issuedAt, H-225,regular,bold);
@@ -66,6 +115,11 @@ export async function createPropertyOfferPdf({company,project,unit,issuedAt,floo
   pair(intro,"Area",unit.area ? unit.area+" sqm":"-",H-401,regular,bold);
   pair(intro,"Inventory status",unit.status,H-445,regular,bold);
   pair(intro,"UNIT PRICE","EGP "+unit.price,H-489,regular,bold);
+  const priceValue=new Decimal(String(unit.price).replace(/[,\s]/g,""));
+  const areaValue=new Decimal(String(unit.area).replace(/[,\s]/g,""));
+  const sqmPrice=priceValue.isFinite()&&areaValue.isFinite()&&areaValue.gt(0)
+    ?priceValue.div(areaValue).toDecimalPlaces(2,Decimal.ROUND_HALF_UP).toFormat(2):"—";
+  pair(intro,"PRICE PER SQM","EGP "+sqmPrice,H-533,regular,bold);
   intro.drawText("Prices and availability are rechecked against the live project source before issue.",{
     x:LEFT,y:195,font:regular,size:9,color:gray
   });
@@ -73,11 +127,13 @@ export async function createPropertyOfferPdf({company,project,unit,issuedAt,floo
     x:LEFT,y:176,font:regular,size:9,color:gray
   });
   const map=pdf.addPage([W,H]);
-  header(map,company,"UNIT LOCATION",printable(project)+"  /  "+printable(unit.code),bold,regular);
+  header(map,company,"UNIT LOCATION",printable(project)+"  /  "+printable(unit.code),bold,regular,logo);
   // Only approved engineering geometry can be represented as unit boundaries.
   // A source DWG alone does not certify automatically derived unit polygons.
   map.drawRectangle({x:LEFT,y:327,width:RIGHT-LEFT,height:326,color:pale,borderColor:line,borderWidth:1});
-  if(floor && floor.shapes.length>0 && floor.backgroundData?.startsWith("data:image/")){
+  if(location){
+    cairoLocation(map,location);
+  } else if(floor && floor.shapes.length>0 && floor.backgroundData?.startsWith("data:image/")){
     try {
       const match=/^data:image\/(png|jpeg);base64,([\s\S]+)$/.exec(floor.backgroundData);
       if(match){
@@ -101,27 +157,31 @@ export async function createPropertyOfferPdf({company,project,unit,issuedAt,floo
     });
   }
   map.drawText("Floor: "+printable(unit.floor),{x:LEFT,y:291,font:bold,size:12,color:navy});
-  map.drawText("Only architecturally approved unit boundaries may be highlighted in official offers.",{
+  map.drawText(location?.reviewed ? "Highlighted outline is pending final engineering verification." :
+    "Engineering drawing shown for location reference, not measurement.",{
     x:LEFT,y:265,font:regular,size:9,color:gray
   });
   for(const schedule of schedules){
     let page=pdf.addPage([W,H]);
-    header(page,company,"PAYMENT SCHEDULE",printable(schedule.name)+" / UNIT "+printable(unit.code),bold,regular);
+    header(page,company,"PAYMENT SCHEDULE",printable(schedule.name)+" / UNIT "+printable(unit.code),bold,regular,logo);
     pair(page,"Term (down payment included)",schedule.durationMonths+" months",H-162,regular,bold);
-    pair(page,"Installment frequency","Every "+schedule.installmentIntervalMonths+" month(s)",H-193,regular,bold);
+    pair(page,"Payment cadence","Monthly",H-193,regular,bold);
     pair(page,"Payment slots",schedule.paymentCount,H-224,regular,bold);
     pair(page,"Unit price","EGP "+schedule.totalPrice,H-255,regular,bold);
     pair(page,"Down payment","EGP "+schedule.downPayment,H-286,regular,bold);
-    pair(page,"Delivery collection","EGP "+schedule.deliveryCollection,H-317,regular,bold);
-    pair(page,"Maintenance","EGP "+schedule.maintenance,H-348,regular,bold);
-    pair(page,"Total incl. maintenance","EGP "+schedule.totalIncludingMaintenance,H-379,regular,bold);
-    let y=H-438;tableHeader(page,y,bold);y-=35;
+    pair(page,"Expected delivery",schedule.deliveryMonths>0 ? "After "+schedule.deliveryMonths+" months" : "Not specified",H-317,regular,bold);
+    pair(page,"Collected by delivery","EGP "+schedule.preDeliveryTotal,H-348,regular,bold);
+    pair(page,"Balance after delivery","EGP "+schedule.postDeliveryTotal,H-379,regular,bold);
+    pair(page,"Maintenance deposit","EGP "+schedule.maintenance,H-410,regular,bold);
+    pair(page,"Maintenance due",schedule.maintenanceDueDate||"-",H-441,regular,bold);
+    pair(page,"Total with maintenance","EGP "+schedule.totalIncludingMaintenance,H-472,regular,bold);
+    let y=H-518;tableHeader(page,y,bold);y-=35;
     schedule.rows.forEach((entry,index)=>{
       if(y<85){
-        page=pdf.addPage([W,H]);header(page,company,"PAYMENT SCHEDULE","CONTINUED / "+printable(unit.code),bold,regular);
+        page=pdf.addPage([W,H]);header(page,company,"PAYMENT SCHEDULE","CONTINUED / "+printable(unit.code),bold,regular,logo);
         y=H-160;tableHeader(page,y,bold);y-=36;
       }
-      const type=entry.type==="DOWN_PAYMENT"?"DOWN PAYMENT (PAYMENT 1)":entry.type==="DELIVERY"?"DELIVERY COLLECTION":entry.type==="MAINTENANCE"?"MAINTENANCE":"INSTALLMENT";
+      const type=entry.type==="DOWN_PAYMENT"?"DOWN PAYMENT (PAYMENT 1)":entry.type==="MAINTENANCE"?"MAINTENANCE":"INSTALLMENT";
       row(page,index,[entry.number===null?"-":String(entry.number),type,entry.due,entry.amount],y,regular);y-=23;
     });
   }
