@@ -117,7 +117,7 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
           </svg>
         </div>
         {currentShape&&<div className="notice" style={{marginTop:10}}>
-          <b>{currentShape.unitCode}</b> · {currentStock?.status||"{t("Not in inventory","غير موجودة بالمخزون")}"}
+          <b>{currentShape.unitCode}</b> · {currentStock?.status||t("Not in inventory","غير موجودة بالمخزون")}
           {" · "}{currentStock?.area||"—"} {t("sqm","م²")} · {currentStock?.price||"—"} EGP
         </div>}
       </section>}
