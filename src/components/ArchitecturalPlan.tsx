@@ -1,143 +1,129 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
-import { useLanguage } from "@/components/LanguageProvider";
-import { unitKey } from "@/lib/unit-code";
 import { CadDxfPreview } from "@/components/CadDxfPreview";
+import { unitKey } from "@/lib/unit-code";
 
-type Unit = { code:string; floor:string; status:string; area:string; price:string };
-type Shape = {unitCode:string; d:string};
-type Floor = {id:string; name:string; floor:string|null; viewBox:string; shapes:Shape[]; backgroundData?:string|null; reviewStatus:string; sourceFileSha256?:string|null};
-type LiveResponse = {units?:Unit[]; floorPlans?:Floor[]; error?:string};
+type Project = { id: string; name: string };
+type Unit = { code: string; floor: string; status: string; area: string; price: string };
+type Shape = { unitCode: string; d: string };
+type Floor = { id: string; name: string; floor: string | null; viewBox: string; shapes: Shape[]; backgroundData?: string | null; reviewStatus: string; sourceFileSha256?: string | null };
+type Result = { units?: Unit[]; floorPlans?: Floor[]; error?: string };
 const DWG_SHA = "9c9aac1fcf2b330fbbb5e3555b86300b922ac1a33037e4ea51510ece82792c6a";
-type State = "available"|"reserved"|"closed"|"soldout";
-function stateOf(status:string): State {
-  const s=status.normalize("NFKC").toLowerCase().replace(/[\s_-]+/g,"");
-  if (["available","avail","forsale","متاح","متاحة","متوفر","متوفرة"].includes(s)) return "available";
-  if (["reserved","booked","booking","محجوز","محجوزة"].includes(s)) return "reserved";
+const floorOptions = [["-1","Basement / البدروم"],["0","Ground / الأرضي"],["1","First / الأول"],["2","Second / الثاني"],["3","Third / الثالث"],["4","Fourth / الرابع"],["5","Fifth / الخامس"],["6","Sixth / السادس"]];
+const palette = { available:"#45ad78", reserved:"#f0b95f", closed:"#8e99aa", soldout:"#df5260" };
+type State = keyof typeof palette;
+function statusOf(value: string):State {
+  const s=value.normalize("NFKC").trim().toLowerCase().replace(/[\s_-]+/g,"");
+  if(["available","avail","forsale","متاح","متاحة","متوفر","متوفرة"].includes(s))return "available";
+  if(["reserved","booked","booking","محجوز","محجوزة"].includes(s))return "reserved";
   return "closed";
 }
-const palette:Record<State,string>={available:"#45ad78",reserved:"#f0b95f",closed:"#8e99aa",soldout:"#df5260"};
-const labels:Record<State,string>={available:"Available / متاحة",reserved:"Reserved / محجوزة",closed:"Closed / مقفولة",soldout:"Sold Out / غير موجودة بالشيت"};
-function indexInventory(units:Unit[], floor:string|null) {
-  const matches=new Map<string,Unit[]>();
-  for(const u of units.filter(u=>u.floor===floor)){
-    const key=unitKey(u.code);
-    matches.set(key,[...(matches.get(key)||[]),u]);
-  }
-  return new Map([...matches].filter(([,v])=>v.length===1).map(([k,v])=>[k,v[0]]));
-}
-export default function ArchitecturalPlan({email}:{email:string}) {
-  const {tr}=useLanguage();
-  const [data,setData]=useState<LiveResponse|null>(null);
-  const [loading,setLoading]=useState(true);
+export default function ArchitecturalPlan({email,projects}:{email:string;projects:Project[]}) {
+  const [projectId,setProjectId]=useState(projects.find(p=>p.id==="cairo-plaza")?.id||projects[0]?.id||"");
+  const [result,setResult]=useState<Result|null>(null);
   const [error,setError]=useState("");
-  const [floorId,setFloorId]=useState("");
-  const [previewFloor,setPreviewFloor]=useState("0");
+  const [loading,setLoading]=useState(true);
+  const [revision,setRevision]=useState(0);
+  const [floorNumber,setFloorNumber]=useState("0");
   const [selected,setSelected]=useState("");
   const [search,setSearch]=useState("");
   const [zoom,setZoom]=useState(1);
-  const [show,setShow]=useState<State[]>(["available","reserved","closed","soldout"]);
-  const load=()=>{
-    setLoading(true);setError("");
-    fetch("/api/inventory?projectId=cairo-plaza",{cache:"no-store"})
-      .then(async response=>{const payload=await response.json() as LiveResponse;
-        if(!response.ok||payload.error) throw Error(payload.error||"Cannot access current inventory.");
-        setData(payload);
-      }).catch(e=>{setData(null);setError(e instanceof Error?e.message:String(e));})
-      .finally(()=>setLoading(false));
-  };
+  const [enabled,setEnabled]=useState<State[]>(["available","reserved","closed","soldout"]);
+  const project=projects.find(p=>p.id===projectId);
   useEffect(()=>{
+    if(!projectId){setLoading(false);return;}
     let stopped=false;
     let controller:AbortController|null=null;
     const refresh=async()=>{
       controller?.abort();
       controller=new AbortController();
-      try {
-        const response=await fetch("/api/inventory?projectId=cairo-plaza",{
-          cache:"no-store",signal:controller.signal
-        });
-        const payload=await response.json() as LiveResponse;
-        if(!response.ok||payload.error) throw Error(payload.error||"Cannot access current inventory.");
-        if(stopped) return;
-        setData(payload);setError("");
-      } catch(e) {
-        if(stopped||((e as Error).name==="AbortError")) return;
-        setData(null);
-        setError(e instanceof Error?e.message:String(e));
-      } finally {if(!stopped)setLoading(false);}
+      try{
+        const response=await fetch("/api/inventory?projectId="+encodeURIComponent(projectId),{cache:"no-store",signal:controller.signal});
+        const data=await response.json() as Result;
+        if(!response.ok||data.error)throw Error(data.error||"Inventory not available");
+        if(!stopped){setResult(data);setError("");}
+      }catch(e){
+        if(!stopped&&(e as Error).name!=="AbortError"){
+          setResult(null);setError(e instanceof Error?e.message:String(e));
+        }
+      }finally{if(!stopped)setLoading(false);}
     };
+    setResult(null);setError("");setLoading(true);
     void refresh();
-    const interval=setInterval(()=>{void refresh();},60000);
-    return ()=>{stopped=true;clearInterval(interval);controller?.abort();};
-  },[]);
-  const floors=useMemo(()=> (data?.floorPlans||[]).filter(f=>
-    f.sourceFileSha256===DWG_SHA && f.reviewStatus==="APPROVED" && f.shapes?.length>0)
-    .sort((a,b)=>Number(a.floor)-Number(b.floor)),[data]);
-  const floor=floors.find(f=>f.id===floorId)||floors[0];
-  const inventory=useMemo(()=>indexInventory(data?.units||[],floor?.floor??null),[data,floor]);
-  const entries=useMemo(()=> (floor?.shapes||[]).map(shape=>{
-    const unit=inventory.get(unitKey(shape.unitCode));
-    return {shape,unit,status:unit?stateOf(unit.status):"soldout" as State};
-  }),[floor,inventory]);
-  const visible=entries.filter(e=>show.includes(e.status)&&unitKey(e.shape.unitCode).includes(unitKey(search)));
-  const chosen=entries.find(e=>unitKey(e.shape.unitCode)===unitKey(selected));
-  function toggle(s:State){setShow(prev=>prev.includes(s)?prev.filter(v=>v!==s):[...prev,s]);}
-  const vb=(floor?.viewBox||"0 0 1000 1000").trim().split(/\s+/).map(Number);
+    const timer=setInterval(()=>{void refresh();},60000);
+    return ()=>{stopped=true;controller?.abort();clearInterval(timer);};
+  },[projectId,revision]);
+  const floors=useMemo(()=> (result?.floorPlans||[]).filter(f=>
+    f.reviewStatus==="APPROVED" && f.shapes?.length &&
+    (projectId!=="cairo-plaza"||f.sourceFileSha256===DWG_SHA))
+      .sort((a,b)=>Number(a.floor)-Number(b.floor)),[result,projectId]);
+  const floor=floors.find(f=>f.floor===floorNumber);
+  const matches=useMemo(()=>{
+    const grouped=new Map<string,Unit[]>();
+    for(const unit of result?.units||[]){
+      if(unit.floor!==floorNumber)continue;
+      const k=unitKey(unit.code);
+      grouped.set(k,[...(grouped.get(k)||[]),unit]);
+    }
+    return new Map([...grouped].filter(([,v])=>v.length===1).map(([k,v])=>[k,v[0]]));
+  },[result,floorNumber]);
+  const entries=(floor?.shapes||[]).map(shape=>{
+    const unit=matches.get(unitKey(shape.unitCode));
+    return {shape,unit,state:unit?statusOf(unit.status):"soldout" as State};
+  });
+  const visible=entries.filter(e=>enabled.includes(e.state)&&unitKey(e.shape.unitCode).includes(unitKey(search)));
+  const choice=entries.find(e=>unitKey(e.shape.unitCode)===unitKey(selected));
+  const vb=(floor?.viewBox||"0 0 1000 1000").split(/\s+/).map(Number);
   return <div className="shell"><Sidebar active="plans" email={email}/><main className="main">
-    <header className="header-line"><div><div className="eyebrow">CAIRO PLAZA / ENGINEERING CAD</div>
-      <h1>{tr("Interactive architectural plan")}</h1>
-      <p className="muted">DWG/DXF only · Sheet1 status refreshes every 60 seconds · Quotation PDF downloads remain available in Offer Studio.</p></div>
-      <button className="btn soft" onClick={load} disabled={loading}>{loading?"Loading...":"Refresh live inventory"}</button>
-    </header>
-    {error && <div className="notice" role="alert">Unable to verify Sheet1: {error}. Colors are withheld rather than incorrectly marking every unit Sold Out.</div>}
-    <div className="panel">
-      <div className="between" style={{gap:12,flexWrap:"wrap"}}>
-        <label className="fieldlabel">Floor
-          <select className="field" value={floor?.id||""} onChange={e=>{setFloorId(e.target.value);setSelected("");setZoom(1);}}>
-            {floors.map(f=><option key={f.id} value={f.id}>{f.name} ({f.floor})</option>)}
+    <header className="header-line"><div>
+      <div className="eyebrow">ENGINEERING / ARCHITECTURAL PLANS</div>
+      <h1>المخططات التفاعلية</h1>
+      <p className="muted">اختار المشروع والدور، ثم استعرض الوحدات حسب حالة المخزون الحالية. تحميل عرض السعر PDF ما زال متاحًا من صفحة العروض.</p>
+    </div><button type="button" className="btn soft" disabled={loading||!projectId} onClick={()=>setRevision(v=>v+1)}>{loading?"جاري التحديث...":"تحديث حالة الوحدات"}</button></header>
+    <div className="panel" style={{marginBottom:16}}>
+      <div className="between" style={{flexWrap:"wrap",gap:16}}>
+        <label className="fieldlabel" style={{minWidth:230,flex:1}}>المشروع / Project
+          <select className="field" value={projectId} onChange={e=>{setProjectId(e.target.value);setFloorNumber("0");setSelected("");setSearch("");setZoom(1);}}>
+            {projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </label>
-        <label className="fieldlabel">Unit code
-          <input className="field" placeholder="Search exact CAD code" value={search} onChange={e=>setSearch(e.target.value)}/>
+        <label className="fieldlabel" style={{minWidth:200,flex:1}}>الدور / Floor
+          <select className="field" value={floorNumber} onChange={e=>{setFloorNumber(e.target.value);setSelected("");setZoom(1);}}>
+            {projectId==="cairo-plaza" ? floorOptions.map(([value,label])=><option key={value} value={value}>{label}</option>) :
+              (result?.floorPlans||[]).map(f=><option key={f.id} value={f.floor||""}>{f.name}</option>)}
+          </select>
         </label>
-        <div className="actionline"><button className="btn soft" onClick={()=>setZoom(v=>Math.max(1,v/1.25))}>−</button>
-          <span>{Math.round(zoom*100)}%</span><button className="btn soft" onClick={()=>setZoom(v=>Math.min(4,v*1.25))}>+</button>
-          <button className="btn soft" onClick={()=>setZoom(1)}>Reset</button></div>
       </div>
-      <div className="actionline" style={{marginTop:15,flexWrap:"wrap"}}>
-        {(["available","reserved","closed","soldout"] as State[]).map(status=>
-          <label key={status} style={{display:"inline-flex",alignItems:"center",gap:7,fontSize:12}}>
-            <input type="checkbox" checked={show.includes(status)} onChange={()=>toggle(status)}/>
-            <span style={{display:"inline-block",width:12,height:12,borderRadius:3,background:palette[status]}}/>
-            {labels[status]} ({entries.filter(e=>e.status===status).length})
-          </label>)}
-      </div>
-      {floor&& !error ? <div style={{overflow:"auto",maxHeight:"75vh",marginTop:20,border:"1px solid #4a5768",borderRadius:12}}>
-        <svg viewBox={floor.viewBox} style={{width:(zoom*100)+"%",height:"auto",display:"block",minWidth:600}} role="group" aria-label={"Verified CAD floor "+floor.name}>
-          {floor.backgroundData && <image href={floor.backgroundData} x={vb[0]} y={vb[1]} width={vb[2]} height={vb[3]} preserveAspectRatio="none"/>}
-          {visible.map(({shape,unit,status})=><path key={shape.unitCode} d={shape.d}
-            fill={palette[status]} fillOpacity={selected===shape.unitCode ? 0.8 : 0.52}
-            stroke={selected===shape.unitCode?"#ffffff":"#314259"} strokeWidth={selected===shape.unitCode?3:1.5}
-            role="button" tabIndex={0} aria-label={shape.unitCode+" "+labels[status]}
-            style={{cursor:"pointer",outline:"none"}}
-            onClick={()=>setSelected(shape.unitCode)}
-            onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setSelected(shape.unitCode);}}}>
-            <title>{shape.unitCode} — {unit?.status||"Sold Out (not listed in Sheet1)"}</title>
-          </path>)}
-        </svg>
-      </div> : <div className="floor-blank" style={{marginTop:20}}>
-        <div><div className="symbol">⌗</div><h2>{loading?"Loading live floorplans…":error?"Inventory unavailable":"CAD boundaries awaiting architectural verification"}</h2>
-          <p className="muted">Only source-verified, approved DWG unit outlines can be published here. Legacy PDF-derived polygons are never shown.</p></div>
-      </div>}
-      {floor && !error && <p className="muted">{entries.length} verified CAD shapes on this floor · {visible.length} displayed. Sheet status is refreshed on page load and with Refresh.</p>}
-      {chosen && !error && <div className="notice" style={{marginTop:15}}>
-        <strong>{chosen.shape.unitCode}</strong> · {chosen.unit?.status||"Sold Out — missing from Sheet1"}
-        {chosen.unit && <> · {chosen.unit.area} m² · {chosen.unit.price} EGP</>}
-        <p style={{marginTop:6}}>Availability and pricing are controlled exclusively by the live inventory. Drawing-only units are never offerable.</p>
-      </div>}
+      <p className="muted" style={{marginTop:12}}>{project?.name||"No project selected"} · {loading?"Loading inventory...":error?"Inventory unavailable":(result?.units?.length||0)+" inventory units"}</p>
+      {error&&<div className="notice" role="alert">تعذر قراءة المخزون: {error}. مش هنعتبر أي وحدة Sold Out قبل التأكد من حالة الشيت.</div>}
     </div>
-    <div className="panel" style={{marginTop:20}}><label className="fieldlabel">CAD preview floor<select className="field" value={previewFloor} onChange={e=>{setPreviewFloor(e.target.value);setSelected("");}}>{[["-1","Basement"],["0","Ground"],["1","First"],["2","Second"],["3","Third"],["4","Fourth"],["5","Fifth"],["6","Sixth"]].map(([id,name])=><option key={id} value={id}>{name} ({id})</option>)}</select></label></div>
-    {data && !error ? <CadDxfPreview floor={previewFloor} inventory={data.units||[]} selected={selected} onSelect={setSelected}/> : <div className="notice" style={{marginTop:16}}>CAD preview requires an active Sheet1 connection to distinguish Sold Out units from an unavailable inventory.</div>}
+    {projectId==="cairo-plaza" && result && !error &&
+      <CadDxfPreview floor={floorNumber} inventory={result.units||[]} selected={selected} onSelect={setSelected}/>}
+    {projectId==="cairo-plaza" && !error && !result && <div className="panel">جاري تحميل بيانات مخزون كايرو بلازا لعرض ألوان الوحدات.</div>}
+    {floor && result && !error ? <section className="panel" style={{marginTop:20}}>
+      <h2>حدود الوحدات المعتمدة — {floor.name}</h2>
+      <div className="between" style={{gap:12,flexWrap:"wrap"}}>
+        <input className="field" style={{maxWidth:250}} placeholder="بحث بكود الوحدة" value={search} onChange={e=>setSearch(e.target.value)}/>
+        <div className="actionline"><button className="btn soft" onClick={()=>setZoom(x=>Math.max(1,x/1.25))}>−</button><span>{Math.round(zoom*100)}%</span><button className="btn soft" onClick={()=>setZoom(x=>Math.min(4,x*1.25))}>+</button></div>
+      </div>
+      <div className="actionline" style={{marginTop:12,flexWrap:"wrap"}}>
+        {(["available","reserved","closed","soldout"] as State[]).map(s=><label key={s} style={{display:"inline-flex",alignItems:"center",gap:6}}>
+          <input type="checkbox" checked={enabled.includes(s)} onChange={()=>setEnabled(v=>v.includes(s)?v.filter(x=>x!==s):[...v,s])}/>
+          <span style={{width:12,height:12,background:palette[s],display:"inline-block"}}/>{s} ({entries.filter(e=>e.state===s).length})
+        </label>)}
+      </div>
+      <div style={{overflow:"auto",maxHeight:"75vh",marginTop:16}}>
+        <svg viewBox={floor.viewBox} style={{width:zoom*100+"%",height:"auto",minWidth:600,display:"block"}}>
+          {floor.backgroundData&&<image href={floor.backgroundData} x={vb[0]} y={vb[1]} width={vb[2]} height={vb[3]} preserveAspectRatio="none"/>}
+          {visible.map(({shape,unit,state})=><path key={shape.unitCode} d={shape.d} fill={palette[state]} fillOpacity={0.48} stroke="#263b55" strokeWidth={2} role="button" tabIndex={0} style={{cursor:"pointer"}} onClick={()=>setSelected(shape.unitCode)} onKeyDown={e=>{if(e.key==="Enter"||e.key===" ")setSelected(shape.unitCode);}}><title>{shape.unitCode} — {unit?.status||"Sold Out"}</title></path>)}
+        </svg>
+      </div>
+      {choice&&<p className="notice">{choice.shape.unitCode}: {choice.unit?.status||"Sold Out"} {choice.unit?.area||""} {choice.unit?.price||""}</p>}
+    </section> : projectId!=="cairo-plaza" && !loading && !error && <div className="panel">
+      <h2>مفيش مخطط منشور للمشروع ده حاليًا</h2>
+      <p className="muted">المشروع محدد بشكل صحيح، لكن لازم يتضاف له مخطط هندسي معتمد من إعدادات النظام قبل عرضه.</p>
+    </div>}
+    {projectId==="cairo-plaza" && result && !error && !floor && <p className="muted">المعاينة بالأعلى هي المتاحة حاليًا؛ حدود الوحدات النهائية لسه قيد المراجعة الهندسية.</p>}
   </main></div>;
 }
