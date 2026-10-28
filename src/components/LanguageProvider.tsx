@@ -248,16 +248,20 @@ const translationMap: Record<string, string> = {
 const Context = createContext<{language:Language;setLanguage:(v:Language)=>void}>({language:"en",setLanguage:()=>{}});
 export function LanguageProvider({children}:{children:React.ReactNode}) {
   const [language,setLanguage]=useState<Language>("en");
+  const [restored,setRestored]=useState(false);
   useEffect(()=>{
     try {
-      if (localStorage.getItem("offer_atelier_language")==="ar") setLanguage("ar");
+      // v2 intentionally ignores old auto-saved Arabic defaults, so all
+      // existing devices start in English until the user chooses Arabic.
+      if (localStorage.getItem("offer_atelier_language_v2")==="ar") setLanguage("ar");
     } catch {}
+    setRestored(true);
   },[]);
   useEffect(()=>{
     document.documentElement.lang=language;
     document.documentElement.dir=language==="ar"?"rtl":"ltr";
-    try {localStorage.setItem("offer_atelier_language",language);} catch {}
-  },[language]);
+    if(restored)try {localStorage.setItem("offer_atelier_language_v2",language);} catch {}
+  },[language,restored]);
   return <Context.Provider value={{language,setLanguage}}>{children}</Context.Provider>;
 }
 export function useLanguage(){
