@@ -79,7 +79,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
     } finally { setGenerating(false); }
   }
   const toggle = (id: string, checked: boolean) => setChosenPlans(ids => checked ? [...ids, id] : ids.filter(x => x !== id));
-  return <div className="shell"><Sidebar active="studio" email={email} /><main className="main">
+  return <div className="shell"><Sidebar active="studio" email={email} shared={email==="Private link access"} /><main className="main">
     <header className="header-line"><div><div className="eyebrow">{tr("OFFER STUDIO / LIVE INVENTORY")}</div><h1>{tr("Build a property offer")}</h1><p className="muted">{tr("Pick a project, inspect a unit and include one or more financial scenarios.")}</p></div>
       <div style={{ minWidth: 230 }}><label className="fieldlabel">{tr("ACTIVE PROJECT")}
         <select className="field" value={projectId} onChange={e => setProjectId(e.target.value)}>
