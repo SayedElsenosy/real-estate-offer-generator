@@ -19,7 +19,7 @@
   "receivedDxf": {
     "fileName": "معماري كايرو بلازا.dxf",
     "sha256": "855b5b71af07fcadfda33b5a9d15dba2738b008d85ed28009d8c456088740fbb",
-    "bytes": 31300000,
+    "bytes": 30577417,
     "version": "AC1015 (DXF R2000; confirmed by ezdxf)",
     "status": "PARSED_NOT_YET_MATCHED_TO_DWG_GEOMETRY",
     "modelspaceEntities": 28341,
