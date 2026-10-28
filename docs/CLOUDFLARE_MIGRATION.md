@@ -114,3 +114,20 @@ Cloudflare Builds test `616a06d7-b6d8-452a-864c-05ed7ea25977` **passed all seven
 Deployed Cloudflare version after these checks: `149a9010-96bb-4799-a4a7-3b157d8b19df`. The official Neon connection also confirmed `offer_generator` with six expected core tables and five projects. **That checks Neon from the connected database tool, not from inside the Worker.**
 
 **Not yet confirmed**: interactive Google OAuth callback and real signed-in session, Worker-to-Neon query through Auth.js, authenticated live Google Sheet/Drive retrieval, a valid PDF offer generated with the real project and payment plan, and complete CAD display in the browser. Keep the migration PR in draft and do not delete Vercel until these tests pass.
+
+
+## Runtime fixes after real Google sign-in and inventory tests (2026-10-28)
+
+User tests revealed `/api/auth/error?error=Configuration` and later HTTP 500/502 inventory failures. Cloudflare's Worker telemetry was examined with secret/token values deliberately excluded.
+
+1. The login callback's `AdapterError` was caused by **Prisma 7 compiling a WASM query compiler dynamically** in workerd: `WebAssembly.Module(): Wasm code generation disallowed by embedder`. The Prisma generator now declares `runtime = "cloudflare"`. This fix was validated by authenticated-relevant Prisma queries against `User` and `Project` executed **inside** the live Worker during a temporary migration-only probe, which was then removed.
+2. Additional runtime logs showed **Neon/Prisma promises crossing Cloudflare request boundaries**. The global cached Prisma client was removed, and the Auth.js PrismaAdapter now resolves its Prisma client when each adapter method is called, so an instance is not shared between unrelated HTTP requests.
+3. Google Drive XLSX download used `fetch({redirect:"error"})`, a mode unsupported by Workers, causing an invalid redirect error on `/api/inventory`. This was replaced with explicit manual redirects restricted to HTTPS Google download hostnames, without forwarding the bearer token to cross-origin destinations.
+
+The final build with these repairs and TypeScript checking passed:
+- Build UUID: `48ee0af8-64cb-48fb-90ce-bc3d933147bc`
+- Deployed Worker version: `be773964-a3cf-41fe-9ff4-c7073fdf3b4d`
+- Checks: seven route guards/health tests plus 5/5 overlapping anonymous home/session requests.
+- The migration branch remains a draft PR. Vercel is retained as fallback.
+
+**Remaining manual acceptance**: the account holder must repeat a real Google OAuth login and then open Cairo Plaza and another spreadsheet-driven project's inventory and download a real PDF offer. These user-authenticated interactions cannot be established by anonymous smoke tests. Do not treat the public database readiness check as ongoing; its temporary endpoint has been removed.
