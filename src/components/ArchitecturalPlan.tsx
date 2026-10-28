@@ -45,7 +45,30 @@ export default function ArchitecturalPlan({email}:{email:string}) {
       }).catch(e=>{setData(null);setError(e instanceof Error?e.message:String(e));})
       .finally(()=>setLoading(false));
   };
-  useEffect(()=>{load();},[]);
+  useEffect(()=>{
+    let stopped=false;
+    let controller:AbortController|null=null;
+    const refresh=async()=>{
+      controller?.abort();
+      controller=new AbortController();
+      try {
+        const response=await fetch("/api/inventory?projectId=cairo-plaza",{
+          cache:"no-store",signal:controller.signal
+        });
+        const payload=await response.json() as LiveResponse;
+        if(!response.ok||payload.error) throw Error(payload.error||"Cannot access current inventory.");
+        if(stopped) return;
+        setData(payload);setError("");
+      } catch(e) {
+        if(stopped||((e as Error).name==="AbortError")) return;
+        setData(null);
+        setError(e instanceof Error?e.message:String(e));
+      } finally {if(!stopped)setLoading(false);}
+    };
+    void refresh();
+    const interval=setInterval(()=>{void refresh();},60000);
+    return ()=>{stopped=true;clearInterval(interval);controller?.abort();};
+  },[]);
   const floors=useMemo(()=> (data?.floorPlans||[]).filter(f=>
     f.sourceFileSha256===DWG_SHA && f.reviewStatus==="APPROVED" && f.shapes?.length>0)
     .sort((a,b)=>Number(a.floor)-Number(b.floor)),[data]);
@@ -62,7 +85,7 @@ export default function ArchitecturalPlan({email}:{email:string}) {
   return <div className="shell"><Sidebar active="plans" email={email}/><main className="main">
     <header className="header-line"><div><div className="eyebrow">CAIRO PLAZA / ENGINEERING CAD</div>
       <h1>{tr("Interactive architectural plan")}</h1>
-      <p className="muted">DWG/DXF only · Live Sheet1 colors · Quotation PDF downloads remain available in Offer Studio.</p></div>
+      <p className="muted">DWG/DXF only · Sheet1 status refreshes every 60 seconds · Quotation PDF downloads remain available in Offer Studio.</p></div>
       <button className="btn soft" onClick={load} disabled={loading}>{loading?"Loading...":"Refresh live inventory"}</button>
     </header>
     {error && <div className="notice" role="alert">Unable to verify Sheet1: {error}. Colors are withheld rather than incorrectly marking every unit Sold Out.</div>}
