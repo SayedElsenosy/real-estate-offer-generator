@@ -1,22 +1,13 @@
-# Cairo Plaza SVG trace audit — 69 draft polygons
+# Cairo Plaza — SVG draft boundary audit
 
-Source: original 8-page architectural PDF and readonly Cairo Plaza inventory.
+All eight floor plan images have been imported into Neon. Draft tracing totals **81**:
+- Basement (-1): **9** candidate unit polygons from 17 source-text labels.
+- Second floor (2): **45** candidate unit polygons from 67 source-text labels.
+- Sixth floor (6): **27** candidate unit polygons from 37 source-text labels.
+- Ground, first, third, fourth, fifth: artwork only; **0** reviewed polygons.
 
-| Floor | Candidate polygons | Machine-readable PDF labels | State |
-|---|---:|---:|---|
-| Basement (-1) | 9 | 17 | DRAFT |
-| Ground (0) | 0 | 0 | DRAFT |
-| First (1) | 0 | 0 | DRAFT |
-| Second (2) | 45 | 67 | DRAFT |
-| Third (3) | 0 | 0 | DRAFT |
-| Fourth (4) | 0 | 0 | DRAFT |
-| Fifth (5) | 0 | 0 | DRAFT |
-| Sixth (6) | 15 | 37 | DRAFT |
+**No floor is approved.** All 81 shapes represent traced, non-selectable, non-PDF draft candidates. Original drawing walls were used where available; text-label bounding rectangles were never accepted as unit outlines. Some bays with angled or ambiguous walls are intentionally left untraced. The 12 newest sixth-floor side offices are based on PDF horizontal wall y-coordinates 582.53, 646.63, 648.58, 687.43, 689.39, 728.24, 730.12, 768.98, 770.93, 809.78, 811.73, 872.67 with left/right external wall sections.
 
-**Total 69 proposed polygons; 121 text-code markers. No approved floor.**
+Rule: if drawn unit code is absent from fresh inventory, render Sold Out, never selectable. Historical red fill in an old PDF is not a substitute for live inventory status.
 
-The 18 newest candidates (5 basement, 13 sixth) were checked for source-code centroid containment, overlap and visually against the vector PDF. They are still proposed tracings—not a professional architectural certification or complete map. Irregular bays without certain wall geometry are intentionally omitted.
-
-**Business rule:** drawing-only code absent from fresh inventory = Sold Out (not selectable). A red fill already printed on the historical drawing does not supersede live inventory.
-
-For client offers, the UI/API may select only fully reviewed and APPROVED outlines. No source sheet or architecture source was edited. Before any floor approval, require a complete and audited geometry mapping for all known labels and all current stock codes.
+Candidate geometry source: `trace-drafts-81.json`. The app prohibits approval when identifiable labeled units or current live stock entries lack matching reviewed boundaries.
