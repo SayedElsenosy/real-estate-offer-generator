@@ -57,13 +57,13 @@ export function FloorPlanEditor({ projectId, floors }: { projectId: string; floo
   }
   async function imageFile(file: File) {
     if (!["image/png","image/jpeg"].includes(file.type) || file.size > 2*1024*1024)
-      return setMessage("Upload PNG or JPG image up to 2MB. Use the exact preview from your mapping package.");
+      return setMessage(tr("Upload PNG or JPG image up to 2MB. Use the exact preview from your mapping package."));
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === "string") {
         setSelected(v => ({...v, backgroundData: reader.result as string, reviewStatus: "DRAFT"}));
         setReviewed(false);
-        setMessage("Original artwork ready for review. The image is not yet an approved interactive unit map.");
+        setMessage(tr("Original artwork ready for review. The image is not yet an approved interactive unit map."));
       }
     };
     reader.readAsDataURL(file);
@@ -86,7 +86,7 @@ export function FloorPlanEditor({ projectId, floors }: { projectId: string; floo
         reviewStatus:"DRAFT"
       }));
       setReviewed(false);
-      setMessage(mapping.shapes.length+" polygons imported as DRAFT. Review every actual boundary on the reference image before approving.");
+      setMessage(mapping.shapes.length+tr(" polygons imported as DRAFT. Review every actual boundary on the reference image before approving."));
     } catch (e) { setMessage(e instanceof Error?e.message:"Mapping import failed"); }
   }
   async function save() {
@@ -104,7 +104,7 @@ export function FloorPlanEditor({ projectId, floors }: { projectId: string; floo
       const reply = await res.json();
       if (!res.ok) throw Error(reply.error || "Save failed");
       setSelected(v=>({...v,id:reply.floor.id,reviewStatus:reply.floor.reviewStatus}));
-      setMessage("Saved "+reply.floor.reviewStatus+". "+reply.floor.shapeCount+" traced polygons. Refresh to load the latest floor.");
+      setMessage(tr("Saved ")+tr(reply.floor.reviewStatus)+". "+reply.floor.shapeCount+tr(" traced polygons. Refresh to load the latest floor."));
     } catch(e) { setMessage(e instanceof Error?e.message:"Save failed"); }
     finally { setSaving(false); }
   }
@@ -126,10 +126,10 @@ export function FloorPlanEditor({ projectId, floors }: { projectId: string; floo
     <div className="stack" style={{gap:13}}>
       <label className="fieldlabel">{tr("Floor")}
         <select className="field" value={floorNumber} onChange={e=>choose(e.target.value)}>
-          {CODES.map(c=><option key={c.floor} value={c.floor}>{c.label} / Floor {c.floor}</option>)}
+          {CODES.map(c=><option key={c.floor} value={c.floor}>{tr(c.label)} / {tr("Floor")} {c.floor}</option>)}
         </select>
       </label>
-      <div className="between"><span className="pill">{selected.reviewStatus==="APPROVED"?"APPROVED GEOMETRY":"DRAFT — NEEDS REVIEW"}</span></div>
+      <div className="between"><span className="pill">{tr(selected.reviewStatus==="APPROVED"?"APPROVED GEOMETRY":"DRAFT — NEEDS REVIEW")}</span></div>
       <label className="fieldlabel">{tr("Floor title")}
         <input className="field" value={selected.name} onChange={e=>setSelected(p=>({...p,name:e.target.value}))}/>
       </label>
@@ -141,7 +141,7 @@ export function FloorPlanEditor({ projectId, floors }: { projectId: string; floo
       </label>
       <div className="floor-blank" style={{height:"auto",minHeight:250,padding:8,display:"block"}}>
         {hasImage || selected.shapes.length ?
-          <svg viewBox={selected.viewBox} style={{width:"100%",height:"auto",display:"block"}} aria-label={"Reviewed map "+selected.name}>
+          <svg viewBox={selected.viewBox} style={{width:"100%",height:"auto",display:"block"}} aria-label={tr("ARCHITECTURAL MAP")+" "+selected.name}>
             {hasImage && <image href={selected.backgroundData || ""} x={vb[0]||0} y={vb[1]||0} width={width} height={height} preserveAspectRatio="none"/>}
             {(selected.markers || []).map((m,i)=>{
               const u=unitByCode.get(unitKey(m.code));
@@ -158,14 +158,14 @@ export function FloorPlanEditor({ projectId, floors }: { projectId: string; floo
             })}
           </svg> : <div><div className="symbol">⌗</div><p className="muted">{tr("Upload the correct floor image from the SVG package to begin.")}</p></div>}
       </div>
-      {selectedCode && <p className="notice">{selectedCode}: {unitByCode.get(unitKey(selectedCode))?.status || "SOLD OUT — not listed in current inventory"}</p>}
+      {selectedCode && <p className="notice">{selectedCode}: {tr(unitByCode.get(unitKey(selectedCode))?.status || "SOLD OUT — not listed in current inventory")}</p>}
       <div className="notice">{tr("RED: drawing-only, not in inventory = Sold Out. GREEN: available in live inventory. GREY: reserved. Original artwork is preserved below the approved overlays. Never use a text-label bounding box as a unit footprint.")}</div>
       <label style={{display:"flex",alignItems:"flex-start",gap:9,fontSize:12}}>
         <input type="checkbox" checked={reviewed} onChange={e=>setReviewed(e.target.checked)} disabled={!selected.shapes.length}/>
         <span>{tr("I manually verified every polygon against the original drawing and approve these exact unit boundaries for live selection.")}</span>
       </label>
       <div className="actionline"><button className="btn" onClick={save} disabled={saving||!selected.name||(selected.shapes.length===0&&!hasImage)}>
-        {saving?"Saving…":reviewed?"Approve and publish":"Save draft for review"}</button>
+        {tr(saving?"Saving…":reviewed?"Approve and publish":"Save draft for review")}</button>
         <button className="btn soft" onClick={()=>choose(floorNumber)}>{tr("Reset selection")}</button></div>
       {message && <p className="notice">{message}</p>}
     </div>
