@@ -234,7 +234,12 @@ const translationMap: Record<string, string> = {
   "Estimated payment breakdown": "توزيع الدفعات",
   "down payment": "مقدم",
   "future installments": "أقساط لاحقة",
-  "Zero offset means automatic start after one payment interval": "قيمة صفر تعني بدء القسط التالي تلقائيًا بعد الفترة المختارة"
+  "Zero offset means automatic start after one payment interval": "قيمة صفر تعني بدء القسط التالي تلقائيًا بعد الفترة المختارة",
+  "OFFICIAL ARCHITECTURAL REFERENCE": "المرجع المعماري الرسمي",
+  "Cairo Plaza — Engineering DWG": "كايرو بلازا — ملف DWG من الإدارة الهندسية",
+  "The engineering DWG is the only accepted source. Previous PDF-based floor backgrounds and draft polygons have been retired from the live application. The DWG geometry must be converted and checked before publishing new interactive floor plans.": "تم اعتماد ملف DWG الوارد من الإدارة الهندسية كمصدر معماري وحيد. تم إيقاف المخططات والحدود القديمة المستخرجة من PDF داخل التطبيق. يلزم استخراج هندسة ملف DWG والتحقق منها قبل نشر مخططات جديدة تفاعلية.",
+  "Awaiting verified DWG layer and unit-boundary extraction. Inventory and quotation calculations remain available; no inaccurate map is shown.": "جارٍ تجهيز استخراج طبقات وحدود الوحدات من DWG بشكل موثّق. المخزون وحسابات العروض مستمران في العمل دون عرض خريطة غير دقيقة.",
+  "Cairo Plaza engineering DWG registered; accurate interactive maps will appear after CAD verification.": "تم اعتماد ملف DWG الهندسي لكايرو بلازا، وستظهر الخرائط التفاعلية الدقيقة بعد فحص ملف CAD."
 };
 const Context = createContext<{language:Language;setLanguage:(v:Language)=>void}>({language:"ar",setLanguage:()=>{}});
 export function LanguageProvider({children}:{children:React.ReactNode}) {
