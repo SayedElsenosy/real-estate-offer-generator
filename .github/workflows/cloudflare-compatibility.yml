@@ -1,0 +1,26 @@
+name: Cloudflare migration compatibility
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies without changing repository
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Run Cloudflare-recommended vinext compatibility check
+        run: npx --yes vinext check
+      - name: Report instructions
+        if: always()
+        run: |
+          echo "Check the vinext compatibility report before initiating migration."
+          echo "No Cloudflare secrets are used and this workflow does not deploy."
