@@ -73,7 +73,9 @@ export async function POST(req: NextRequest) {
       if (missing.length)
         throw new Error("Cannot approve incomplete floor geometry: " + missing.length +
           " drawing labels still lack unit outlines. Complete all boundaries before approval.");
-      if (!input.backgroundData && !existingFloor?.backgroundData)
+      if (input.projectId === CAIRO_PLAZA_PROJECT_ID && !input.backgroundData)
+        throw new Error("Cairo Plaza requires a fresh architectural reference image rendered from its engineering DWG. Archived PDF backgrounds are forbidden.");
+      if (input.projectId !== CAIRO_PLAZA_PROJECT_ID && !input.backgroundData && !existingFloor?.backgroundData)
         throw new Error("Cannot approve floor geometry without the original architectural reference image.");
       if (input.projectId === "cairo-plaza") {
         const project = await db().project.findUnique({ where: { id: input.projectId } });
@@ -93,7 +95,9 @@ export async function POST(req: NextRequest) {
       ...(input.projectId === CAIRO_PLAZA_PROJECT_ID ? {sourceFileSha256: input.sourceFileSha256} : {}),
       ...(input.markers !== undefined ? {markers: input.markers} : {}),
       reviewStatus: input.reviewStatus,
-      ...(input.backgroundData !== undefined ? { backgroundData: input.backgroundData } : {})
+      ...(input.projectId === CAIRO_PLAZA_PROJECT_ID
+        ? { backgroundData: input.backgroundData ?? null }
+        : input.backgroundData !== undefined ? { backgroundData: input.backgroundData } : {})
     };
     if (!input.id) {
       const existing = await db().floorPlan.findFirst({ where: {
