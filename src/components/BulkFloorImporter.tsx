@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 import JSZip from "jszip";
 
 type Floor = {
@@ -19,6 +20,7 @@ type ManifestFloor = {
 };
 type Manifest = { version: number; projectId: string; floors: ManifestFloor[] };
 export function BulkFloorImporter({ projectId, floors }: { projectId: string; floors: Floor[] }) {
+  const { tr } = useLanguage();
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState("");
   const [failures, setFailures] = useState<string[]>([]);
@@ -92,15 +94,15 @@ export function BulkFloorImporter({ projectId, floors }: { projectId: string; fl
     } finally {setBusy(false);}
   }
   return <div className="panel" style={{marginBottom:20}}>
-    <div className="eyebrow">CAIRO PLAZA / AUTOMATED BULK IMPORT</div>
-    <h2 style={{marginTop:12}}>Import all 8 architectural floors in one go</h2>
-    <p className="muted">The package contains the exact eight original floor pictures, plus 121 source-confirmed unit-code label positions. All floors are saved as Draft so that annotation hotspots cannot be mistaken for surveyed unit boundaries. No sales data or original drawing is modified.</p>
-    <label className="fieldlabel">Select Cairo Plaza bulk package ZIP
+    <div className="eyebrow">{tr("CAIRO PLAZA / AUTOMATED BULK IMPORT")}</div>
+    <h2 style={{marginTop:12}}>{tr("Import all 8 architectural floors in one go")}</h2>
+    <p className="muted">{tr("The package contains the exact eight original floor pictures, plus 121 source-confirmed unit-code label positions. All floors are saved as Draft so that annotation hotspots cannot be mistaken for surveyed unit boundaries. No sales data or original drawing is modified.")}</p>
+    <label className="fieldlabel">{tr("Select Cairo Plaza bulk package ZIP")}
       <input className="field" type="file" accept=".zip,application/zip"
         disabled={busy} onChange={e=>{const file=e.target.files?.[0];if(file)void importZip(file);}}/>
     </label>
     {progress && <p className={done?"notice good":"notice"} style={{marginTop:14}}>{progress}</p>}
     {failures.map((item,i)=><p key={i} className="muted">{item}</p>)}
-    {done && <button className="btn soft" type="button" onClick={()=>window.location.reload()}>Reload saved floorplans</button>}
+    {done && <button className="btn soft" type="button" onClick={()=>window.location.reload()}>{tr("Reload saved floorplans")}</button>}
   </div>;
 }
