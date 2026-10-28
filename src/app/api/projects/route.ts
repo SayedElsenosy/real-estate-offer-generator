@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { currentAdmin, currentUser } from "@/lib/guards";
+import { CAIRO_PLAZA_PROJECT_ID, hasAuthoritativeCairoDwgSource } from "@/lib/cairo-architectural-source";
 
 export const runtime = "nodejs";
 const config = z.object({
@@ -19,7 +20,12 @@ export async function GET() {
     orderBy: { name: "asc" },
     include: { paymentPlans: true, floorPlans: true }
   });
-  return NextResponse.json({ projects }, { headers: { "Cache-Control": "no-store" } });
+  const safeProjects = projects.map(project => project.id === CAIRO_PLAZA_PROJECT_ID
+    ? {...project, floorPlans: project.floorPlans.map(f =>
+        hasAuthoritativeCairoDwgSource(f) ? f
+          : {...f, shapes: [], markers: [], backgroundData: null, reviewStatus: "DRAFT"})}
+    : project);
+  return NextResponse.json({ projects: safeProjects }, { headers: { "Cache-Control": "no-store" } });
 }
 export async function PATCH(req: NextRequest) {
   const admin = await currentAdmin();
