@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { currentUser } from "@/lib/guards";
 import { getLiveInventory, isAvailable } from "@/lib/sheets";
 import { calculateSchedule } from "@/lib/payment";
-import { unitKey, inventoryKeyForDrawing } from "@/lib/unit-code";
+import { unitKey } from "@/lib/unit-code";
 import { OfferDocument, type FloorGeometry } from "@/lib/pdf";
 
 export const runtime = "nodejs";
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     const geometry: FloorGeometry = match ? { viewBox: match.viewBox, backgroundData: match.backgroundData || null,
       shapes: (rawShapes || []).map(shape => {
         const candidates = units.filter(value => value.floor === unit.floor &&
-          unitKey(value.code) === inventoryKeyForDrawing(shape.unitCode, projectId, unit.floor));
+          unitKey(value.code) === unitKey(shape.unitCode));
         const current = candidates.length === 1 ? candidates[0] : undefined;
         const status: "AVAILABLE" | "UNAVAILABLE" | "SOLD_OUT" = !current
           ? "SOLD_OUT" : isAvailable(current.status) ? "AVAILABLE" : "UNAVAILABLE";
