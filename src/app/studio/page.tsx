@@ -1,12 +1,13 @@
 import { redirect } from "next/navigation";
-import { auth, authReady } from "@/auth";
+import { currentUser } from "@/lib/guards";
+import { hasSharedAccess } from "@/lib/shared-access";
 import { db } from "@/lib/db";
 import Studio from "@/components/Studio";
 export const dynamic = "force-dynamic";
 export default async function StudioPage() {
-  if (!authReady) redirect("/");
-  const session = await auth();
-  if (!session?.user?.email) redirect("/");
+  const user = await currentUser();
+  if (!user) redirect("/");
   const projects = await db().project.findMany({ include: { paymentPlans: true }, orderBy: { name: "asc" } });
-  return <Studio projects={JSON.parse(JSON.stringify(projects))} email={session.user.email} />;
+  return <Studio projects={JSON.parse(JSON.stringify(projects))}
+    email={(await hasSharedAccess()) ? "Private link access" : (user.email || "")} />;
 }
