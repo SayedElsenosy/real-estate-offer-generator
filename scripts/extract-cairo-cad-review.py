@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Produce an auditable, NON-APPROVED CAD mapping review bundle from the engineering DXF.
 
-Usage: pip install ezdxf
+Usage: pip install ezdxf shapely
 python scripts/extract-cairo-cad-review.py --dxf drawing.dxf --out cad-review.json
 
 This intentionally does NOT pair arbitrary closed polylines with a unit code.
@@ -16,6 +16,7 @@ from pathlib import Path
 import re
 
 import ezdxf
+from shapely.geometry import Point, Polygon
 
 EXPECTED_DXF_SHA = "855b5b71af07fcadfda33b5a9d15dba2738b008d85ed28009d8c456088740fbb"
 CODE = re.compile(r"(?<![A-Z0-9])[A-Z]/(?:BA|GR|FR|2ND|3RD|4TH|5TH|6TH)/[A-Z0-9]+/[0-9]{1,3}(?:-?[A-Z])?(?![A-Z0-9])", re.I)
@@ -55,6 +56,21 @@ def main():
                 "points": points, "bulges": bulges,
                 "requiresReview": True,
             })
+    # Spatial containment is evidence only, not automatic boundary approval.
+    valid_polys = []
+    for candidate in candidate_polylines:
+        if any(abs(b) > 1e-10 for b in candidate["bulges"]):
+            continue  # Curved segments cannot be represented as straight polygons.
+        poly = Polygon(candidate["points"])
+        if poly.is_valid and poly.area > 1:
+            valid_polys.append((candidate, poly))
+    for label in labels:
+        point = Point(label["x"], label["y"])
+        label["containingPolylineCandidates"] = [
+            {"handle": c["handle"], "layer": c["layer"], "areaDrawingUnitsSquared": round(poly.area, 3)}
+            for c, poly in valid_polys if poly.covers(point)
+        ]
+        label["candidateAmbiguous"] = len(label["containingPolylineCandidates"]) != 1
     dupes = {k: v for k, v in Counter(x["code"] for x in labels).items() if v > 1}
     result = {
         "project": "cairo-plaza", "inputDxfSha256": EXPECTED_DXF_SHA,
@@ -64,7 +80,7 @@ def main():
         "warnings": [
             "A closed polyline may represent a wall, column, detail or common area rather than a unit.",
             "All INSERT block transformations, rotations, scale and floor assignments must be reviewed.",
-            "Labels are not unit boundaries. Do not publish these candidates as floor shapes.",
+            "Labels are not unit boundaries. Containing polygons may be walls, hatch outlines, or floor limits. Do not publish automatically.",
             "CAD codes missing from Sheet1 must be Sold Out only after exact code and floor pairing is approved.",
         ],
     }
