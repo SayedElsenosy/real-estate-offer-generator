@@ -82,12 +82,14 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
   const matches=useMemo(()=>{
     const grouped=new Map<string,Unit[]>();
     for(const unit of result?.units||[]){
-      if(unit.floor!==floorNumber)continue;
+      // CAD floors are numeric while live Excel uses labels such as Ground/First.
+      // Match exact normalized codes across the project, and require uniqueness.
+      // Never mark a matched unit sold-out just because the floor formats differ.
       const k=unitKey(unit.code);
       grouped.set(k,[...(grouped.get(k)||[]),unit]);
     }
     return new Map([...grouped].filter(([,v])=>v.length===1).map(([k,v])=>[k,v[0]]));
-  },[result,floorNumber]);
+  },[result]);
   const entries=(floor?.shapes||[]).map(shape=>{
     const unit=matches.get(unitKey(shape.unitCode));
     return {shape,unit,state:unit?statusOf(unit.status):"soldout" as State};
