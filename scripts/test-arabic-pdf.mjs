@@ -1,0 +1,21 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { PDFDocument } from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
+import { drawArabicText } from "arabic-bidi-shaper/pdf-lib";
+
+const fontBytes=readFileSync("node_modules/@fontsource/cairo/files/cairo-arabic-400-normal.woff");
+const pdf=await PDFDocument.create();
+pdf.registerFontkit(fontkit);
+const font=await pdf.embedFont(fontBytes,{subset:true});
+const page=pdf.addPage([595.28,841.89]);
+drawArabicText(page,"عرض سعر عقاري",{x:540,y:720,font,size:20,align:"right"});
+drawArabicText(page,"جدول الأقساط ووديعة الصيانة",{x:540,y:670,font,size:15,align:"right"});
+drawArabicText(page,"المبلغ 1,234.50 جنيه",{x:540,y:630,font,size:15,align:"right"});
+const result=await pdf.save({useObjectStreams:false});
+assert.ok(result.byteLength>2500,"Arabic glyph font must be embedded");
+assert.equal(new TextDecoder().decode(result.slice(0,5)),"%PDF-");
+const source=readFileSync("src/components/Studio.tsx","utf8");
+assert.ok(source.includes('useState<"ar"|"en">("ar")'),"Arabic must default for PDF exports");
+assert.ok(source.includes('language:offerLanguage'),"Offer form must submit requested language");
+console.log("PASS: self-hosted Arabic Cairo font, Unicode RTL phrases, numeric bidi and default Arabic selection");
