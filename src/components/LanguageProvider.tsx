@@ -33,6 +33,14 @@ const translationMap: Record<string, string> = {
   "Or use a permanent HTTPS logo URL": "أو استخدم رابط صورة HTTPS دائم",
   "Image URL (not a temporary Facebook link)": "رابط الصورة (ليس رابط فيسبوك مؤقت)",
   "Temporary Facebook photo URLs expire. Upload the original logo once and save settings to keep it available in every offer.": "روابط صور فيسبوك المؤقتة تنتهي صلاحيتها. ارفع صورة الشعار الأصلية مرة واحدة واحفظ الإعدادات ليظهر في كل العروض.",
+  "Private access link for other devices": "رابط الدخول الخاص من أي جهاز",
+  "Share the private link to open the studio and floor plans on another device without Google sign-in. The link does not grant administrator rights.": "شارك الرابط الخاص لفتح الاستوديو والمخططات من أي جهاز بدون تسجيل Google، ولا يمنح صلاحيات الإدارة.",
+  "Preparing private link…": "جارٍ تجهيز الرابط…",
+  "Private link copied": "تم نسخ رابط الدخول الخاص",
+  "Copy private access link": "نسخ رابط الدخول الخاص",
+  "Only share this link with authorized people. They can access offers, live inventory and floor plans but not admin settings.": "شارك الرابط مع الأشخاص المصرح لهم فقط. يتيح العروض والمخزون والمخططات دون صلاحية الإدارة.",
+  "Unable to create private access link. Sign in with the administrator account.": "تعذر إنشاء الرابط الخاص. سجّل الدخول بحساب الإدارة.",
+  "An unexpected error occurred": "حدث خطأ غير متوقع",
   "Overview": "الرئيسية",
   "Auto-refresh every 3 seconds while this tab is open": "تحديث تلقائي كل 3 ثوانٍ أثناء فتح التبويب",
   "Checking for changes…": "جارٍ التحقق من التغييرات…",
@@ -278,20 +286,13 @@ const translationMap: Record<string, string> = {
 const Context = createContext<{language:Language;setLanguage:(v:Language)=>void}>({language:"en",setLanguage:()=>{}});
 export function LanguageProvider({children}:{children:React.ReactNode}) {
   const [language,setLanguage]=useState<Language>("en");
-  const [restored,setRestored]=useState(false);
-  useEffect(()=>{
-    try {
-      // v2 intentionally ignores old auto-saved Arabic defaults, so all
-      // existing devices start in English until the user chooses Arabic.
-      if (localStorage.getItem("offer_atelier_language_v2")==="ar") setLanguage("ar");
-    } catch {}
-    setRestored(true);
-  },[]);
+  // English is the default on every fresh page load. A visitor can switch
+  // to Arabic for the current navigation session, but an old browser setting
+  // must not unexpectedly make every new visit start in Arabic.
   useEffect(()=>{
     document.documentElement.lang=language;
     document.documentElement.dir=language==="ar"?"rtl":"ltr";
-    if(restored)try {localStorage.setItem("offer_atelier_language_v2",language);} catch {}
-  },[language,restored]);
+  },[language]);
   return <Context.Provider value={{language,setLanguage}}>{children}</Context.Provider>;
 }
 export function useLanguage(){
