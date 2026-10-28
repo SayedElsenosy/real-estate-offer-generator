@@ -9,7 +9,7 @@ const ReactPDF = require('@react-pdf/renderer');
 let writes = [], captured = [], units = [], user = { id: 'test-user' };
 const floor = { floor: '0', reviewStatus: 'DRAFT', viewBox: '0 0 100 100', backgroundData: null,
   shapes: [{ unitCode: 'D/GR/SH/23', d: 'M 0 0 L 10 0 L 10 10 L 0 10 Z' }] };
-const plan = { id: 'plan', name: 'Test terms', downPaymentPct: '10', months: 3, maintenancePct: '5', startOffsetMonths: 1 };
+const plan = { id: 'plan', name: 'Test terms', downPaymentPct: '10', months: 3, maintenancePct: '5', startOffsetMonths: 1, deliveryDate: null, deliveryCollectionEnabled: false, deliveryCollectionPct: '0' };
 const project = { id: 'cairo-plaza', name: 'Cairo Plaza', companyName: 'Offer Atelier TEST', spreadsheetId: 'test-only', sheetRange: 'Sheet1!A:M', logoUrl: null, floorPlans: [floor] };
 const database = { project: { findUnique: async () => project }, paymentPlan: { findMany: async () => [plan] }, offer: { create: async value => { writes.push(value.data); return value.data; } } };
 const cache = new Map();
@@ -43,16 +43,20 @@ async function main() {
   assert.equal(unitKey('G/FR/SH/01a'), unitKey('G/FR/SH/01A'));
   const schedule = calculateSchedule('100,000.01', plan, new Date('2026-01-31T00:00:00Z'));
   assert.equal(schedule.rows.filter(r => r.type !== 'MAINTENANCE').reduce((sum,r) => sum.plus(r.amount), new Decimal(0)).toFixed(2), '100000.01');
-  assert.equal(schedule.rows[1].due, '2026-02-28');
+  assert.equal(schedule.rows.find(r => r.type === 'INSTALLMENT').due, '2026-02-28');
   assert.equal(schedule.maintenance, '5000.00');
+  const delivery = calculateSchedule('100000.01', { ...plan, deliveryDate: '2027-06-01', deliveryCollectionEnabled: true, deliveryCollectionPct: '20' }, new Date('2026-01-31T00:00:00Z'));
+  assert.equal(delivery.rows.find(r => r.type === 'DELIVERY').amount, '20000.00');
+  assert.equal(delivery.rows.filter(r => r.type !== 'MAINTENANCE').reduce((sum,r) => sum.plus(r.amount),new Decimal(0)).toFixed(2), '100000.01');
   const fixture = { code: 'D/GR/SH/23', floor: '0', area: '35', price: '100000.01', status: 'Available', project: 'Cairo Plaza' };
   units = [fixture];
   const response = await POST(request());
   assert.equal(response.status, 200); const bytes = Buffer.from(await response.arrayBuffer()); assert.equal(bytes.subarray(0,4).toString(), '%PDF');
   assert.equal(captured.at(-1).floor, null, 'DRAFT must not reach PDF geometry');
-  assert.equal(writes.at(-1).unitSnapshot.price, fixture.price);
-  assert.equal(writes.at(-1).unitSnapshot.status, fixture.status);
-  assert.equal(writes.at(-1).scheduleSnapshots[0].totalPrice, '100000.01');
+  assert.equal(captured.at(-1).unit.price, fixture.price);
+  assert.equal(captured.at(-1).unit.status, fixture.status);
+  assert.equal(captured.at(-1).schedules[0].totalPrice, '100000.01');
+  assert.equal(writes.length, 0, 'Offer history must remain disabled');
   const out = process.env.TEST_OUTPUT_DIR;
   if (out) { fs.mkdirSync(out, { recursive: true }); fs.writeFileSync(path.join(out, 'synthetic-offer-test.pdf'), bytes); }
   let prior = writes.length;
@@ -64,7 +68,8 @@ async function main() {
   user = null; assert.equal((await POST(request())).status, 401); user = { id: 'test-user' };
   floor.reviewStatus = 'APPROVED';
   assert.equal((await POST(request())).status, 200); assert.equal(captured.at(-1).floor.shapes[0].status, 'AVAILABLE');
-  assert.equal(writes.length, prior + 1);
-  console.log('PASS: exact identity, SR/SH separation, punctuation preservation, case normalization, payment reconciliation, month-end dates, real PDF rendering, DRAFT exclusion, stock price/status snapshots, reserved/wrong-floor/wrong-type/ambiguous/duplicate-plan/unauthenticated rejection, APPROVED control. DB writes isolated in memory.');
+  assert.equal(writes.length, 0);
+  assert.equal((await load('src/app/api/offers/route.ts').GET()).status, 410);
+  console.log('PASS: exact identity, SR/SH separation, punctuation preservation, case normalization, payment and delivery reconciliation, month-end dates, real PDF rendering, DRAFT exclusion, stock price/status preservation, reserved/wrong-floor/wrong-type/ambiguous/duplicate-plan/unauthenticated rejection, APPROVED control, no offer history or DB writes.');
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });
