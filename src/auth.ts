@@ -31,6 +31,8 @@ export const authReady = Boolean(
 
 export function isAdmin(email?: string | null): boolean {
   if (!email) return false;
+  const configuredOwner = process.env.SHARED_ACCESS_OWNER_EMAIL?.trim().toLowerCase();
+  if (configuredOwner) return email.trim().toLowerCase() === configuredOwner;
   return (process.env.ADMIN_EMAILS || "").split(",").map(v => v.trim().toLowerCase()).includes(email.toLowerCase());
 }
 
