@@ -8,7 +8,8 @@ export type OfferSchedule = {
   name: string; durationMonths: number; installmentIntervalMonths: number;
   paymentCount: number; futureInstallmentCount: number;
   totalPrice: string; downPayment: string; maintenance: string;
-  deliveryDate: string | null; deliveryCollection: string; deliveryCollectionPct: string;
+  deliveryMonths: number; deliveryDate: string | null; deliveryCollection: string; deliveryCollectionPct: string;
+  preDeliveryTotal:string; postDeliveryTotal:string; maintenanceDueDate:string|null;
   totalIncludingMaintenance: string; rows: ScheduleRow[]
 };
 const st = StyleSheet.create({
