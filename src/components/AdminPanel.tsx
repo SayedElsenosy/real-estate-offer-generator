@@ -3,7 +3,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
 import { FloorPlanEditor } from "@/components/FloorPlanEditor";
-import { BulkFloorImporter } from "@/components/BulkFloorImporter";
 import { useLanguage } from "@/components/LanguageProvider";
 
 type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; installmentIntervalMonths: number; deliveryDate: string | null; deliveryCollectionEnabled: boolean; deliveryCollectionPct: string };
@@ -129,8 +128,14 @@ export default function AdminPanel({ email, projects }: { email: string; project
         </div>
         <div className="notice" style={{marginTop:18}}>{tr("Cairo Plaza: Excel Sheet1 (column A code, G area, E floor, L status, M total price). The other projects use their verified live sheet layouts.")}</div>
       </section>
-      {id === "cairo-plaza" && <BulkFloorImporter projectId={id} floors={project.floorPlans} />}
-      <FloorPlanEditor key={id} projectId={id} floors={project.floorPlans} />
+      {id === "cairo-plaza"
+        ? <section className="panel">
+            <div className="eyebrow">{tr("OFFICIAL ARCHITECTURAL REFERENCE")}</div>
+            <h2 style={{marginTop:12}}>{tr("Cairo Plaza — Engineering DWG")}</h2>
+            <p className="muted">{tr("The engineering DWG is the only accepted source. Previous PDF-based floor backgrounds and draft polygons have been retired from the live application. The DWG geometry must be converted and checked before publishing new interactive floor plans.")}</p>
+            <div className="notice">{tr("Awaiting verified DWG layer and unit-boundary extraction. Inventory and quotation calculations remain available; no inaccurate map is shown.")}</div>
+          </section>
+        : <FloorPlanEditor key={id} projectId={id} floors={project.floorPlans} />}
 
     </div><div className="stack">
       <section className="panel"><div className="eyebrow">{tr("FINANCIAL CONFIGURATION")}</div><h2 style={{marginTop:12}}>{tr("Payment plan manager")}</h2>
