@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
-import { CadDxfPreview } from "@/components/CadDxfPreview";
 import { unitKey } from "@/lib/unit-code";
 import cairoCad from "@/data/cairo-plaza-labels.json";
 import { cairoBgGzip } from "@/data/cairo-bg-gzip";
@@ -108,12 +107,12 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
     <div className="panel" style={{marginBottom:16}}>
       <div className="between" style={{flexWrap:"wrap",gap:16}}>
         <label className="fieldlabel" style={{minWidth:230,flex:1}}>المشروع / Project
-          <select className="field" value={projectId} onChange={e=>{setProjectId(e.target.value);setFloorNumber("0");setSelected("");setSearch("");setZoom(1);}}>
+          <select className="field" value={projectId} onChange={e=>{setProjectId(e.target.value);setFloorNumber("0");setSelected("");setSearch("");setZoom(1);setCadZoom(1);}}>
             {projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </label>
         <label className="fieldlabel" style={{minWidth:200,flex:1}}>الدور / Floor
-          <select className="field" value={floorNumber} onChange={e=>{setFloorNumber(e.target.value);setSelected("");setZoom(1);}}>
+          <select className="field" value={floorNumber} onChange={e=>{setFloorNumber(e.target.value);setSelected("");setZoom(1);setCadZoom(1);}}>
             {projectId==="cairo-plaza" ? floorOptions.map(([value,label])=><option key={value} value={value}>{label}</option>) :
               (result?.floorPlans||[]).map(f=><option key={f.id} value={f.floor||""}>{f.name}</option>)}
           </select>
@@ -182,7 +181,6 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
           {!selectedLiveUnit && <p style={{color:"#a94442",fontSize:13,marginTop:12}}>الوحدة موجودة بالرسم الهندسي لكن لم نجد لها صفًا مطابقًا وفريدًا في مخزون الشيت الحالي؛ لن نفترض سعرًا أو مساحة.</p>}
         </div>}
       </section>
-      <CadDxfPreview floor={floorNumber} inventory={result.units||[]} selected={selected} onSelect={setSelected}/>
     </>}
     {projectId==="cairo-plaza" && !error && !result && <div className="panel">جاري تحميل بيانات مخزون كايرو بلازا لعرض ألوان الوحدات.</div>}
     {floor && result && !error ? <section className="panel" style={{marginTop:20}}>
