@@ -108,7 +108,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
             <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% {tr("Down payment %")} · {plan.months} {tr("Total term including down payment (months)")} · {tr("Every")} {plan.installmentIntervalMonths || 1} {tr("months")} · {plan.maintenancePct}% {tr("Maintenance %")}{plan.deliveryDate ? " · " + tr("Delivery date") + ": " + plan.deliveryDate : ""}{plan.deliveryCollectionEnabled ? " · " + plan.deliveryCollectionPct + "% " + tr("Collection at delivery %") : ""}</small></span>
           </label>)}
           {!project?.paymentPlans.length && <div className="notice">{tr("No plans yet. An administrator can add a plan (such as 10% down / 80 months) in Workspace Settings.")}</div>}
-          <button className="btn gold" style={{width:"100%",marginTop:18}} disabled={!unit || !!error || loading || chosenPlans.length===0 || generating} onClick={issueOffer}>
+          <button className="btn gold" style={{width:"100%",marginTop:18}} disabled={!unit || !isAvailable(unit.status) || !!error || loading || chosenPlans.length===0 || generating} onClick={issueOffer}>
             {tr(generating ? "Rendering proposal…" : "Generate premium PDF offer")}
           </button>
           <p className="muted" style={{fontSize:11}}>{tr("The server checks live price and availability again before producing the PDF.")}</p>
