@@ -26,10 +26,10 @@ export async function GET(req: NextRequest) {
   }, { headers: { "Cache-Control": "no-store" } });
   try {
     const units = await getLiveInventory(user.id, project.spreadsheetId, project.sheetRange, project.name);
-    return NextResponse.json({ units, floorPlans: project.floorPlans }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ units, floorPlans: safeFloorPlans(id, project.floorPlans) }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return NextResponse.json({
-      units: [], floorPlans: project.floorPlans,
+      units: [], floorPlans: safeFloorPlans(id, project.floorPlans),
       error: error instanceof Error ? error.message : "Inventory fetch failed"
     }, { status: 502, headers: { "Cache-Control": "no-store" } });
   }
