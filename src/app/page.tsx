@@ -18,7 +18,7 @@ export default async function Home() {
         <div className="info-card"><div className="eyebrow"><T text="PROPERTY OFFER STUDIO" /></div><h2><T text="A smarter way to present each property." /></h2><p><T text="From a single project overview to individual unit location and a precise installment table — all in one place." /></p>
           {session ? <div className="actionline"><Link className="btn gold" href="/studio"><T text="Open Offer Studio" /></Link><form action={async () => { "use server"; await signOut({ redirectTo: "/" }); }}><button className="btn outline"><T text="Sign out" /></button></form></div> :
            authReady ? <form action={async () => { "use server"; await signIn("google", { redirectTo: "/studio" }); }}><button className="btn gold"><T text="Continue with Google" /></button></form> :
-           <div className="notice"><T text="Google OAuth and Neon environment credentials have not been configured on this deployment. The application will enable sign-in after these are supplied in Vercel." /></div>}
+           <div className="notice"><T text="Google OAuth and Neon environment credentials have not been configured on this deployment. The application will enable sign-in after these are configured on the current deployment." /></div>}
         </div>
         <div className="panel"><div className="eyebrow"><T text="SOURCE OF TRUTH" /></div><h2 style={{marginTop:12}}><T text="Always work with current inventory" /></h2><p className="muted"><T text="We request read-only access to Sheets and Drive (for Cairo Plaza's original Excel file). No public sharing or publish-to-web is necessary. Every issued proposal preserves a snapshot of its terms." /></p></div>
       </section>
