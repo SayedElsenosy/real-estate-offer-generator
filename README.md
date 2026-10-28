@@ -8,10 +8,10 @@ Standalone full-stack property offer generator using Next.js (App Router), Auth.
 - Google OAuth refresh tokens retained server-side in the Prisma Account table
 - Admin controls to connect each project to a Sheet (no Publish to web)
 - Interactive floor maps backed by stored, sanitized SVG path geometry keyed to Unit Code
-- Admin managed payment plans; many months and maintenance deposit percent
+- Admin-managed payment plans with down payment counted as payment #1 in the term, configurable installment interval (monthly/quarterly/custom), optional delivery date and collection percentage, and maintenance deposit
 - Decimal.js calculations with correct rounding of the final installment
 - Multi-page PDF offers using @react-pdf/renderer (unit details, highlighted floor map and one payment schedule per chosen plan)
-- Offer snapshots in Neon (prices, terms, schedules) for audit/history
+- **Download-only offers:** PDFs are generated in memory and sent to the browser without saving new offers, schedule snapshots, or PDF binaries in Neon; offer history is disabled
 
 ## Deployment
 The linked Vercel project automatically deploys changes pushed to main.
@@ -40,7 +40,7 @@ Export the architectural PDF to an SVG containing simple path/polygon/rect eleme
 Prisma schema matches eight tables already provisioned in the dedicated Neon offer_generator database. It is intentionally separate from BUNYRA.
 
 ## Limitations
-The current PDF is an original corporate starter template. Exact 1:1 matching requires the original reference PDF, official fonts, imagery, and brand assets. Generated PDF files are streamed to the user and offer data is snapshotted in PostgreSQL, but the binary PDF itself is not archived in object storage yet. This is not an invoice or binding contract.
+The current PDF is an original corporate starter template. Exact 1:1 matching requires the original reference PDF, official fonts, imagery, and brand assets. Generated PDFs are streamed to the user's browser; the app deliberately does not store newly generated PDF files, offer history, or quotation snapshots in PostgreSQL. Any older records predate this change and are untouched. This is not an invoice or binding contract.
 
 Do not place .env secrets into the repository or front-end bundles.
 
@@ -60,3 +60,20 @@ On the next login the user may need to consent to Google Drive readonly access. 
 
 ## Verified native Excel layout (Sheet1)
 The native XLSX has **Column 1** (not `Unit Code`) in cell A1. That column contains the actual Unit Code, followed by Project Name (B), Floor Number (E), Gross Area (G), Availability Status (L) and Total Price (M). Google Drive's CSV/text preview prepends an export-only index column, so its apparent positions differ from the source workbook. The app matches unique verified header names and accepts `Column 1` or `Unit Code` as the unit-code heading. No source file changes or copies are necessary. Google Drive HTTP 403 errors describe provider reasons when available.
+
+
+## Cairo Plaza geometric review — 2026-10-28
+
+The current [source-vector audit](assets/cairo-plaza/review-2026-10-28/REPORT.md) contains **361 DRAFT unit outline candidates** across eight floors. Exactly **140 of 153** authoritative Sheet1 inventory rows have an outline candidate matched by full unit code and floor; **13 remain unresolved**. The [review files](assets/cairo-plaza/review-2026-10-28/) contain individual QA screenshots, source vector evidence, and per-floor draft SVGs. All geometries remain **DRAFT**, not architect-certified: draft shapes cannot be used as interactive offer selectors or as highlighted unit maps in customer PDFs.
+
+The geometry baseline is [trace-drafts-361.json](assets/cairo-plaza/trace-drafts-361.json). No automatic SR/SH substitutions, split-unit guesses, or normalized aliasing beyond case differences are permitted.
+
+Geometry check (requires Python and Shapely):
+
+```sh
+python scripts/verify-cairo-geometry.py
+# For source-level verification, also provide the ORIGINAL source files:
+python scripts/verify-cairo-geometry.py --pdf "/path/to/original.pdf" --inventory "/path/to/Price List.xlsx"
+```
+
+The optional inventory verification reads Sheet1 but never edits the spreadsheet. No geometry may be marked APPROVED without individual architectural review.
