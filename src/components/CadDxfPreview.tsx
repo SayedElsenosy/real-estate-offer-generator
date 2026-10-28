@@ -68,11 +68,21 @@ export function CadDxfPreview({floor,inventory,selected,onSelect}:{floor:string;
   const [zoom,setZoom]=useState(1);
   const labels=useMemo(()=>cad?.labels.filter(v=>v.floor===floor)||[],[cad,floor]);
   const bounds=useMemo(()=>{
-    if(!labels.length)return null;
+    if(!cad || !labels.length)return null;
+    // A few floors (particularly basement, second and third) have labels
+    // concentrated in only one wing of the actual CAD plan. Never crop the
+    // architectural drawing to this floor's text-label bounding box.
+    // All floor drawings share a common horizontal CAD frame.
+    const allXs=cad.labels.map(v=>v.x);
     const xs=labels.map(v=>v.x),ys=labels.map(v=>v.y);
-    return {left:Math.min(...xs)-15,right:Math.max(...xs)+15,
-      top:-(Math.max(...ys)+15),bottom:-(Math.min(...ys)-15)};
-  },[labels]);
+    const globalLeft=Math.min(...allXs),globalRight=Math.max(...allXs);
+    const width=Math.max(globalRight-globalLeft,150);
+    const padX=Math.max(width*0.12,20);
+    const floorHeight=Math.max(Math.max(...ys)-Math.min(...ys),95);
+    const padY=Math.max(floorHeight*0.27,28);
+    return {left:globalLeft-padX,right:globalRight+padX,
+      top:-(Math.max(...ys)+padY),bottom:-(Math.min(...ys)-padY)};
+  },[cad,labels]);
   const matched=useMemo(()=>{
     const m=new Map<string,{status:string}[]>();
     for(const u of inventory.filter(u=>u.floor===floor)){const k=unitKey(u.code);m.set(k,[...(m.get(k)||[]),u]);}
