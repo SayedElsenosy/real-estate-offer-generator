@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { unitKey } from "@/lib/unit-code";
+import { unitKey, inventoryKeyForDrawing } from "@/lib/unit-code";
 
 type Shape = { unitCode: string; d: string };
 type Floor = {
@@ -142,12 +142,12 @@ export function FloorPlanEditor({ projectId, floors }: { projectId: string; floo
           <svg viewBox={selected.viewBox} style={{width:"100%",height:"auto",display:"block"}} aria-label={"Reviewed map "+selected.name}>
             {hasImage && <image href={selected.backgroundData || ""} x={vb[0]||0} y={vb[1]||0} width={width} height={height} preserveAspectRatio="none"/>}
             {(selected.markers || []).map((m,i)=>{
-              const u=unitByCode.get(unitKey(m.code));
+              const u=unitByCode.get(inventoryKeyForDrawing(m.code, projectId, floorNumber));
               const status=u?.status || "SOLD OUT";
               return <g key={"marker-"+i}><circle cx={m.x} cy={m.y} r={9} fill={u?"#c19b5d":"#e24848"} fillOpacity={.6} stroke="#fff" strokeWidth={2}><title>{m.code+" — "+status+" — PDF text location only"}</title></circle></g>;
             })}
             {selected.shapes.map((shape,i)=>{
-              const u=unitByCode.get(unitKey(shape.unitCode));
+              const u=unitByCode.get(inventoryKeyForDrawing(shape.unitCode, projectId, floorNumber));
               const fill=!u?"#d94545":available(u.status)?"#9bc8a7":"#aeb8c6";
               return <path key={i} d={shape.d} fill={fill} fillOpacity={0.38} stroke="#b58b50" strokeWidth={4}
                 onClick={()=>setSelectedCode(shape.unitCode)} style={{cursor:"pointer"}}>
@@ -156,7 +156,7 @@ export function FloorPlanEditor({ projectId, floors }: { projectId: string; floo
             })}
           </svg> : <div><div className="symbol">⌗</div><p className="muted">Upload the correct floor image from the SVG package to begin.</p></div>}
       </div>
-      {selectedCode && <p className="notice">{selectedCode}: {unitByCode.get(unitKey(selectedCode))?.status || "SOLD OUT — not listed in current inventory"}</p>}
+      {selectedCode && <p className="notice">{selectedCode}: {unitByCode.get(inventoryKeyForDrawing(selectedCode, projectId, floorNumber))?.status || "SOLD OUT — not listed in current inventory"}</p>}
       <div className="notice">RED: drawing-only, not in inventory = Sold Out. GREEN: available in live inventory. GREY: reserved. Original artwork is preserved below the approved overlays. Never use a text-label bounding box as a unit footprint.</div>
       <label style={{display:"flex",alignItems:"flex-start",gap:9,fontSize:12}}>
         <input type="checkbox" checked={reviewed} onChange={e=>setReviewed(e.target.checked)} disabled={!selected.shapes.length}/>
