@@ -8,12 +8,13 @@ const probes = [
   {path:"/api/auth/session", name:"unauthenticated auth session", expected:200},
   {path:"/", name:"home page", expected:200},
   {path:"/api/offers", name:"quote history remains disabled", expected:410},
+  {path:"/api/offers", method:"POST", name:"quote generation rejects unauthenticated users", expected:401},
   {path:"/api/inventory?projectId=cairo-plaza", name:"inventory rejects anonymous users", expected:401},
 ];
 let failures=0;
 for(const probe of probes){
   try{
-    const response=await fetch(new URL(probe.path,origin),{redirect:"manual",headers:{"Cache-Control":"no-cache"},signal:AbortSignal.timeout(20000)});
+    const response=await fetch(new URL(probe.path,origin),{redirect:"manual",method:probe.method||"GET",body:probe.method==="POST"?"{}":undefined,headers:{"Cache-Control":"no-cache",...(probe.method==="POST"?{"Content-Type":"application/json"}:{})},signal:AbortSignal.timeout(20000)});
     let body=null;
     if(probe.match){try{body=await response.json();}catch{}}
     const ok=response.status===probe.expected&&(!probe.match||probe.match(body??{}));
