@@ -163,7 +163,14 @@ export default function AdminPanel({ email, projects }: { email: string; project
             </label>
           </div>
           <p className="muted">{tr("Installment frequency hint")}</p>
-          <p className="notice">{tr("Down payment counts as payment number 1 within the selected term.")}</p>
+          <p className="notice">{tr("Down payment counts as payment number 1 within the selected term.")}{" "}
+            {Number(plan.months)>0 && Number(plan.installmentIntervalMonths)>0 && Number(plan.downPaymentPct)>=0
+              ? tr("Estimated payment breakdown") + ": " +
+                (Number(plan.downPaymentPct)>0 ? "1 " + tr("down payment") + " + " : "") +
+                (Math.ceil(Number(plan.months)/Number(plan.installmentIntervalMonths))-
+                  (Number(plan.downPaymentPct)>0 ? 1 : 0)) + " " + tr("future installments")
+              : null}
+          </p>
           <label className="fieldlabel">{tr("Delivery date")}<input className="field" type="date" value={plan.deliveryDate}
             onChange={e=>setPlan({...plan,deliveryDate:e.target.value})} /></label>
           <label className="fieldlabel" style={{display:"flex",alignItems:"center",gap:9}}>
