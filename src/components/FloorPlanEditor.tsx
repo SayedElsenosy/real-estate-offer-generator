@@ -108,7 +108,14 @@ export function FloorPlanEditor({ projectId, floors }: { projectId: string; floo
   }
   const vb=selected.viewBox.trim().split(/\s+/).map(Number);
   const width=vb[2]||2267.72,height=vb[3]||1700.79;
-  const unitByCode = new Map(inventory.map(u=>[unitKey(u.code),u]));
+  const floorInventory = inventory.filter(u => u.floor === floorNumber);
+  const grouped = new Map<string, InventoryUnit[]>();
+  for (const unit of floorInventory) {
+    const key = unitKey(unit.code);
+    grouped.set(key, [...(grouped.get(key) || []), unit]);
+  }
+  const unitByCode = new Map([...grouped.entries()].filter(([,items]) => items.length === 1)
+    .map(([key,items]) => [key, items[0]]));
   const hasImage=!!selected.backgroundData;
   return <section className="panel">
     <div className="eyebrow">ARCHITECTURAL FLOOR PLANS — REVIEW WORKFLOW</div>
