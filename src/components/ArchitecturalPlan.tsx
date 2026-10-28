@@ -163,9 +163,10 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
           </svg>
         </div>
         {!cadBackground && <p className="muted" style={{fontSize:12,marginTop:9}}>جارٍ إظهار المرجع الهندسي لهذا الدور. بيانات الوحدات والألوان متاحة حتى لو الصورة غير محمّلة.</p>}
-        {selectedCadAnchor && <div className="panel" style={{marginTop:18,background:"#f8fafc",border:"1px solid #dbe3eb",padding:18}}>
+        {selectedCadAnchor && <div className="panel" role="dialog" aria-label="تفاصيل الوحدة المختارة" style={{position:"fixed",bottom:18,left:18,zIndex:80,width:360,maxWidth:"calc(100vw - 36px)",maxHeight:"min(74vh,420px)",overflowY:"auto",background:"#fff",boxShadow:"0 15px 45px #14273d33",border:"1px solid #dbe3eb",borderRadius:16,padding:18}}>
           <div className="between" style={{gap:10,flexWrap:"wrap"}}>
             <h3 style={{margin:0}}>تفاصيل الوحدة — <span dir="ltr">{selectedCadAnchor.code}</span></h3>
+            <button type="button" aria-label="إغلاق تفاصيل الوحدة" onClick={()=>setSelected("")} style={{border:0,background:"#edf1f5",borderRadius:8,padding:"5px 10px",cursor:"pointer"}}>✕</button>
             <span className="pill" style={{background:palette[selectedState]+"22",border:"1px solid "+palette[selectedState],color:"#1b314c"}}>
               {selectedLiveUnit?.status||"غير موجودة في الشيت"}
             </span>
