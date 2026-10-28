@@ -160,17 +160,17 @@ export default function AdminPanel({ email, projects }: { email: string; project
             <label className="fieldlabel">{tr("Next payment after down payment (months)")}<input className="field" type="number" min="0" max="120" value={plan.startOffsetMonths} onChange={e=>setPlan({...plan,startOffsetMonths:e.target.value})}/></label>
           </div>
           <p className="notice">{tr("All installments are monthly. The down payment is the first payment and counts within the full term.")}</p>
+          <label className="fieldlabel">{tr("Delivery after (months)")}
+            <input className="field" type="number" min="1" max={Math.max(1,Number(plan.months)-1)} step="1"
+              value={plan.deliveryMonths}
+              onChange={e=>setPlan({...plan,deliveryMonths:e.target.value})}/>
+          </label>
           <label className="fieldlabel" style={{display:"flex",alignItems:"center",gap:9}}>
             <input type="checkbox" checked={plan.deliveryCollectionEnabled}
               onChange={e=>setPlan({...plan,deliveryCollectionEnabled:e.target.checked})}/>
             {tr("Split installments before and after delivery")}
           </label>
           {plan.deliveryCollectionEnabled && <>
-            <label className="fieldlabel">{tr("Delivery after (months)")}
-              <input className="field" type="number" min="2" max={Math.max(2,Number(plan.months)-1)} step="1"
-                value={plan.deliveryMonths}
-                onChange={e=>setPlan({...plan,deliveryMonths:e.target.value})}/>
-            </label>
             <label className="fieldlabel">{tr("Target paid by delivery (% of unit price, includes down payment)")}
               <input className="field" type="number" min={plan.downPaymentPct} max="100" step="0.01"
                 value={plan.deliveryCollectionPct}
