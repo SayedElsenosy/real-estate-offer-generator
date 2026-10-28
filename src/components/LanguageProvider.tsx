@@ -230,7 +230,10 @@ const translationMap: Record<string, string> = {
   "Installment interval must be an integer from 1 to 36 months": "الفاصل بين الأقساط لازم يكون عدد شهور صحيح من 1 إلى 36",
   "The duration and interval allow only the down payment; choose a longer term or a shorter interval": "المدة الحالية تسمح بالمقدم فقط؛ زوّد المدة أو قلّل الفاصل بين الأقساط",
   "Installment dates exceed the total duration; adjust first installment offset or interval": "مواعيد الأقساط تتجاوز مدة السداد؛ عدّل بداية الأقساط أو تكرارها",
-  "First payment is the down payment": "المقدم هو الدفعة الأولى"
+  "First payment is the down payment": "المقدم هو الدفعة الأولى",
+  "Estimated payment breakdown": "توزيع الدفعات",
+  "down payment": "مقدم",
+  "future installments": "أقساط لاحقة"
 };
 const Context = createContext<{language:Language;setLanguage:(v:Language)=>void}>({language:"ar",setLanguage:()=>{}});
 export function LanguageProvider({children}:{children:React.ReactNode}) {
