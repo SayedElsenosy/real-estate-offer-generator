@@ -28,8 +28,9 @@ const inputSchema = z.object({
     context.addIssue({ code: "custom", message: "Down payment and delivery collection cannot exceed 100%", path: ["deliveryCollectionPct"] });
   if (recurringCount === 0 && input.downPaymentPct + collection < 100)
     context.addIssue({ code: "custom", message: "Duration and interval leave no future installment slots; extend the duration or shorten the interval", path: ["months"] });
+  const firstFutureOffset = input.startOffsetMonths === 0 ? input.installmentIntervalMonths : input.startOffsetMonths;
   if (recurringCount > 0 &&
-      input.startOffsetMonths + (recurringCount - 1) * input.installmentIntervalMonths > input.months)
+      firstFutureOffset + (recurringCount - 1) * input.installmentIntervalMonths > input.months)
     context.addIssue({ code: "custom", message: "Last installment falls outside the selected duration; adjust the offset or frequency", path: ["startOffsetMonths"] });
 });
 export async function POST(req: NextRequest) {
