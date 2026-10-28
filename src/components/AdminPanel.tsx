@@ -5,14 +5,14 @@ import { Sidebar } from "@/components/Sidebar";
 import { FloorPlanEditor } from "@/components/FloorPlanEditor";
 import { useLanguage } from "@/components/LanguageProvider";
 
-type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; installmentIntervalMonths: number; deliveryDate: string | null; deliveryCollectionEnabled: boolean; deliveryCollectionPct: string };
+type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; deliveryMonths: number | null; deliveryCollectionEnabled: boolean; deliveryCollectionPct: string };
 type Shape = { unitCode: string; d: string };
 type Floor = { id: string; name: string; floor: string | null; viewBox: string; shapes: Shape[] };
 type Project = {
   id: string; name: string; spreadsheetId: string | null; sheetRange: string;
   companyName: string; logoUrl: string | null; paymentPlans: Plan[]; floorPlans: Floor[];
 };
-const blankPlan = { id: "", name: "", downPaymentPct: "10", maintenancePct: "8", months: "80", startOffsetMonths: "1", installmentIntervalMonths: "1", deliveryDate: "", deliveryCollectionEnabled: false, deliveryCollectionPct: "0" };
+const blankPlan = { id: "", name: "", downPaymentPct: "10", maintenancePct: "8", months: "80", startOffsetMonths: "1", deliveryMonths: "18", deliveryCollectionEnabled: false, deliveryCollectionPct: "0" };
 const blankFloor = { id: "", name: "", floor: "", viewBox: "0 0 1000 700", shapes: [] as Shape[] };
 function extractPaths(source: string): { viewBox: string; shapes: Shape[] } {
   const document = new DOMParser().parseFromString(source, "image/svg+xml");
@@ -141,10 +141,10 @@ export default function AdminPanel({ email, projects }: { email: string; project
       <section className="panel"><div className="eyebrow">{tr("FINANCIAL CONFIGURATION")}</div><h2 style={{marginTop:12}}>{tr("Payment plan manager")}</h2>
         <p className="muted">{tr("Define reusable payment structures, then select multiple scenarios when issuing an offer.")}</p>
         {project.paymentPlans.map(p=><div className="unit" key={p.id}>
-          <span><b>{p.name}</b><small>{p.downPaymentPct}% {tr("Down payment %")} · {p.months} {tr("Total term including down payment (months)")} · {tr("Every")} {p.installmentIntervalMonths || 1} {tr("months")} · {tr("First payment is the down payment")}{p.deliveryDate ? " · " + tr("Delivery date") + ": " + p.deliveryDate : ""}</small></span>
+          <span><b>{p.name}</b><small>{p.downPaymentPct}% {tr("Down payment %")} · {p.months} {tr("Total term including down payment (months)")} · {tr("Monthly payments")} · {tr("First payment is the down payment")}{p.deliveryMonths ? " · "+tr("Delivery after")+" "+p.deliveryMonths+" "+tr("months") : ""}</small></span>
           <div className="actionline">
             <button className="btn soft" type="button" disabled={busy}
-              onClick={()=>setPlan({id:p.id,name:p.name,downPaymentPct:p.downPaymentPct,months:String(p.months),maintenancePct:p.maintenancePct,startOffsetMonths:String(p.startOffsetMonths),installmentIntervalMonths:String(p.installmentIntervalMonths || 1),deliveryDate:p.deliveryDate || "",deliveryCollectionEnabled:p.deliveryCollectionEnabled,deliveryCollectionPct:p.deliveryCollectionPct})}>
+              onClick={()=>setPlan({id:p.id,name:p.name,downPaymentPct:p.downPaymentPct,months:String(p.months),maintenancePct:p.maintenancePct,startOffsetMonths:String(p.startOffsetMonths),deliveryMonths:String(p.deliveryMonths || 18),deliveryCollectionEnabled:p.deliveryCollectionEnabled,deliveryCollectionPct:p.deliveryCollectionPct})}>
               {tr("Edit")}
             </button>
             <button className="btn danger" type="button" disabled={busy} onClick={()=>void deletePlan(p.id)}>{tr("Delete")}</button>
@@ -158,37 +158,26 @@ export default function AdminPanel({ email, projects }: { email: string; project
             <label className="fieldlabel">{tr("Total term including down payment (months)")}<input className="field" type="number" min="1" max="360" value={plan.months} onChange={e=>setPlan({...plan,months:e.target.value})}/></label>
             <label className="fieldlabel">{tr("Maintenance %")}<input className="field" type="number" min="0" max="100" step="0.01" value={plan.maintenancePct} onChange={e=>setPlan({...plan,maintenancePct:e.target.value})}/></label>
             <label className="fieldlabel">{tr("Next payment after down payment (months)")}<input className="field" type="number" min="0" max="120" value={plan.startOffsetMonths} onChange={e=>setPlan({...plan,startOffsetMonths:e.target.value})}/></label>
-            <label className="fieldlabel">{tr("Installment every (months)")}
-              <input className="field" type="number" min="1" max="36" step="1" value={plan.installmentIntervalMonths}
-                onChange={e=>setPlan(old=>{
-                  const next=e.target.value;
-                  return {...old,installmentIntervalMonths:next,
-                    startOffsetMonths:old.startOffsetMonths===old.installmentIntervalMonths ? next : old.startOffsetMonths};
-                })}/>
-            </label>
           </div>
-          <p className="muted">{tr("Installment frequency hint")} — {tr("Zero offset means automatic start after one payment interval")}</p>
-          <p className="notice">{tr("Down payment counts as payment number 1 within the selected term.")}{" "}
-            {Number(plan.months)>0 && Number(plan.installmentIntervalMonths)>0 && Number(plan.downPaymentPct)>=0
-              ? tr("Estimated payment breakdown") + ": " +
-                (Number(plan.downPaymentPct)>0 ? "1 " + tr("down payment") + " + " : "") +
-                (Number(plan.downPaymentPct) + (plan.deliveryCollectionEnabled ? Number(plan.deliveryCollectionPct) : 0) >= 100 ? 0 :
-                  Math.max(0,Math.ceil(Number(plan.months)/Number(plan.installmentIntervalMonths))-
-                    (Number(plan.downPaymentPct)>0 ? 1 : 0))) + " " + tr("future installments")
-              : null}
-          </p>
-          <label className="fieldlabel">{tr("Delivery date")}<input className="field" type="date" value={plan.deliveryDate}
-            onChange={e=>setPlan({...plan,deliveryDate:e.target.value})} /></label>
+          <p className="notice">{tr("All installments are monthly. The down payment is the first payment and counts within the full term.")}</p>
           <label className="fieldlabel" style={{display:"flex",alignItems:"center",gap:9}}>
             <input type="checkbox" checked={plan.deliveryCollectionEnabled}
-              onChange={e=>setPlan({...plan,deliveryCollectionEnabled:e.target.checked,deliveryCollectionPct:e.target.checked?plan.deliveryCollectionPct:"0"})}/>
-            {tr("Collect a percentage at delivery")}
+              onChange={e=>setPlan({...plan,deliveryCollectionEnabled:e.target.checked})}/>
+            {tr("Split installments before and after delivery")}
           </label>
-          {plan.deliveryCollectionEnabled && <label className="fieldlabel">{tr("Collection at delivery %")}
-            <input className="field" type="number" min="0.01" max="100" step="0.01" value={plan.deliveryCollectionPct}
-              onChange={e=>setPlan({...plan,deliveryCollectionPct:e.target.value})}/>
-          </label>}
-          <p className="muted">{tr("Delivery collection is optional. When enabled, it is deducted from the installment balance.")}</p>
+          {plan.deliveryCollectionEnabled && <>
+            <label className="fieldlabel">{tr("Delivery after (months)")}
+              <input className="field" type="number" min="2" max={Math.max(2,Number(plan.months)-1)} step="1"
+                value={plan.deliveryMonths}
+                onChange={e=>setPlan({...plan,deliveryMonths:e.target.value})}/>
+            </label>
+            <label className="fieldlabel">{tr("Target paid by delivery (% of unit price, includes down payment)")}
+              <input className="field" type="number" min={plan.downPaymentPct} max="100" step="0.01"
+                value={plan.deliveryCollectionPct}
+                onChange={e=>setPlan({...plan,deliveryCollectionPct:e.target.value})}/>
+            </label>
+          </>}
+          <p className="muted">{tr("The delivery percentage is spread across the monthly payments before delivery, not billed as a separate delivery installment. The remaining balance is spread over the months after delivery.")}</p>
           <div className="actionline"><button className="btn" disabled={busy||!plan.name} onClick={savePlan}>{tr(plan.id?"Update payment plan":"Add payment plan")}</button><button className="btn soft" onClick={()=>setPlan(blankPlan)}>{tr("New plan")}</button></div>
         </div>
       </section>
@@ -197,7 +186,7 @@ export default function AdminPanel({ email, projects }: { email: string; project
         <div className="pitem"><span>{tr("Administrative changes")}</span><b>{tr("Allowlisted admins")}</b></div>
         <div className="pitem"><span>{tr("Unit prices")}</span><b>{tr("Verified live")}</b></div>
         <div className="pitem"><span>{tr("Issued offers")}</span><b>{tr("Not saved")}</b></div>
-        <p className="muted">{tr("Logos are embedded in PDFs only when their domain is explicitly listed in ALLOWED_LOGO_HOSTS.")}</p>
+        <p className="muted">{tr("Company branding is loaded from the project settings. Public Facebook CDN logos and configured trusted logo hosts can be embedded in PDFs.")}</p>
       </section>
     </div></div>}
   </main></div>;
