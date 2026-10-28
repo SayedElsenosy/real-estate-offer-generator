@@ -17,7 +17,8 @@ const inputSchema = z.object({
   unitCode: z.string().min(1),
   unitFloor: z.string().min(1),
   planIds: z.array(z.string()).min(1).max(5),
-  maintenanceDueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional()
+  maintenanceDueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  language: z.enum(["ar","en"]).default("ar")
 });
 function trustedLogo(url: string | null): string | null {
   if (!url) return null;
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    const { projectId, unitCode, unitFloor, planIds, maintenanceDueDate } = inputSchema.parse(await req.json());
+    const { projectId, unitCode, unitFloor, planIds, maintenanceDueDate, language } = inputSchema.parse(await req.json());
     const project = await db().project.findUnique({ where: { id: projectId }, include: { floorPlans: true } });
     if (!project?.spreadsheetId) return NextResponse.json({ error: "Project inventory is not connected" }, { status: 409 });
     const units = await getLiveInventory(user.id, project.spreadsheetId, project.sheetRange, project.name);
@@ -73,15 +74,18 @@ export async function POST(req: NextRequest) {
       ? await getCairoOfferLocation(unit.code, unit.floor) : null;
     // Workers-safe PDF engine. The former renderer relied on a Node URL/file
     // environment and failed with "Invalid URL string" on Cloudflare.
-    const pdfBytes = await createPropertyOfferPdf({
+    const common = {
       company: project.companyName, logoUrl: trustedLogo(project.logoUrl),
       project: project.name, unit, issuedAt, floor: geometry, location, schedules
-    });
+    };
+    const pdfBytes = language==="ar"
+      ? await (await import("@/lib/arabic-pdf")).createArabicOfferPdf(common)
+      : await createPropertyOfferPdf(common);
     // PDF is generated in-memory and streamed directly to the browser.
     // Never persist quotation PDF, unit snapshot, schedules, or quote history.
     const safeCode = unit.code.replace(/[^a-z0-9_-]/gi, "_");
     return new Response(new Uint8Array(pdfBytes), {
-      headers: { "Content-Type": "application/pdf", "Content-Disposition": 'attachment; filename="Offer-' + safeCode + '.pdf"',
+      headers: { "Content-Type": "application/pdf", "Content-Disposition": 'attachment; filename="' + (language==="ar"?"Arabic-Offer-":"Offer-") + safeCode + '.pdf"',
         "Cache-Control": "no-store" }
     });
   } catch (error) {
