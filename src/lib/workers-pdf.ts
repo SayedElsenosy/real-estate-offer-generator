@@ -5,7 +5,7 @@ import type { PdfUnitLocation } from "@/lib/cairo-offer-location";
 import type { InventoryUnit } from "@/lib/sheets";
 import type { OfferSchedule, FloorGeometry } from "@/lib/pdf";
 
-type Props = { company:string; logoUrl?:string|null; project:string; unit:InventoryUnit; issuedAt:string;
+export type Props = { company:string; logoUrl?:string|null; project:string; unit:InventoryUnit; issuedAt:string;
   floor:FloorGeometry; location?:PdfUnitLocation|null; schedules:OfferSchedule[] };
 const W=595.28,H=841.89, LEFT=43,RIGHT=W-43;
 const navy=rgb(0.09,0.16,0.26), gold=rgb(0.70,0.53,0.29), gray=rgb(0.47,0.55,0.64),
@@ -58,7 +58,7 @@ function row(page:PDFPage,index:number,values:string[],y:number,regular:PDFFont)
     x:xs[i],y:y-1,size:8.2,font:regular,color:navy
   }));
 }
-async function embeddedLogo(pdf:PDFDocument,url?:string|null):Promise<PDFImage|null> {
+export async function embeddedLogo(pdf:PDFDocument,url?:string|null):Promise<PDFImage|null> {
   if(!url)return null;
   try {
     const data=/^data:image\/(png|jpeg);base64,([A-Za-z0-9+/]+={0,2})$/.exec(url);
@@ -86,7 +86,7 @@ async function embeddedLogo(pdf:PDFDocument,url?:string|null):Promise<PDFImage|n
     return type.includes("png")?await pdf.embedPng(bytes):await pdf.embedJpg(bytes);
   }catch{return null;}
 }
-function cairoLocation(page:PDFPage,plan:PdfUnitLocation) {
+export function cairoLocation(page:PDFPage,plan:PdfUnitLocation) {
   const viewX=214,viewY=155;
   const frameW=RIGHT-LEFT-18,frameH=306;
   const scale=Math.min(frameW/viewX,frameH/viewY);
