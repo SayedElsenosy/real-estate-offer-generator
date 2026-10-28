@@ -129,7 +129,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
           {project?.paymentPlans.map(plan => <label className="planrow" key={plan.id}>
             <input type="checkbox" checked={chosenPlans.includes(plan.id)} disabled={!unit || (chosenPlans.length >= 5 && !chosenPlans.includes(plan.id))}
               onChange={event => toggle(plan.id, event.target.checked)} />
-            <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% {tr("Down payment %")} · {plan.months} {tr("months")} · {tr("Monthly payments")} · {plan.maintenancePct}% {tr("Maintenance %")}{plan.deliveryCollectionEnabled ? " · "+tr("Delivery after")+" "+(plan.deliveryMonths||"—")+" "+tr("months")+" · "+plan.deliveryCollectionPct+"% "+tr("Paid by delivery") : ""}</small></span>
+            <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% {tr("Down payment %")} · {plan.months} {tr("months")} · {tr("Monthly payments")} · {plan.maintenancePct}% {tr("Maintenance %")}{plan.deliveryMonths ? " · "+tr("Delivery after")+" "+plan.deliveryMonths+" "+tr("months") : ""}{plan.deliveryCollectionEnabled ? " · "+plan.deliveryCollectionPct+"% "+tr("Paid by delivery") : ""}</small></span>
           </label>)}
           {!project?.paymentPlans.length && <div className="notice">{tr("No plans yet. An administrator can add a plan (such as 10% down / 80 months) in Workspace Settings.")}</div>}
           {(selectedPlans.some(p=>Number(p.maintenancePct)>0))&&
