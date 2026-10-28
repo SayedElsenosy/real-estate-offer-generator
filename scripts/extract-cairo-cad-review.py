@@ -48,7 +48,7 @@ def main():
                       for x, y in ent.get_points("xy")]
             # Bulges are retained because curved CAD boundaries must never
             # be silently converted into straight line SVG polygons.
-            bulges = [round(float(v), 8) for v in ent.get_points("b")]
+            bulges = [round(float(b), 8) for _x, _y, b in ent.get_points("xyb")]
             candidate_polylines.append({
                 "handle": ent.dxf.handle, "layer": ent.dxf.layer,
                 "points": points, "bulges": bulges,
