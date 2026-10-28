@@ -29,6 +29,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
   const [offerError,setOfferError] = useState("");
   const [search, setSearch] = useState("");
   const [maintenanceDueDate,setMaintenanceDueDate]=useState("");
+  const [offerLanguage,setOfferLanguage]=useState<"ar"|"en">("ar");
   const project = projects.find(p => p.id === projectId);
   const unit = units.find(value => value.code === selected && value.floor === floorNumber);
   const selectedPlans=project?.paymentPlans.filter(plan=>chosenPlans.includes(plan.id))||[];
@@ -69,7 +70,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
     try {
       const response = await fetch("/api/offers", { method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId, unitCode: unit.code, unitFloor: unit.floor, planIds: chosenPlans,maintenanceDueDate:maintenanceDueDate||null }) });
+        body: JSON.stringify({ projectId, unitCode: unit.code, unitFloor: unit.floor, planIds: chosenPlans,maintenanceDueDate:maintenanceDueDate||null,language:offerLanguage }) });
       if (!response.ok) {
         const message = await response.json();
         throw new Error(message.error || "PDF generation failed");
@@ -77,7 +78,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
       const objectURL = URL.createObjectURL(await response.blob());
       const element = document.createElement("a");
       element.href = objectURL;
-      element.download = "Property-Offer-" + unit.code.replace(/[^a-z0-9_-]/gi, "_") + ".pdf";
+      element.download = (offerLanguage==="ar"?"Arabic-Offer-":"Property-Offer-") + unit.code.replace(/[^a-z0-9_-]/gi, "_") + ".pdf";
       element.click();
       setTimeout(() => URL.revokeObjectURL(objectURL), 3000);
     } catch (err) {
@@ -173,6 +174,13 @@ export default function Studio({ projects, email }: { projects: Project[]; email
               </div>
             </div>)}
           </div>}
+          <label className="fieldlabel" style={{marginTop:16,display:"block"}}>
+            {tr("PDF offer language")}
+            <select className="field" value={offerLanguage} onChange={event=>setOfferLanguage(event.target.value as "ar"|"en")}>
+              <option value="ar">{tr("Arabic PDF")}</option>
+              <option value="en">{tr("English PDF")}</option>
+            </select>
+          </label>
           <button className="btn gold" style={{width:"100%",marginTop:18}} disabled={!unit || !isAvailable(unit.status) || !!error || !!schedules.error || loading || chosenPlans.length===0 || generating || (selectedPlans.some(p=>Number(p.maintenancePct)>0)&&!maintenanceDueDate)} onClick={issueOffer}>
             {tr(generating ? "Rendering proposal…" : "Generate premium PDF offer")}
           </button>
