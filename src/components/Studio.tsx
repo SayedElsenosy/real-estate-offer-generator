@@ -58,7 +58,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
     const exact = candidates.find(u => u.code === code);
     const match = exact || (candidates.length === 1 ? candidates[0] : undefined);
     if (!match || !isAvailable(match.status)) return;
-    setSelected(code);
+    setSelected(match.code);
     setFloorNumber(match.floor);
   }
   async function issueOffer() {
