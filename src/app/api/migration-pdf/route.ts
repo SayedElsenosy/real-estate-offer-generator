@@ -1,15 +1,20 @@
 import { createPropertyOfferPdf } from "@/lib/workers-pdf";
+import { getCairoOfferLocation } from "@/lib/cairo-offer-location";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 // Temporary no-personal-data smoke test. Removed once rendering passes.
-export async function GET() {
+export async function GET(req:NextRequest) {
   try {
+    const verifyMap=req.nextUrl.searchParams.get("map")==="1";
+    const location=verifyMap?await getCairoOfferLocation("I/GR/SH/01B","Ground"):null;
+    if(verifyMap&&!location)throw Error("Test floor map could not be loaded");
     const bytes = await createPropertyOfferPdf({
-      company: "Property Development", project: "Runtime Test",
+      company: "Elaf Development", project: verifyMap?"Cairo Plaza":"Runtime Test", location,
       issuedAt: "2026-10-28",
-      unit: { code: "TEST-001", area: "125", floor: "2", price: "7500000", status: "Available", project: "Runtime Test" },
+      unit: { code: verifyMap?"I/GR/SH/01B":"TEST-001", area: "125", floor: verifyMap?"Ground":"2", price: "7500000", status: "Available", project: "Cairo Plaza" },
       floor: null,
       schedules: [{
         name:"Monthly plan",durationMonths:24,installmentIntervalMonths:1,paymentCount:24,
