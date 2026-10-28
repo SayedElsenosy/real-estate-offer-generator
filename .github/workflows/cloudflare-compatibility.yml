@@ -2,6 +2,9 @@ name: Cloudflare migration compatibility
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/cloudflare-compatibility.yml'
 
 permissions:
   contents: read
