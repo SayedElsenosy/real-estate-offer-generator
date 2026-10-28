@@ -119,7 +119,7 @@ export function FloorPlanEditor({ projectId, floors }: { projectId: string; floo
           {CODES.map(c=><option key={c.floor} value={c.floor}>{c.label} / Floor {c.floor}</option>)}
         </select>
       </label>
-      <div className="between"><span className="pill">{selected.reviewStatus==="APPROVED"?"APPROVED GEOMETRY":"DRAFT — NEEDS REVIEW"}</span><span className="muted">{selected.shapes.length} proposed boundaries / {(selected.markers || []).length} source labels / {(selected.markers || []).filter(m=>!selected.shapes.some(s=>s.unitCode===m.code)).length} untraced labels</span></div>
+      <div className="between"><span className="pill">{selected.reviewStatus==="APPROVED"?"APPROVED GEOMETRY":"DRAFT — NEEDS REVIEW"}</span></div>
       <label className="fieldlabel">Floor title
         <input className="field" value={selected.name} onChange={e=>setSelected(p=>({...p,name:e.target.value}))}/>
       </label>
