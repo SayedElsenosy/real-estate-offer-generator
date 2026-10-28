@@ -48,6 +48,22 @@ export async function POST(req: NextRequest) {
       throw new Error("Only a genuine PNG/JPEG background of 2MB or less can be stored.");
     if (input.reviewStatus === "APPROVED" && (!input.approvalConfirmed || !input.shapes.length))
       throw new Error("Approve only reviewed unit polygons. At least one reviewed shape and explicit confirmation are required.");
+    const existingFloor = input.id
+      ? await db().floorPlan.findFirst({ where: { id: input.id, projectId: input.projectId } })
+      : null;
+    if (input.id && !existingFloor) throw new Error("Requested floor was not found for this project.");
+    if (input.reviewStatus === "APPROVED") {
+      const savedMarkers = (existingFloor?.markers || []) as { code?: string }[];
+      const providedMarkers = input.markers || [];
+      const required = new Set([...savedMarkers, ...providedMarkers]
+        .map(v => String(v.code || "").trim().toUpperCase()).filter(Boolean));
+      const missing = [...required].filter(code => !codes.includes(code));
+      if (missing.length)
+        throw new Error("Cannot approve incomplete floor geometry: " + missing.length +
+          " drawing labels still lack unit outlines. Complete all boundaries before approval.");
+      if (!input.backgroundData && !existingFloor?.backgroundData)
+        throw new Error("Cannot approve floor geometry without the original architectural reference image.");
+    }
     const data = {
       projectId: input.projectId, name: input.name, floor: input.floor || null,
       viewBox: input.viewBox, shapes: input.shapes, updatedAt: new Date(),
