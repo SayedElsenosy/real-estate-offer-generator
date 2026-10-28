@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { currentUser } from "@/lib/guards";
 import { getLiveInventory, isAvailable } from "@/lib/sheets";
 import { calculateSchedule } from "@/lib/payment";
+import { unitKey } from "@/lib/unit-code";
 import { OfferDocument, type FloorGeometry } from "@/lib/pdf";
 
 export const runtime = "nodejs";
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
     const project = await db().project.findUnique({ where: { id: projectId }, include: { floorPlans: true } });
     if (!project?.spreadsheetId) return NextResponse.json({ error: "Project inventory is not connected" }, { status: 409 });
     const units = await getLiveInventory(user.id, project.spreadsheetId, project.sheetRange, project.name);
-    const unit = units.find(value => value.code === unitCode);
+    const unit = units.find(value => unitKey(value.code) === unitKey(unitCode));
     if (!unit) return NextResponse.json({ error: "Unit does not exist in the live inventory" }, { status: 404 });
     if (!isAvailable(unit.status)) return NextResponse.json({ error: "Unit is no longer available" }, { status: 409 });
     const uniquePlanIds = [...new Set(planIds)];
@@ -47,10 +48,10 @@ export async function POST(req: NextRequest) {
     const rawShapes = match?.shapes as { unitCode: string; d: string }[] | undefined;
     const geometry: FloorGeometry = match ? { viewBox: match.viewBox, backgroundData: match.backgroundData || null,
       shapes: (rawShapes || []).map(shape => {
-        const current = units.find(value => value.code === shape.unitCode);
+        const current = units.find(value => unitKey(value.code) === unitKey(shape.unitCode));
         const status: "AVAILABLE" | "UNAVAILABLE" | "SOLD_OUT" = !current
           ? "SOLD_OUT" : isAvailable(current.status) ? "AVAILABLE" : "UNAVAILABLE";
-        return { unitCode: shape.unitCode, d: shape.d, status };
+        return { unitCode: current?.code || shape.unitCode, d: shape.d, status };
       }) } : null;
     const issuedAt = date.toISOString().slice(0, 10);
     const pdfNode = React.createElement(OfferDocument, {
