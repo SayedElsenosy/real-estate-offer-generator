@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { currentAdmin } from "@/lib/guards";
 import { getLiveInventory } from "@/lib/sheets";
+import { CAIRO_PLAZA_PROJECT_ID, CAIRO_PLAZA_SOURCE_SHA256 } from "@/lib/cairo-architectural-source";
 
 export const runtime = "nodejs";
 const shapeSchema = z.object({
@@ -19,6 +20,7 @@ const inputSchema = z.object({
   markers: z.array(z.object({code:z.string().trim().min(1).max(80),x:z.number().finite().min(0).max(3000),y:z.number().finite().min(0).max(3000)})).max(600).optional(),
   backgroundData: z.string().max(3000000).nullable().optional(),
   reviewStatus: z.enum(["DRAFT", "APPROVED"]).default("DRAFT"),
+  sourceFileSha256: z.string().regex(/^[a-f0-9]{64}$/).nullable().optional(),
   approvalConfirmed: z.boolean().optional()
 });
 function validBackground(background: string | null | undefined): boolean {
@@ -43,6 +45,14 @@ export async function POST(req: NextRequest) {
     if (payload.length > 3500000)
       return NextResponse.json({ error: "Floor asset is too large" }, { status: 413 });
     const input = inputSchema.parse(JSON.parse(payload));
+    // The architectural PDF is retired. Legacy imports lacking the DWG
+    // fingerprint must never replace Cairo Plaza plans or be published.
+    if (input.projectId === CAIRO_PLAZA_PROJECT_ID &&
+        input.sourceFileSha256 !== CAIRO_PLAZA_SOURCE_SHA256)
+      return NextResponse.json({
+        error: "Cairo Plaza accepts geometry only from the registered engineering DWG source. Legacy PDF imports are disabled."
+      }, { status: 409 });
+
     const codes = input.shapes.map(shape => shape.unitCode.toUpperCase());
     if (new Set(codes).size !== codes.length)
       throw new Error("A floor plan cannot have duplicate unit codes.");
@@ -80,6 +90,7 @@ export async function POST(req: NextRequest) {
     const data = {
       projectId: input.projectId, name: input.name, floor: input.floor || null,
       viewBox: input.viewBox, shapes: input.shapes, updatedAt: new Date(),
+      ...(input.projectId === CAIRO_PLAZA_PROJECT_ID ? {sourceFileSha256: input.sourceFileSha256} : {}),
       ...(input.markers !== undefined ? {markers: input.markers} : {}),
       reviewStatus: input.reviewStatus,
       ...(input.backgroundData !== undefined ? { backgroundData: input.backgroundData } : {})
