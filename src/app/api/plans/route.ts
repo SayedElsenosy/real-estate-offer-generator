@@ -12,6 +12,7 @@ const inputSchema = z.object({
   months: z.coerce.number().int().min(1).max(360),
   maintenancePct: z.coerce.number().min(0).max(100),
   startOffsetMonths: z.coerce.number().int().min(0).max(120),
+  installmentIntervalMonths: z.coerce.number().int().min(1).max(36).default(1),
   deliveryDate: z.union([z.string(), z.null()]).optional(),
   deliveryCollectionEnabled: z.boolean().default(false),
   deliveryCollectionPct: z.coerce.number().min(0).max(100).default(0)
@@ -20,8 +21,16 @@ const inputSchema = z.object({
   if (date && !validIsoDate(date)) context.addIssue({ code: "custom", message: "Invalid delivery date", path: ["deliveryDate"] });
   if (input.deliveryCollectionEnabled && (!date || input.deliveryCollectionPct <= 0))
     context.addIssue({ code: "custom", message: "Select delivery date and percentage when collection at delivery is enabled", path: ["deliveryDate"] });
-  if (input.downPaymentPct + (input.deliveryCollectionEnabled ? input.deliveryCollectionPct : 0) > 100)
+  const totalSlots = Math.ceil(input.months / input.installmentIntervalMonths);
+  const recurringCount = totalSlots - 1;
+  const collection = input.deliveryCollectionEnabled ? input.deliveryCollectionPct : 0;
+  if (input.downPaymentPct + collection > 100)
     context.addIssue({ code: "custom", message: "Down payment and delivery collection cannot exceed 100%", path: ["deliveryCollectionPct"] });
+  if (recurringCount === 0 && input.downPaymentPct + collection < 100)
+    context.addIssue({ code: "custom", message: "Duration and interval leave no future installment slots; extend the duration or shorten the interval", path: ["months"] });
+  if (recurringCount > 0 &&
+      input.startOffsetMonths + (recurringCount - 1) * input.installmentIntervalMonths >= input.months)
+    context.addIssue({ code: "custom", message: "Last installment falls outside the selected duration; adjust the offset or frequency", path: ["startOffsetMonths"] });
 });
 export async function POST(req: NextRequest) {
   const admin = await currentAdmin();
@@ -33,6 +42,7 @@ export async function POST(req: NextRequest) {
     const data = { projectId: payload.projectId, name: payload.name,
       downPaymentPct: payload.downPaymentPct.toString(), months: payload.months,
       maintenancePct: payload.maintenancePct.toString(), startOffsetMonths: payload.startOffsetMonths,
+      installmentIntervalMonths: payload.installmentIntervalMonths,
       deliveryDate: payload.deliveryDate || null,
       deliveryCollectionEnabled: payload.deliveryCollectionEnabled,
       deliveryCollectionPct: (payload.deliveryCollectionEnabled ? payload.deliveryCollectionPct : 0).toString(),
