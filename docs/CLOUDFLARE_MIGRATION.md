@@ -144,3 +144,19 @@ The account holder approved bearer-link access from **any device without Google 
 - Revocation: rotating `SHARED_ACCESS_TOKEN` in Cloudflare invalidates the link **and all existing shared device cookies**. Any new value must be at least 40 characters of high-entropy ASCII. The owner can then copy the newly generated link in the dashboard.
 - Build `5c6b1df0-f631-4f4e-8e79-99c529e67737` passed TypeScript, Worker deployment, 12 non-sensitive HTTP checks including anonymous and invalid link denial, and parallel requests. Deployed version `6ad02a42-9161-4f09-a5a6-7fcc57f35fc3`.
 - **Manual acceptance needed:** use the button on an authenticated owner's browser to copy a link, open it on a fresh browser/device and verify cookie redemption, live inventory and quotation PDF. Automated checks intentionally do not ingest the secret or impersonate a real user.
+
+
+## One-time production capacity evaluation — October 29, 2026
+
+Default project is now Cairo Plaza in the Offer Studio; Interactive Plans already defaulted to Cairo Plaza.
+
+A one-time **100 concurrent HTTP offer generation** test was executed via Cloudflare Builds against the deployed Worker. The temporary, high-entropy-token-gated route performed the same real Google Drive XLSX inventory fetch, Neon PostgreSQL reads, financial schedule calculation, Cairo Plaza CAD location lookup and PDF rendering as real offers. It intentionally did not create actual Google browser sessions or persist offers.
+
+Results recorded in Cloudflare Build `9292ea0b-a8d8-4ed1-9304-393a7691ba22`:
+- A single preflight end-to-end PDF: **1/1 succeeded**, HTTP 200, 24,826 bytes, 4,760 ms.
+- 100 concurrent end-to-end PDF requests: **97/100 succeeded**, **3/100 failed** with HTTP 503, whole burst completed in 5,461 ms.
+- Response times among all 100 requests: median 4,786 ms, p90 5,302 ms, p95 5,335 ms, p99 5,391 ms, max 5,434 ms.
+- Cloudflare Worker observability logged **`Worker exceeded CPU time limit`** for requests to the temporary endpoint during the burst. This is a confirmed service capacity issue, not a clean 100/100 readiness test.
+- The one-time test token was deleted, the endpoint and script were removed from GitHub, and the automated deployment command was restored.
+
+**Release assessment:** The existing stack succeeded at 97% of that real-pipeline burst, but is **not proven to sustain 100 simultaneous successful offers**. To improve reliability, prioritize reducing per-offer ExcelJS/XLSX parse CPU (e.g., live Drive revision validation against a safely versioned inventory snapshot) and/or increasing paid-plan Worker CPU allowance if authorized and applicable. After improvement, repeat the exact 100-request test and require 100/100, while monitoring PDF correctness, Google Drive quotas and Neon latency. Do not upgrade the Cloudflare plan or change billable limits without owner approval.
