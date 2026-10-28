@@ -130,23 +130,27 @@ export default function Studio({ projects, email }: { projects: Project[]; email
                     <title>{m.code+" · "+status+" · label location (not unit boundary)"}</title>
                   </circle>;
               })}
-              {floor.reviewStatus === "APPROVED" && floor.shapes.map((shape,i)=>{
+              {floor.shapes.map((shape,i)=>{
                 const known = units.find(value=>value.code===shape.unitCode);
                 const blocked = !known || !isAvailable(known.status);
-                return <path key={i} d={shape.d} fill={!known?"#efaaaa":blocked?"#d3d9e1":shape.unitCode===selected?"#c5a16a":"#d8e8df"}
-                  stroke="#32465d" strokeWidth={3} fillOpacity={.42}
-                  style={{cursor:blocked?"not-allowed":"pointer"}}
-                  tabIndex={blocked?-1:0} role="button" aria-label={"Unit "+shape.unitCode+" "+(known?.status||"Sold Out")}
-                  onClick={()=>selectUnit(shape.unitCode)}
-                  onKeyDown={e=>{if(e.key==="Enter"||e.key===" ")selectUnit(shape.unitCode);}}>
-                  <title>{shape.unitCode+" · "+(known?.status||"SOLD OUT")}</title>
+                const approved = floor.reviewStatus === "APPROVED";
+                return <path key={i} d={shape.d}
+                  fill={!known?"#efaaaa":blocked?"#d3d9e1":shape.unitCode===selected?"#c5a16a":"#d8e8df"}
+                  stroke={approved?"#32465d":"#1b78b9"} strokeWidth={approved?3:2.5}
+                  strokeDasharray={approved?undefined:"8 5"}
+                  fillOpacity={approved?.42:.16}
+                  style={{cursor:approved&&!blocked?"pointer":"default",pointerEvents:approved?"auto":"none"}}
+                  tabIndex={approved&&!blocked?0:-1} role="img"
+                  aria-label={"Unit "+shape.unitCode+" "+(known?.status||"Sold Out")+(approved?" approved":" draft")}
+                  onClick={approved?()=>selectUnit(shape.unitCode):undefined}
+                  onKeyDown={approved?(e)=>{if(e.key==="Enter"||e.key===" ")selectUnit(shape.unitCode);}:undefined}>
+                  <title>{shape.unitCode+" · "+(known?.status||"SOLD OUT")+(approved?"":" · PROPOSED OUTLINE (NOT SELECTABLE)")}</title>
                 </path>;
-              })}
-            </svg> :
+              })}            </svg> :
             <div className="floor-blank"><div><div className="symbol">⌗</div><h2>Floor plan not published</h2>
               <p className="muted">The original architectural image and reviewed unit boundaries will appear here after a floor is saved in Workspace Settings.</p>
             </div></div>}
-          {floor?.reviewStatus !== "APPROVED" && floor?.backgroundData && <p className="notice">Original architectural artwork with colored code-label markers only. Red markers indicate SOLD OUT if that code is absent from live inventory. These dots are NOT unit outlines; selection remains disabled until boundaries are reviewed.</p>}
+          {floor?.reviewStatus !== "APPROVED" && floor?.backgroundData && <p className="notice">Draft review: ${floor.shapes.length} traced outline candidates (dashed blue lines), plus source code-label markers. Red = SOLD OUT if absent from live inventory. These outlines are NOT selectable until approved.</p>}
           <p className="muted">Gold: selected. Green: available. Grey: reserved. Red: SOLD OUT if the drawn unit is absent from current inventory. Only approved outlines are interactive.</p>
         </section>
       </div>
