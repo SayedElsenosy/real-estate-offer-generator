@@ -5,7 +5,9 @@ import type { ScheduleRow } from "@/lib/payment";
 
 export type FloorGeometry = { viewBox: string; backgroundData: string | null; shapes: { unitCode: string; d: string; status: "AVAILABLE" | "UNAVAILABLE" | "SOLD_OUT" }[] } | null;
 export type OfferSchedule = {
-  name: string; totalPrice: string; downPayment: string; maintenance: string;
+  name: string; durationMonths: number; installmentIntervalMonths: number;
+  paymentCount: number; futureInstallmentCount: number;
+  totalPrice: string; downPayment: string; maintenance: string;
   deliveryDate: string | null; deliveryCollection: string; deliveryCollectionPct: string;
   totalIncludingMaintenance: string; rows: ScheduleRow[]
 };
@@ -74,6 +76,9 @@ export function OfferDocument({ company, logo, project, unit, issuedAt, floor, s
       <Header company={company} />
       <Text style={st.title}>PAYMENT SCHEDULE</Text>
       <Text>{schedule.name} / {unit.code}</Text>
+      <CellRow label="Total term (down payment included)" value={schedule.durationMonths + " months"} />
+      <CellRow label="Installment frequency" value={"Every " + schedule.installmentIntervalMonths + " month(s)"} />
+      <CellRow label="Numbered payment slots (including down payment)" value={String(schedule.paymentCount)} />
       <CellRow label="Price" value={"EGP " + schedule.totalPrice} />
       <CellRow label="Down payment" value={"EGP " + schedule.downPayment} />
       {schedule.deliveryDate && <CellRow label="Expected delivery date" value={schedule.deliveryDate} />}
@@ -84,8 +89,8 @@ export function OfferDocument({ company, logo, project, unit, issuedAt, floor, s
         <Text style={st.c1}>NO.</Text><Text style={st.c2}>DESCRIPTION</Text><Text style={st.c3}>DUE DATE</Text><Text style={st.c4}>AMOUNT (EGP)</Text>
       </View>
       {schedule.rows.map((row, i) => <View key={i} style={st.tr} wrap={false}>
-        <Text style={st.c1}>{row.number}</Text>
-        <Text style={st.c2}>{row.type === "DELIVERY" ? "DELIVERY COLLECTION" : row.type.replace("_", " ")}</Text>
+        <Text style={st.c1}>{row.number === null ? "—" : String(row.number)}</Text>
+        <Text style={st.c2}>{row.type === "DOWN_PAYMENT" ? "DOWN PAYMENT (PAYMENT 1)" : row.type === "DELIVERY" ? "DELIVERY COLLECTION" : row.type.replace("_", " ")}</Text>
         <Text style={st.c3}>{row.due}</Text>
         <Text style={st.c4}>{row.amount}</Text>
       </View>)}
