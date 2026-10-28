@@ -21,6 +21,7 @@ const inputSchema = z.object({
 });
 function trustedLogo(url: string | null): string | null {
   if (!url) return null;
+  if (url.length<=380000 && /^data:image\/(png|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/.test(url)) return url;
   try {
     const parsed = new URL(url);
     const allowed = (process.env.ALLOWED_LOGO_HOSTS || "").split(",").map(x => x.trim().toLowerCase()).filter(Boolean);
