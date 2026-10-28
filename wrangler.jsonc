@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "real-estate-offer-generator",
+  "account_id": "d2984372ee07c2652fce20b126c98f2e",
+  "main": "vinext/server/app-router-entry",
+  "compatibility_date": "2026-10-28",
+  "assets": {
+    "not_found_handling": "none"
+  },
+  "vars": {
+    "AUTH_TRUST_HOST": "true"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
