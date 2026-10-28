@@ -41,8 +41,9 @@ export function calculateSchedule(priceInput: string, terms: PaymentTerms, issue
   const totalSlots = Math.ceil(terms.months / interval);
   const hasDownPayment = new Decimal(terms.downPaymentPct).gt(0);
   const futureInstallmentCount = totalSlots - (hasDownPayment ? 1 : 0);
+  const firstFutureOffset = terms.startOffsetMonths === 0 ? interval : terms.startOffsetMonths;
   if (futureInstallmentCount > 0) {
-    const lastDueOffset = terms.startOffsetMonths + (futureInstallmentCount - 1) * interval;
+    const lastDueOffset = firstFutureOffset + (futureInstallmentCount - 1) * interval;
     if (lastDueOffset > terms.months)
       throw new Error("Installment dates exceed the total duration; adjust first installment offset or interval");
   }
@@ -71,7 +72,7 @@ export function calculateSchedule(priceInput: string, terms: PaymentTerms, issue
   if (remainder.gt(0)) {
     for (let i = 0; i < futureInstallmentCount; i++) {
       rows.push({ number: i + (hasDownPayment ? 2 : 1), type: "INSTALLMENT",
-        due: shiftMonths(issueDate, terms.startOffsetMonths + i * interval),
+        due: shiftMonths(issueDate, firstFutureOffset + i * interval),
         amount: (i === futureInstallmentCount - 1
           ? remainder.minus(ordinary.mul(futureInstallmentCount - 1)) : ordinary).toFixed(2) });
     }
