@@ -233,7 +233,8 @@ const translationMap: Record<string, string> = {
   "First payment is the down payment": "المقدم هو الدفعة الأولى",
   "Estimated payment breakdown": "توزيع الدفعات",
   "down payment": "مقدم",
-  "future installments": "أقساط لاحقة"
+  "future installments": "أقساط لاحقة",
+  "Zero offset means automatic start after one payment interval": "قيمة صفر تعني بدء القسط التالي تلقائيًا بعد الفترة المختارة"
 };
 const Context = createContext<{language:Language;setLanguage:(v:Language)=>void}>({language:"ar",setLanguage:()=>{}});
 export function LanguageProvider({children}:{children:React.ReactNode}) {
