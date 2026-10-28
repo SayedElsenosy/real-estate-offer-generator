@@ -137,7 +137,7 @@ export const CairoPlazaInteractiveMap = memo(function CairoPlazaInteractiveMap({
           <h2 dir="ltr" style={{margin:"10px 0",textAlign:"right"}}>{chosen.shape.code}</h2>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             <div><small className="muted">{t("Floor","الدور")}</small><div>{model.name}</div></div>
-            <div><small className="muted">{t("Status","الحالة")}</small><div style={{fontWeight:600,color:colors[chosen.sale].fill}}>{chosen.live?.status||t(colors[chosen.sale].en,colors[chosen.sale].ar)}</div></div>
+            <div><small className="muted">{t("Status","الحالة")}</small><div style={{fontWeight:600,color:colors[chosen.sale].fill}}>{t(colors[chosen.sale].en,colors[chosen.sale].ar)}</div></div>
             <div><small className="muted">{t("Area from inventory","المساحة من الشيت")}</small><div>{chosen.live?.area?chosen.live.area+" sqm":"—"}</div></div>
             <div><small className="muted">{t("Current price","السعر الحالي")}</small><div dir="ltr" style={{textAlign:"right",fontWeight:700}}>{amount(chosen.live?.price)}</div></div>
           </div>
