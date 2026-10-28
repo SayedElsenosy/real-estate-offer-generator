@@ -171,7 +171,7 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
     pair(page,"Unit price","EGP "+schedule.totalPrice,H-255,regular,bold);
     pair(page,"Down payment","EGP "+schedule.downPayment,H-286,regular,bold);
     pair(page,"Expected delivery",schedule.deliveryMonths>0 ? "After "+schedule.deliveryMonths+" months" : "Not specified",H-317,regular,bold);
-    pair(page,"Collected by delivery","EGP "+schedule.preDeliveryTotal,H-348,regular,bold);
+    pair(page,"Total paid BEFORE delivery","EGP "+schedule.preDeliveryTotal,H-348,regular,bold);
     pair(page,"Balance after delivery","EGP "+schedule.postDeliveryTotal,H-379,regular,bold);
     pair(page,"Maintenance deposit","EGP "+schedule.maintenance,H-410,regular,bold);
     pair(page,"Maintenance due",schedule.maintenanceDueDate||"-",H-441,regular,bold);
