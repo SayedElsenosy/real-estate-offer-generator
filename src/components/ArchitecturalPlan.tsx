@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { useLanguage } from "@/components/LanguageProvider";
 import { unitKey } from "@/lib/unit-code";
+import { CadDxfPreview } from "@/components/CadDxfPreview";
 
 type Unit = { code:string; floor:string; status:string; area:string; price:string };
 type Shape = {unitCode:string; d:string};
@@ -32,6 +33,7 @@ export default function ArchitecturalPlan({email}:{email:string}) {
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState("");
   const [floorId,setFloorId]=useState("");
+  const [previewFloor,setPreviewFloor]=useState("0");
   const [selected,setSelected]=useState("");
   const [search,setSearch]=useState("");
   const [zoom,setZoom]=useState(1);
@@ -135,5 +137,7 @@ export default function ArchitecturalPlan({email}:{email:string}) {
         <p style={{marginTop:6}}>Availability and pricing are controlled exclusively by the live inventory. Drawing-only units are never offerable.</p>
       </div>}
     </div>
+    <div className="panel" style={{marginTop:20}}><label className="fieldlabel">CAD preview floor<select className="field" value={previewFloor} onChange={e=>{setPreviewFloor(e.target.value);setSelected("");}}>{[["-1","Basement"],["0","Ground"],["1","First"],["2","Second"],["3","Third"],["4","Fourth"],["5","Fifth"],["6","Sixth"]].map(([id,name])=><option key={id} value={id}>{name} ({id})</option>)}</select></label></div>
+    <CadDxfPreview floor={previewFloor} inventory={data?.units||[]} selected={selected} onSelect={setSelected}/>
   </main></div>;
 }
