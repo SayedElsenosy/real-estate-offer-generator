@@ -6,7 +6,7 @@ import { unitKey } from "@/lib/unit-code";
 import { useLanguage } from "@/components/LanguageProvider";
 
 type Unit = { code: string; price: string; area: string; floor: string; status: string; project: string };
-type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; deliveryDate?: string | null; deliveryCollectionPct?: string; deliveryCollectionEnabled?: boolean };
+type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; installmentIntervalMonths?: number; deliveryDate?: string | null; deliveryCollectionPct?: string; deliveryCollectionEnabled?: boolean };
 type Project = { id: string; slug: string; name: string; paymentPlans: Plan[] };
 type Shape = { unitCode: string; d: string };
 type Floor = { id: string; name: string; floor: string | null; viewBox: string; shapes: Shape[]; markers?: {code:string;x:number;y:number}[]; backgroundData?: string | null; reviewStatus?: string };
@@ -164,7 +164,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
           {project?.paymentPlans.map(plan => <label className="planrow" key={plan.id}>
             <input type="checkbox" checked={chosenPlans.includes(plan.id)} disabled={!unit || (chosenPlans.length >= 5 && !chosenPlans.includes(plan.id))}
               onChange={event => toggle(plan.id, event.target.checked)} />
-            <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% {tr("Down payment %")} · {plan.months} {tr("Installment months")} · {plan.maintenancePct}% {tr("Maintenance %")}{plan.deliveryDate ? " · " + tr("Delivery date") + ": " + plan.deliveryDate : ""}{plan.deliveryCollectionEnabled ? " · " + plan.deliveryCollectionPct + "% " + tr("Collection at delivery %") : ""}</small></span>
+            <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% {tr("Down payment %")} · {plan.months} {tr("Total term including down payment (months)")} · {tr("Every")} {plan.installmentIntervalMonths || 1} {tr("months")} · {plan.maintenancePct}% {tr("Maintenance %")}{plan.deliveryDate ? " · " + tr("Delivery date") + ": " + plan.deliveryDate : ""}{plan.deliveryCollectionEnabled ? " · " + plan.deliveryCollectionPct + "% " + tr("Collection at delivery %") : ""}</small></span>
           </label>)}
           {!project?.paymentPlans.length && <div className="notice">{tr("No plans yet. An administrator can add a plan (such as 10% down / 80 months) in Workspace Settings.")}</div>}
           <button className="btn gold" style={{width:"100%",marginTop:18}} disabled={!unit || chosenPlans.length===0 || generating} onClick={issueOffer}>
