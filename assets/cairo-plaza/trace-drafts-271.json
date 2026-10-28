@@ -621,7 +621,7 @@
       },
       {
         "unitCode": "A/FR/SH/10A",
-        "d": "M 1214 1284 L 1240 1284 L 1240 1336 L 1214 1336 Z",
+        "d": "M 1214 1284 L 1240 1284 L 1240 1370 L 1214 1370 Z",
         "source": "Original Cairo Plaza PDF wall partitions and visibly legible room label; manually reviewed as draft",
         "confidence": "DRAFT_VISUAL_PARTITION"
       },
