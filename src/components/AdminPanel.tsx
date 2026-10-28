@@ -12,7 +12,7 @@ type Project = {
   id: string; name: string; spreadsheetId: string | null; sheetRange: string;
   companyName: string; logoUrl: string | null; paymentPlans: Plan[]; floorPlans: Floor[];
 };
-const blankPlan = { id: "", name: "", downPaymentPct: "10", maintenancePct: "8", months: "80", startOffsetMonths: "1", deliveryMonths: "18", deliveryCollectionEnabled: false, deliveryCollectionPct: "0" };
+const blankPlan = { id: "", name: "", downPaymentPct: "10", maintenancePct: "8", months: "80", startOffsetMonths: "1", deliveryMonths: "", deliveryCollectionEnabled: false, deliveryCollectionPct: "0" };
 const blankFloor = { id: "", name: "", floor: "", viewBox: "0 0 1000 700", shapes: [] as Shape[] };
 function extractPaths(source: string): { viewBox: string; shapes: Shape[] } {
   const document = new DOMParser().parseFromString(source, "image/svg+xml");
@@ -183,7 +183,7 @@ export default function AdminPanel({ email, projects }: { email: string; project
           <span><b>{p.name}</b><small>{p.downPaymentPct}% {tr("Down payment %")} · {p.months} {tr("Total term including down payment (months)")} · {tr("Monthly payments")} · {tr("First payment is the down payment")}{p.deliveryMonths ? " · "+tr("Delivery after")+" "+p.deliveryMonths+" "+tr("months") : ""}</small></span>
           <div className="actionline">
             <button className="btn soft" type="button" disabled={busy}
-              onClick={()=>setPlan({id:p.id,name:p.name,downPaymentPct:p.downPaymentPct,months:String(p.months),maintenancePct:p.maintenancePct,startOffsetMonths:String(p.startOffsetMonths),deliveryMonths:String(p.deliveryMonths || 18),deliveryCollectionEnabled:p.deliveryCollectionEnabled,deliveryCollectionPct:p.deliveryCollectionPct})}>
+              onClick={()=>setPlan({id:p.id,name:p.name,downPaymentPct:p.downPaymentPct,months:String(p.months),maintenancePct:p.maintenancePct,startOffsetMonths:String(p.startOffsetMonths),deliveryMonths:p.deliveryMonths ? String(p.deliveryMonths) : "",deliveryCollectionEnabled:p.deliveryCollectionEnabled,deliveryCollectionPct:p.deliveryCollectionPct})}>
               {tr("Edit")}
             </button>
             <button className="btn danger" type="button" disabled={busy} onClick={()=>void deletePlan(p.id)}>{tr("Delete")}</button>
