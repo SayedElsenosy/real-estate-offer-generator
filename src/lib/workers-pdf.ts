@@ -179,7 +179,7 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
     let page=pdf.addPage([W,H]);
     header(page,company,"PAYMENT SCHEDULE",printable(schedule.name)+" / UNIT "+printable(unit.code),bold,regular,logo);
     pair(page,"Term (down payment included)",schedule.durationMonths+" months",H-162,regular,bold);
-    pair(page,"Payment cadence","Monthly",H-193,regular,bold);
+    pair(page,"Payment cadence",schedule.installmentIntervalMonths===3?"Quarterly (every 3 months)":"Monthly",H-193,regular,bold);
     pair(page,"Payment slots",schedule.paymentCount,H-224,regular,bold);
     pair(page,"Unit price","EGP "+schedule.totalPrice,H-255,regular,bold);
     pair(page,"Down payment","EGP "+schedule.downPayment,H-286,regular,bold);
