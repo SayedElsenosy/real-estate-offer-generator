@@ -96,7 +96,8 @@ model PaymentPlan {
   maintenancePct    Decimal  @default(0) @db.Decimal(7, 4)
   startOffsetMonths Int      @default(1)
   installmentIntervalMonths Int @default(1)
-  deliveryDate      String?  @db.VarChar(10)
+  deliveryDate      String?  @db.VarChar(10) // legacy; retained for existing records
+  deliveryMonths    Int? // expected delivery offset from offer date
   deliveryCollectionEnabled Boolean @default(false)
   deliveryCollectionPct Decimal @default(0) @db.Decimal(7, 4)
   createdAt         DateTime @default(now()) @db.Timestamptz(6)
