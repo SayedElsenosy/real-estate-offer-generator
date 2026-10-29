@@ -4,6 +4,7 @@ import { drawArabicText } from "arabic-bidi-shaper/pdf-lib";
 import plexRegular from "@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-400-normal.woff?inline";
 import plexBold from "@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-700-normal.woff?inline";
 import Decimal from "decimal.js";
+import { formatOfferMoney } from "@/lib/offer-money";
 import { cairoLocation, embeddedLogo, type Props } from "@/lib/workers-pdf";
 
 const W=595.28,H=841.89,LEFT=47,RIGHT=W-47;
@@ -14,11 +15,7 @@ const gray=rgb(0.40,0.46,0.55),pale=rgb(0.955,0.968,0.981),
 function latin(value:unknown):string {
   return String(value??"").replace(/[^\x20-\x7e]/g," ").replace(/\s+/g," ").trim()||"-";
 }
-function amount(value:unknown):string {
-  try{return new Decimal(String(value).replace(/,/g,"")).toFixed(2)
-    .replace(/\B(?=(\d{3})+(?!\d))/g,",");}
-  catch{return "-";}
-}
+const amount = formatOfferMoney;
 function fontBytes(encoded:string):Uint8Array {
   if(!encoded.startsWith("data:")||!encoded.includes(","))throw Error("Arabic font not embedded");
   return Uint8Array.from(atob(encoded.slice(encoded.indexOf(",")+1)),c=>c.charCodeAt(0));
