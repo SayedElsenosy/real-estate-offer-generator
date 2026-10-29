@@ -4,7 +4,7 @@ import { PDFDocument } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { drawArabicText } from "arabic-bidi-shaper/pdf-lib";
 
-const fontBytes=readFileSync("node_modules/@fontsource/cairo/files/cairo-arabic-400-normal.woff");
+const fontBytes=readFileSync("node_modules/@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-400-normal.woff");
 const pdf=await PDFDocument.create();
 pdf.registerFontkit(fontkit);
 const font=await pdf.embedFont(fontBytes,{subset:true});
@@ -18,4 +18,4 @@ assert.equal(new TextDecoder().decode(result.slice(0,5)),"%PDF-");
 const source=readFileSync("src/components/Studio.tsx","utf8");
 assert.ok(source.includes('useState<"ar"|"en">("ar")'),"Arabic must default for PDF exports");
 assert.ok(source.includes('language:offerLanguage'),"Offer form must submit requested language");
-console.log("PASS: self-hosted Arabic Cairo font, Unicode RTL phrases, numeric bidi and default Arabic selection");
+console.log("PASS: self-hosted IBM Plex Sans Arabic font, Unicode RTL phrases, numeric bidi and default Arabic selection");
