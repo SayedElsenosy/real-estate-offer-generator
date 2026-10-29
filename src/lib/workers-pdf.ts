@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb, type PDFPage, type PDFFont, type PDFImage } from "pdf-lib";
 import Decimal from "decimal.js";
+import { formatOfferMoney } from "@/lib/offer-money";
 import { unitKey } from "@/lib/unit-code";
 import type { PdfUnitLocation } from "@/lib/cairo-offer-location";
 import type { InventoryUnit } from "@/lib/sheets";
@@ -127,13 +128,13 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
   pair(intro,"Floor",unit.floor,H-357,regular,bold);
   pair(intro,"Area",unit.area ? unit.area+" sqm":"-",H-401,regular,bold);
   pair(intro,"Inventory status",unit.status,H-445,regular,bold);
-  pair(intro,"UNIT PRICE","EGP "+unit.price,H-489,regular,bold);
+  pair(intro,"UNIT PRICE","EGP "+formatOfferMoney(unit.price),H-489,regular,bold);
   const priceValue=new Decimal(String(unit.price).replace(/[,\s]/g,""));
   const cleanArea=String(unit.area||"").replace(/[,\s]/g,"");
   const areaValue=new Decimal(/^\d+(?:\.\d+)?$/.test(cleanArea)?cleanArea:"0");
   const sqmPrice=priceValue.isFinite()&&areaValue.isFinite()&&areaValue.gt(0)
     ?priceValue.div(areaValue).toDecimalPlaces(2,Decimal.ROUND_HALF_UP).toFixed(2):"—";
-  pair(intro,"PRICE PER SQM","EGP "+sqmPrice,H-533,regular,bold);
+  pair(intro,"PRICE PER SQM","EGP "+formatOfferMoney(sqmPrice),H-533,regular,bold);
   intro.drawText("Prices and availability are rechecked against the live project source before issue.",{
     x:LEFT,y:195,font:regular,size:9,color:gray
   });
@@ -181,14 +182,14 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
     pair(page,"Term (down payment included)",schedule.durationMonths+" months",H-162,regular,bold);
     pair(page,"Payment cadence",schedule.installmentIntervalMonths===3?"Quarterly (every 3 months)":"Monthly",H-193,regular,bold);
     pair(page,"Payment slots",schedule.paymentCount,H-224,regular,bold);
-    pair(page,"Unit price","EGP "+schedule.totalPrice,H-255,regular,bold);
-    pair(page,"Down payment","EGP "+schedule.downPayment,H-286,regular,bold);
+    pair(page,"Unit price","EGP "+formatOfferMoney(schedule.totalPrice),H-255,regular,bold);
+    pair(page,"Down payment","EGP "+formatOfferMoney(schedule.downPayment),H-286,regular,bold);
     pair(page,"Expected delivery",schedule.deliveryMonths>0 ? "After "+schedule.deliveryMonths+" months" : "Not specified",H-317,regular,bold);
-    pair(page,"Total paid BEFORE delivery","EGP "+schedule.preDeliveryTotal,H-348,regular,bold);
-    pair(page,"Balance after delivery","EGP "+schedule.postDeliveryTotal,H-379,regular,bold);
-    pair(page,"Maintenance deposit","EGP "+schedule.maintenance,H-410,regular,bold);
+    pair(page,"Total paid BEFORE delivery","EGP "+formatOfferMoney(schedule.preDeliveryTotal),H-348,regular,bold);
+    pair(page,"Balance after delivery","EGP "+formatOfferMoney(schedule.postDeliveryTotal),H-379,regular,bold);
+    pair(page,"Maintenance deposit","EGP "+formatOfferMoney(schedule.maintenance),H-410,regular,bold);
     pair(page,"Maintenance due",schedule.maintenanceDueDate||"-",H-441,regular,bold);
-    pair(page,"Total with maintenance","EGP "+schedule.totalIncludingMaintenance,H-472,regular,bold);
+    pair(page,"Total with maintenance","EGP "+formatOfferMoney(schedule.totalIncludingMaintenance),H-472,regular,bold);
     let y=H-518;tableHeader(page,y,bold);y-=35;
     schedule.rows.forEach((entry,index)=>{
       if(y<85){
@@ -196,7 +197,7 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
         y=H-160;tableHeader(page,y,bold);y-=36;
       }
       const type=entry.type==="DOWN_PAYMENT"?"DOWN PAYMENT (PAYMENT 1)":entry.type==="MAINTENANCE"?"MAINTENANCE":"INSTALLMENT";
-      row(page,index,[entry.number===null?"-":String(entry.number),type,entry.due,entry.amount],y,regular);y-=23;
+      row(page,index,[entry.number===null?"-":String(entry.number),type,entry.due,formatOfferMoney(entry.amount)],y,regular);y-=23;
     });
   }
   return pdf.save({useObjectStreams:false});
