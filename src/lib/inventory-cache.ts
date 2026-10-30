@@ -4,7 +4,7 @@ import { getLiveInventory, getDriveFileRevision, type InventoryUnit } from "@/li
 // Promise or a database/Google response across Worker request contexts.
 // This reduces repetitive XLSX downloads/parsing during short polling cycles.
 // Each isolate has its own cache: these are freshness targets, not SLA promises.
-const REVALIDATE_MS = 3000;
+const REVALIDATE_MS = 10000;
 const MAX_ENTRIES = 12;
 type Entry = { units: InventoryUnit[]; expiresAt: number; lastReadAt: number; revision: string|null };
 const entries = new Map<string, Entry>();
