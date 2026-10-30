@@ -44,6 +44,8 @@ async function accessToken(userId: string): Promise<string> {
   return payload.access_token;
 }
 
+export { accessToken as getGoogleAccessToken };
+
 /** Small metadata check to avoid repeatedly downloading and parsing Cairo Plaza XLSX.
  * Requires the same read-only Google Drive scope as its normal download.
  */
