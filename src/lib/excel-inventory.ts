@@ -28,14 +28,37 @@ export async function getExcelInventory(
   const tab = requestedTab.replace(/^'|'$/g, "").replace(/''/g, "'").trim();
   if (!tab) throw new Error("An Excel worksheet name must be configured.");
 
-  const response = await fetch(
-    "https://www.googleapis.com/drive/v3/files/" + encodeURIComponent(spreadsheetId) + "?alt=media",
-    {
-      headers: { Authorization: "Bearer " + accessToken },
+  const sourceUrl = "https://www.googleapis.com/drive/v3/files/" +
+    encodeURIComponent(spreadsheetId) + "?alt=media";
+  // Workerd rejects fetch({redirect:"error"}). Follow Drive's signed download
+  // redirects explicitly, never forwarding the OAuth bearer token to another
+  // origin, and never following an arbitrary external host.
+  let currentUrl = sourceUrl;
+  let response = await fetch(currentUrl, {
+    headers: { Authorization: "Bearer " + accessToken },
+    cache: "no-store",
+    redirect: "manual"
+  });
+  for (let hop = 0; hop < 3 && response.status >= 300 && response.status < 400; hop++) {
+    const location = response.headers.get("location");
+    if (!location) throw new Error("Google Drive returned a redirect without a destination.");
+    const target = new URL(location, currentUrl);
+    const host = target.hostname.toLowerCase();
+    const trusted = target.protocol === "https:" &&
+      (host === "google.com" || host.endsWith(".google.com") ||
+       host === "googleapis.com" || host.endsWith(".googleapis.com") ||
+       host === "googleusercontent.com" || host.endsWith(".googleusercontent.com"));
+    if (!trusted) throw new Error("Google Drive returned an untrusted download redirect.");
+    const sameOrigin = target.origin === new URL(sourceUrl).origin;
+    currentUrl = target.toString();
+    response = await fetch(currentUrl, {
+      headers: sameOrigin ? { Authorization: "Bearer " + accessToken } : {},
       cache: "no-store",
-      redirect: "error"
-    }
-  );
+      redirect: "manual"
+    });
+  }
+  if (response.status >= 300 && response.status < 400)
+    throw new Error("Google Drive returned too many download redirects.");
   if (!response.ok) {
     let providerReason = "";
     try {

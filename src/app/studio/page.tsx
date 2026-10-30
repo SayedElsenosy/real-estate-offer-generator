@@ -1,12 +1,10 @@
-import { redirect } from "next/navigation";
-import { auth, authReady } from "@/auth";
-import { db } from "@/lib/db";
-import Studio from "@/components/Studio";
-export const dynamic = "force-dynamic";
-export default async function StudioPage() {
-  if (!authReady) redirect("/");
-  const session = await auth();
-  if (!session?.user?.email) redirect("/");
-  const projects = await db().project.findMany({ include: { paymentPlans: true }, orderBy: { name: "asc" } });
-  return <Studio projects={JSON.parse(JSON.stringify(projects))} email={session.user.email} />;
+import StudioBootstrap from "@/components/StudioBootstrap";
+
+// The page contains no user information, so vinext can serve its pre-rendered
+// HTML as a static asset without running authenticated SSR in the Worker.
+// All user/project/payment-plan reads occur through /api/studio/bootstrap.
+export const dynamic = "force-static";
+
+export default function StudioPage() {
+  return <StudioBootstrap />;
 }

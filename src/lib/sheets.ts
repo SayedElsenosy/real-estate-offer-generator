@@ -44,6 +44,25 @@ async function accessToken(userId: string): Promise<string> {
   return payload.access_token;
 }
 
+export { accessToken as getGoogleAccessToken };
+
+/** Small metadata check to avoid repeatedly downloading and parsing Cairo Plaza XLSX.
+ * Requires the same read-only Google Drive scope as its normal download.
+ */
+export async function getDriveFileRevision(userId: string, fileId: string): Promise<string> {
+  const token = await accessToken(userId);
+  const url = "https://www.googleapis.com/drive/v3/files/" + encodeURIComponent(fileId) +
+    "?fields=" + encodeURIComponent("id,version,modifiedTime,md5Checksum");
+  const response = await fetch(url, {
+    headers: { Authorization: "Bearer " + token }, cache: "no-store"
+  });
+  if (!response.ok) throw new Error("Google Drive could not verify the Excel file version");
+  const info = await response.json() as { version?: string; modifiedTime?: string; md5Checksum?: string };
+  const revision = [info.version || "",info.md5Checksum || "",info.modifiedTime || ""].join(":");
+  if (!revision.replace(/:/g,"")) throw new Error("Google Drive returned no Excel file version");
+  return revision;
+}
+
 function normalize(value: string): string {
   return String(value).normalize("NFKC").toLowerCase().replace(/[\s_\-().\n/]/g, "");
 }

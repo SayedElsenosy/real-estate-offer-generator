@@ -3,7 +3,64 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 type Language = "ar" | "en";
 const translationMap: Record<string, string> = {
+  "Plan discount %": "نسبة الخصم على الخطة",
+  "Second down payment %": "نسبة المقدم الثاني",
+  "Second down payment": "المقدم الثاني",
+  "Second down payment after (months)": "المقدم الثاني بعد (شهور)",
+  "Final quarterly installment at the end of the term": "آخر قسط ربع سنوي عند نهاية المدة",
+  "Adjustment per regular installment (EGP)": "تعديل قيمة كل قسط عادي (جنيه)",
+  "Monthly payments": "أقساط شهرية",
+  "Quarterly installments": "أقساط ربع سنوية",
+  "Installment frequency": "دورية الأقساط",
+  "Monthly — every month": "شهري — كل شهر",
+  "Quarterly — every 3 months": "ربع سنوي — كل 3 شهور",
+  "The down payment is the first payment within the term. Later installments follow the selected frequency. The schedule and PDF use the same cadence.": "المقدم أول دفعة ضمن المدة الإجمالية، والأقساط التالية حسب الدورية المختارة؛ ويظهر نفس الجدول في المعاينة وملف PDF.",
+  "The pre-delivery percentage is distributed across the installments before delivery, with no separate payment at delivery. The remainder is distributed after delivery.": "تتوزع النسبة المطلوبة قبل الاستلام على الأقساط المستحقة قبله، بدون دفعة مستقلة عند الاستلام، ويتوزع المتبقي على الأقساط بعده.",
+  "Delivery after": "الاستلام بعد",
+  "Paid by delivery": "نسبة المسدد حتى الاستلام",
+  "Split installments before and after delivery": "تقسيم الأقساط قبل وبعد الاستلام",
+  "Delivery after (months)": "موعد الاستلام بعد (عدد الشهور)",
+  "Target paid by delivery (% of unit price, includes down payment)": "نسبة المسدد قبل الاستلام من سعر الوحدة (تشمل المقدم)",
+  "The delivery percentage is spread across the monthly payments before delivery, not billed as a separate delivery installment. The remaining balance is spread over the months after delivery.": "يتم توزيع النسبة المطلوب سدادها حتى الاستلام على الأقساط الشهرية السابقة للاستلام بدون دفعة مستقلة عند التسليم، ويتوزع المتبقي على الشهور التالية.",
+  "All installments are monthly. The down payment is the first payment and counts within the full term.": "جميع الأقساط شهرية، والمقدم أول دفعة ويُحتسب ضمن المدة الإجمالية.",
+  "Maintenance deposit due date": "تاريخ استحقاق وديعة الصيانة",
+  "Live payment schedule preview": "جدول الأقساط المباشر",
+  "Collected before delivery": "المسدد حتى الاستلام",
+  "Balance after delivery": "المتبقي بعد الاستلام",
+  "Total including maintenance": "الإجمالي شامل الصيانة",
+  "Payment type": "نوع الدفعة",
+  "Due date": "تاريخ الاستحقاق",
+  "Amount (EGP)": "القيمة (جنيه)",
+  "Down payment": "المقدم",
+  "Maintenance": "وديعة الصيانة",
+  "Installment": "قسط",
+  "Please select the maintenance deposit date.": "حدد تاريخ استحقاق وديعة الصيانة.",
+  "Select the maintenance date before exporting. The schedule currently uses today as a temporary preview.": "حدد تاريخ وديعة الصيانة قبل تحميل العرض؛ يظهر تاريخ اليوم مؤقتًا في المعاينة فقط.",
+  "Choose a PNG or JPEG logo under 6 MB.": "اختر صورة شعار PNG أو JPEG بحجم أقل من 6 ميجابايت.",
+  "Logo prepared. Save project settings to keep it permanently.": "تم تجهيز الشعار؛ اضغط حفظ إعدادات المشروع للاحتفاظ به.",
+  "Logo could not be loaded": "تعذر تحميل صورة الشعار",
+  "Upload company logo (PNG or JPEG)": "رفع شعار الشركة (PNG أو JPEG)",
+  "Company logo preview": "معاينة شعار الشركة",
+  "Uploaded logo will be embedded directly into PDF offers.": "سيتم تضمين الشعار المحفوظ داخل عروض الأسعار PDF مباشرة.",
+  "Or use a permanent HTTPS logo URL": "أو استخدم رابط صورة HTTPS دائم",
+  "Image URL (not a temporary Facebook link)": "رابط الصورة (ليس رابط فيسبوك مؤقت)",
+  "Temporary Facebook photo URLs expire. Upload the original logo once and save settings to keep it available in every offer.": "روابط صور فيسبوك المؤقتة تنتهي صلاحيتها. ارفع صورة الشعار الأصلية مرة واحدة واحفظ الإعدادات ليظهر في كل العروض.",
+  "Private access link for other devices": "رابط الدخول الخاص من أي جهاز",
+  "Share the private link to open the studio and floor plans on another device without Google sign-in. The link does not grant administrator rights.": "شارك الرابط الخاص لفتح الاستوديو والمخططات من أي جهاز بدون تسجيل Google، ولا يمنح صلاحيات الإدارة.",
+  "Preparing private link…": "جارٍ تجهيز الرابط…",
+  "Private link copied": "تم نسخ رابط الدخول الخاص",
+  "Copy private access link": "نسخ رابط الدخول الخاص",
+  "Only share this link with authorized people. They can access offers, live inventory and floor plans but not admin settings.": "شارك الرابط مع الأشخاص المصرح لهم فقط. يتيح العروض والمخزون والمخططات دون صلاحية الإدارة.",
+  "Unable to create private access link. Sign in with the administrator account.": "تعذر إنشاء الرابط الخاص. سجّل الدخول بحساب الإدارة.",
+  "An unexpected error occurred": "حدث خطأ غير متوقع",
+  "PDF offer language": "لغة عرض السعر PDF",
+  "Arabic PDF": "العربية",
+  "English PDF": "الإنجليزية",
   "Overview": "الرئيسية",
+  "Auto-refresh every 10 seconds while this tab is open": "تحديث تلقائي كل 10 ثوانٍ أثناء فتح التبويب",
+  "Checking for changes…": "جارٍ التحقق من التغييرات…",
+  "Inventory synchronized": "المخزون متزامن",
+  "Refresh now": "تحديث الآن",
   "Offer Studio": "إنشاء عروض الأسعار",
   "Workspace Settings": "إعدادات النظام",
   "REAL ESTATE PROPOSALS": "عروض عقارية احترافية",
@@ -241,18 +298,15 @@ const translationMap: Record<string, string> = {
   "Awaiting verified DWG layer and unit-boundary extraction. Inventory and quotation calculations remain available; no inaccurate map is shown.": "جارٍ تجهيز استخراج طبقات وحدود الوحدات من DWG بشكل موثّق. المخزون وحسابات العروض مستمران في العمل دون عرض خريطة غير دقيقة.",
   "Cairo Plaza engineering DWG registered; accurate interactive maps will appear after CAD verification.": "تم اعتماد ملف DWG الهندسي لكايرو بلازا، وستظهر الخرائط التفاعلية الدقيقة بعد فحص ملف CAD."
 };
-const Context = createContext<{language:Language;setLanguage:(v:Language)=>void}>({language:"ar",setLanguage:()=>{}});
+const Context = createContext<{language:Language;setLanguage:(v:Language)=>void}>({language:"en",setLanguage:()=>{}});
 export function LanguageProvider({children}:{children:React.ReactNode}) {
-  const [language,setLanguage]=useState<Language>("ar");
-  useEffect(()=>{
-    try {
-      if (localStorage.getItem("offer_atelier_language")==="en") setLanguage("en");
-    } catch {}
-  },[]);
+  const [language,setLanguage]=useState<Language>("en");
+  // English is the default on every fresh page load. A visitor can switch
+  // to Arabic for the current navigation session, but an old browser setting
+  // must not unexpectedly make every new visit start in Arabic.
   useEffect(()=>{
     document.documentElement.lang=language;
     document.documentElement.dir=language==="ar"?"rtl":"ltr";
-    try {localStorage.setItem("offer_atelier_language",language);} catch {}
   },[language]);
   return <Context.Provider value={{language,setLanguage}}>{children}</Context.Provider>;
 }

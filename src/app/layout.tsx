@@ -6,5 +6,5 @@ export const metadata: Metadata = {
   description: "عروض أسعار عقارية احترافية من المخزون المباشر. / Real estate proposals from live inventory."
 };
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return <html lang="ar" dir="rtl"><body><LanguageProvider>{children}</LanguageProvider></body></html>;
+  return <html lang="en" dir="ltr"><body><LanguageProvider>{children}</LanguageProvider></body></html>;
 }

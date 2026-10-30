@@ -6,87 +6,159 @@ export type PaymentTerms = {
   months: number;
   maintenancePct: string;
   startOffsetMonths: number;
-  installmentIntervalMonths?: number;
-  deliveryDate?: string | null;
+  installmentIntervalMonths?: 1 | 3;
+  discountPct?: string;
+  secondDownPaymentPct?: string;
+  secondDownOffsetMonths?: number;
+  quarterlyEndAtTerm?: boolean;
+  ordinaryInstallmentRebate?: string;
+  deliveryMonths?: number;
   deliveryCollectionEnabled?: boolean;
   deliveryCollectionPct?: string | null;
+  maintenanceDueDate?: string | null;
 };
 export type ScheduleRow = {
   number: number | null;
-  type: "DOWN_PAYMENT" | "INSTALLMENT" | "MAINTENANCE" | "DELIVERY";
+  type: "DOWN_PAYMENT" | "SECOND_DOWN_PAYMENT" | "INSTALLMENT" | "MAINTENANCE";
   due: string;
   amount: string;
 };
 function shiftMonths(original: Date, offset: number): string {
-  const start = new Date(Date.UTC(original.getUTCFullYear(), original.getUTCMonth() + offset, 1));
-  const end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 0)).getUTCDate();
-  return new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), Math.min(original.getUTCDate(), end))).toISOString().slice(0, 10);
+  const month = new Date(Date.UTC(original.getUTCFullYear(), original.getUTCMonth() + offset, 1));
+  const lastDay = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth(),
+    Math.min(original.getUTCDate(),lastDay))).toISOString().slice(0,10);
 }
 export function validIsoDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const d = new Date(value + "T00:00:00Z");
-  return Number.isFinite(d.getTime()) && d.toISOString().slice(0, 10) === value;
+  const date = new Date(value+"T00:00:00Z");
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0,10)===value;
 }
-export function calculateSchedule(priceInput: string, terms: PaymentTerms, issueDate: Date) {
-  const price = new Decimal(priceInput.replace(/[,\s]/g, ""));
-  if (!price.isFinite() || price.lte(0)) throw new Error("Unit price is not a positive numeric amount");
-  if (!Number.isInteger(terms.months) || terms.months < 1 || terms.months > 360) throw new Error("Unsupported payment duration");
-  if (!Number.isInteger(terms.startOffsetMonths) || terms.startOffsetMonths < 0 || terms.startOffsetMonths > 120) throw new Error("Invalid first installment offset");
-  const interval = terms.installmentIntervalMonths ?? 1;
-  if (!Number.isInteger(interval) || interval < 1 || interval > 36)
-    throw new Error("Installment interval must be an integer from 1 to 36 months");
-  // Duration includes the deposit as payment #1 if a deposit exists.
-  // Example: 80 monthly months = deposit + 79 installments; 36 quarterly months = deposit + 11.
-  // A zero-down plan has no deposit row and retains all installment slots.
-  const totalSlots = Math.ceil(terms.months / interval);
-  const hasDownPayment = new Decimal(terms.downPaymentPct).gt(0);
-  const futureInstallmentCount = totalSlots - (hasDownPayment ? 1 : 0);
-  const firstFutureOffset = terms.startOffsetMonths === 0 ? interval : terms.startOffsetMonths;
-  if (futureInstallmentCount > 0) {
-    const lastDueOffset = firstFutureOffset + (futureInstallmentCount - 1) * interval;
-    if (lastDueOffset > terms.months)
-      throw new Error("Installment dates exceed the total duration; adjust first installment offset or interval");
+function money(value: Decimal) { return value.toDecimalPlaces(2,Decimal.ROUND_HALF_UP); }
+function distribute(amount: Decimal, count: number, rebate = new Decimal(0)): Decimal[] {
+  if (count===0) {
+    if (!amount.isZero()) throw new Error("No installment months available for this stage of payments.");
+    return [];
   }
-  const percent = new Decimal(terms.downPaymentPct);
-  const maintenancePercent = new Decimal(terms.maintenancePct);
-  const deliveryPercent = terms.deliveryCollectionEnabled ? new Decimal(terms.deliveryCollectionPct || 0) : new Decimal(0);
-  if (!percent.isFinite() || !maintenancePercent.isFinite() || !deliveryPercent.isFinite() ||
-      percent.lt(0) || percent.gt(100) || maintenancePercent.lt(0) || maintenancePercent.gt(100) ||
-      deliveryPercent.lt(0) || deliveryPercent.gt(100) || percent.plus(deliveryPercent).gt(100))
-    throw new Error("Invalid payment percentages: down payment plus delivery collection cannot exceed 100%");
-  const deliveryDate = terms.deliveryDate || null;
-  if (deliveryDate && !validIsoDate(deliveryDate)) throw new Error("Invalid delivery date");
-  if (terms.deliveryCollectionEnabled && (!deliveryDate || !deliveryPercent.gt(0)))
-    throw new Error("An enabled delivery collection requires a delivery date and a positive percentage");
-  const down = price.mul(percent).div(100).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-  const delivery = price.mul(deliveryPercent).div(100).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-  const maintenance = price.mul(maintenancePercent).div(100).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-  const remainder = price.minus(down).minus(delivery);
-  if (remainder.gt(0) && futureInstallmentCount === 0)
-    throw new Error("The duration and interval allow only the down payment; choose a longer term or a shorter interval");
-  const ordinary = futureInstallmentCount > 0
-    ? remainder.div(futureInstallmentCount).toDecimalPlaces(2, Decimal.ROUND_DOWN) : new Decimal(0);
-  const rows: ScheduleRow[] = hasDownPayment
-    ? [{ number: 1, type: "DOWN_PAYMENT", due: issueDate.toISOString().slice(0, 10), amount: down.toFixed(2) }]
-    : [];
-  if (remainder.gt(0)) {
-    for (let i = 0; i < futureInstallmentCount; i++) {
-      rows.push({ number: i + (hasDownPayment ? 2 : 1), type: "INSTALLMENT",
-        due: shiftMonths(issueDate, firstFutureOffset + i * interval),
-        amount: (i === futureInstallmentCount - 1
-          ? remainder.minus(ordinary.mul(futureInstallmentCount - 1)) : ordinary).toFixed(2) });
-    }
-  }
-  if (terms.deliveryCollectionEnabled && deliveryDate) {
-    rows.push({ number: null, type: "DELIVERY", due: deliveryDate, amount: delivery.toFixed(2) });
-  }
-  if (maintenance.gt(0)) rows.push({ number: null, type: "MAINTENANCE", due: issueDate.toISOString().slice(0, 10), amount: maintenance.toFixed(2) });
-  const rank = (type: ScheduleRow["type"]) => type === "DOWN_PAYMENT" ? 0 : type === "INSTALLMENT" ? 1 : type === "DELIVERY" ? 2 : 3;
-  rows.sort((a, b) => a.due.localeCompare(b.due) || rank(a.type) - rank(b.type));
-  return { name: terms.name, durationMonths: terms.months, installmentIntervalMonths: interval,
-    paymentCount: remainder.gt(0) ? totalSlots : (hasDownPayment ? 1 : 0), futureInstallmentCount: remainder.gt(0) ? futureInstallmentCount : 0,
-    totalPrice: price.toFixed(2), downPayment: down.toFixed(2),
-    deliveryDate, deliveryCollection: delivery.toFixed(2),
-    deliveryCollectionPct: deliveryPercent.toFixed(4),
-    maintenance: maintenance.toFixed(2), totalIncludingMaintenance: price.plus(maintenance).toFixed(2), rows };
+  const ordinary = amount.div(count).minus(rebate).toDecimalPlaces(2,Decimal.ROUND_DOWN);
+  if(ordinary.lt(0))throw Error("The installment rebate is too large.");
+  return Array.from({length:count},(_,i)=>i===count-1
+    ? amount.minus(ordinary.mul(count-1)) : ordinary);
+}
+/** Installments are monthly or quarterly. Down payment occupies month 0.
+ * Delivery allocation is a TARGET amount paid cumulatively BEFORE delivery:
+ * no separate cash collection or row is due on delivery.
+ */
+export function calculateSchedule(priceInput:string,terms:PaymentTerms,issueDate:Date) {
+  const originalPrice = new Decimal(priceInput.replace(/[,\s]/g,""));
+  const discountPct = new Decimal(terms.discountPct||"0");
+  if(!discountPct.isFinite()||discountPct.lt(0)||discountPct.gte(100))throw Error("Invalid discount percentage.");
+  const price=money(originalPrice.mul(new Decimal(100).minus(discountPct)).div(100));
+  if (!price.isFinite()||price.lte(0)) throw Error("Unit price must be a positive amount.");
+  if (!Number.isInteger(terms.months)||terms.months<1||terms.months>360)
+    throw Error("Payment term must be between 1 and 360 months.");
+  if (!Number.isInteger(terms.startOffsetMonths)||terms.startOffsetMonths<0||terms.startOffsetMonths>120)
+    throw Error("Invalid first installment offset.");
+  const interval=terms.installmentIntervalMonths ?? 1;
+  if (interval!==1 && interval!==3)
+    throw Error("Installment frequency must be monthly or quarterly.");
+  const downPct=new Decimal(terms.downPaymentPct);
+  const secondPct=new Decimal(terms.secondDownPaymentPct||"0");
+  const secondOffset=terms.secondDownOffsetMonths||0;
+  const rebate=new Decimal(terms.ordinaryInstallmentRebate||"0");
+  if(!secondPct.isFinite()||secondPct.lt(0)||secondPct.gt(100)||
+    !Number.isInteger(secondOffset)||secondOffset<0||secondOffset>terms.months||
+    (secondPct.gt(0)&&secondOffset===0)||!rebate.isFinite()||rebate.lt(0))
+    throw Error("Invalid second down payment or regular installment adjustment.");
+  const maintenancePct=new Decimal(terms.maintenancePct);
+  const preDeliveryPct=terms.deliveryCollectionEnabled
+    ? new Decimal(terms.deliveryCollectionPct||"0") : new Decimal(0);
+  if([downPct,maintenancePct,preDeliveryPct].some(v=>!v.isFinite()||v.lt(0)||v.gt(100))||downPct.plus(secondPct).gt(100))
+    throw Error("Payment percentages must be between 0 and 100.");
+  const deliveryMonths=Number(terms.deliveryMonths||0);
+  if(terms.deliveryCollectionEnabled && preDeliveryPct.lt(downPct.plus(secondPct.gt(0)&&secondOffset<deliveryMonths?secondPct:0)))
+    throw Error("Pre-delivery target cannot be smaller than down payments due before delivery.");
+  if (deliveryMonths!==0 && (!Number.isInteger(deliveryMonths)||
+      deliveryMonths<1||deliveryMonths>=terms.months))
+    throw Error("Delivery month must fall within the payment term.");
+  if (terms.deliveryCollectionEnabled && deliveryMonths<2)
+    throw Error("Delivery months must be at least 2 when splitting payments.");
+  const maintenanceDate=terms.maintenanceDueDate || null;
+  if(maintenancePct.gt(0) && (!maintenanceDate || !validIsoDate(maintenanceDate)))
+    throw Error("Choose a valid maintenance deposit due date.");
+  if (maintenanceDate && !validIsoDate(maintenanceDate)) throw Error("Invalid maintenance due date.");
+  const down=money(price.mul(downPct).div(100));
+  const secondDown=money(price.mul(secondPct).div(100));
+  const maintenance=money(price.mul(maintenancePct).div(100));
+  const preDeliveryTarget=terms.deliveryCollectionEnabled
+    ? money(price.mul(preDeliveryPct).div(100)) : down;
+  const hasDown=down.gt(0);
+  // The deposit occupies the first payment slot inside the agreed term.
+  // Future installments follow the chosen cadence (month 1 or 3, 6, 9...)
+  // without extending past the agreed duration. Explicit late start offsets
+  // remain supported for legacy plans.
+  const firstFutureOffset=Math.max(interval,terms.startOffsetMonths||interval,
+    secondDown.gt(0)?secondOffset+interval:0);
+  const lastOffset=interval===3&&terms.quarterlyEndAtTerm
+    ?terms.months:terms.months-(hasDown?1:0);
+  const offsets:number[]=[];
+  for(let month=firstFutureOffset;month<=lastOffset;month+=interval)offsets.push(month);
+  if (!offsets.length && !price.eq(down.plus(secondDown)))
+    throw Error("The selected duration contains no future installment dates.");
+  const before=offsets.filter(month=>terms.deliveryCollectionEnabled && month<deliveryMonths);
+  const after=offsets.filter(month=>!terms.deliveryCollectionEnabled||month>=deliveryMonths);
+  const secondPre=secondDown.gt(0)&&secondOffset<deliveryMonths;
+  const beforeAmount=terms.deliveryCollectionEnabled
+    ? preDeliveryTarget.minus(down).minus(secondPre?secondDown:0):new Decimal(0);
+  const afterAmount=terms.deliveryCollectionEnabled
+    ? price.minus(preDeliveryTarget).minus(secondPre?0:secondDown)
+    :price.minus(down).minus(secondDown);
+  if(beforeAmount.lt(0)||afterAmount.lt(0))throw Error("Pre-delivery allocation exceeds the available price.");
+  const rows:ScheduleRow[]=[];
+  if(hasDown)rows.push({number:1,type:"DOWN_PAYMENT",due:issueDate.toISOString().slice(0,10),amount:down.toFixed(2)});
+  if(secondDown.gt(0))rows.push({number:hasDown?2:1,type:"SECOND_DOWN_PAYMENT",
+    due:shiftMonths(issueDate,secondOffset),amount:secondDown.toFixed(2)});
+  let count=(hasDown?1:0)+(secondDown.gt(0)?1:0);
+  const addRows=(months:number[],amount:Decimal)=>{
+    const amounts=distribute(amount,months.length,rebate);
+    months.forEach((month,i)=>rows.push({
+      number:++count,type:"INSTALLMENT",due:shiftMonths(issueDate,month),
+      amount:amounts[i].toFixed(2)
+    }));
+  };
+  addRows(before,beforeAmount);
+  addRows(after,afterAmount);
+  if(maintenance.gt(0)&&maintenanceDate)
+    rows.push({number:null,type:"MAINTENANCE",due:maintenanceDate,amount:maintenance.toFixed(2)});
+  rows.sort((a,b)=>a.due.localeCompare(b.due) ||
+    (a.type==="DOWN_PAYMENT"?-1:a.type==="SECOND_DOWN_PAYMENT"?-1:a.type==="MAINTENANCE"?1:0));
+  const total=rows.reduce((sum,row)=>sum.plus(row.amount),new Decimal(0));
+  if (!total.eq(price.plus(maintenance)))
+    throw Error("Payment schedule did not balance exactly to the unit price.");
+  return {
+    name:terms.name,durationMonths:terms.months,installmentIntervalMonths:interval,
+    paymentCount:count,futureInstallmentCount:count-(hasDown?1:0)-(secondDown.gt(0)?1:0),
+    originalPrice:originalPrice.toFixed(2),discountPct:discountPct.toFixed(4),
+    secondDownPayment:secondDown.toFixed(2),secondDownOffsetMonths:secondOffset,
+    totalPrice:price.toFixed(2),downPayment:down.toFixed(2),
+    deliveryMonths,deliveryDate:deliveryMonths>0?shiftMonths(issueDate,deliveryMonths):null,
+    // The historic name is kept for PDF type compatibility, but is NOT a
+    // separate delivery payment; it is the cumulative pre-delivery target.
+    deliveryCollection:"0.00",deliveryCollectionPct:preDeliveryPct.toFixed(4),
+    preDeliveryTotal:(terms.deliveryCollectionEnabled
+      ? preDeliveryTarget
+      : rows.filter(row=>row.type!=="MAINTENANCE" &&
+          (deliveryMonths===0?row.type==="DOWN_PAYMENT"||row.type==="SECOND_DOWN_PAYMENT":
+            row.due<shiftMonths(issueDate,deliveryMonths)))
+          .reduce((acc,row)=>acc.plus(row.amount),new Decimal(0))).toFixed(2),
+    postDeliveryTotal:(terms.deliveryCollectionEnabled
+      ? price.minus(preDeliveryTarget)
+      : price.minus(rows.filter(row=>row.type!=="MAINTENANCE" &&
+          (deliveryMonths===0?row.type==="DOWN_PAYMENT":
+            row.due<shiftMonths(issueDate,deliveryMonths)))
+          .reduce((acc,row)=>acc.plus(row.amount),new Decimal(0)))).toFixed(2),
+    maintenanceDueDate:maintenanceDate,
+    maintenance:maintenance.toFixed(2),totalIncludingMaintenance:price.plus(maintenance).toFixed(2),
+    rows
+  };
 }

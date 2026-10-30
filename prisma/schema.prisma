@@ -1,5 +1,8 @@
 generator client {
   provider = "prisma-client"
+  // Cloudflare Workers forbid runtime WASM compilation. Generate a
+  // Cloudflare-targeted client with a statically importable query compiler.
+  runtime  = "cloudflare"
   output   = "../src/generated/prisma"
 }
 
@@ -93,7 +96,13 @@ model PaymentPlan {
   maintenancePct    Decimal  @default(0) @db.Decimal(7, 4)
   startOffsetMonths Int      @default(1)
   installmentIntervalMonths Int @default(1)
-  deliveryDate      String?  @db.VarChar(10)
+  discountPct       Decimal  @default(0) @db.Decimal(7, 4) // applied to live unit list price
+  secondDownPaymentPct Decimal @default(0) @db.Decimal(7, 4) // fraction of discounted sale price
+  secondDownOffsetMonths Int @default(0) // second down-payment date offset
+  quarterlyEndAtTerm Boolean @default(false) // include final quarter at term endpoint
+  ordinaryInstallmentRebate Decimal @default(0) @db.Decimal(12, 2) // fixed EGP reduction per regular installment; last reconciles
+  deliveryDate      String?  @db.VarChar(10) // legacy; retained for existing records
+  deliveryMonths    Int? // expected delivery offset from offer date
   deliveryCollectionEnabled Boolean @default(false)
   deliveryCollectionPct Decimal @default(0) @db.Decimal(7, 4)
   createdAt         DateTime @default(now()) @db.Timestamptz(6)

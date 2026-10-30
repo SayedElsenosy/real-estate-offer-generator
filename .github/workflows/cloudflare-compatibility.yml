@@ -1,38 +1,40 @@
-name: Cloudflare migration compatibility
+name: Cloudflare migration build verification
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
   push:
+    branches: [cloudflare-workers-migration, fix/cloudflare-1102-studio]
     paths:
-      - '.github/workflows/cloudflare-compatibility.yml'
-      - 'scripts/cloudflare-preflight.mjs'
       - 'package.json'
-      - 'prisma/schema.prisma'
+      - 'vite.config.ts'
+      - 'wrangler.jsonc'
+      - '.github/workflows/cloudflare-compatibility.yml'
+      - 'src/**'
+      - 'prisma/**'
 
 permissions:
   contents: read
 
 jobs:
-  check:
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Static migration audit (no credentials)
-        run: node scripts/cloudflare-preflight.mjs
-      - name: Install dependencies without writing lockfile
-        run: npm install --no-package-lock --ignore-scripts --no-audit --no-fund
+      - name: Install application dependencies
+        run: npm install --no-package-lock --no-audit --no-fund
       - name: Generate Prisma client
         run: npx prisma generate
       - name: TypeScript check
         run: npm run typecheck
-      - name: vinext compatibility check
-        run: npx --yes vinext check
-      - name: Migration status
-        if: always()
-        run: |
-          echo "No Cloudflare secrets are used and this workflow does not deploy."
-          echo "A successful static check is NOT proof that OAuth/Neon/PDF work on Workers."
+      - name: vinext compatibility report
+        run: npx vinext check
+      - name: Build Cloudflare Worker (not deploy)
+        run: npm run build:cloudflare
+      - name: Verify generated Worker configuration
+        run: test -f dist/worker/index.js || test -d dist

@@ -56,3 +56,107 @@ The available GitHub connector only exposes pull-request-triggered workflow runs
 ## Existing Cloudflare inventory
 
 `cairo-plaza-web` is an existing, unrelated D1-backed Worker; its credentials and D1 database must not be reused or overwritten. Likewise, preserve `bunyra-new` untouched.
+
+
+## Actual Cloudflare deployment (2026-10-28)
+
+**Staging Worker deployed and post-deploy HTTP smoke test passed.**
+
+- Cloudflare account: `d2984372ee07c2652fce20b126c98f2e`
+- Worker: `real-estate-offer-generator`
+- Live staging URL: https://real-estate-offer-generator.sayedelsenosy65.workers.dev
+- Non-sensitive smoke endpoint: `/api/migration-health`
+- Final verified build UUID: `8fc597c1-93c3-4625-a470-9375b97bf7e1`; status `success`
+- Deployed Worker version: `cc98f274-3203-4b8b-92dc-fb8de68fd77c`
+- GitHub migration branch: `cloudflare-workers-migration` (draft PR #1)
+- Cloudflare Builds connected to this GitHub branch; production `main` was not switched.
+- Cloudflare `AUTH_SECRET` was generated cryptographically on the Cloudflare side and stored as a secret; its value was not printed.
+- `AUTH_TRUST_HOST` and `NEXTAUTH_URL` are configured for the new Worker address in `wrangler.jsonc`.
+
+### Remaining production-blocking secrets
+
+The connected Vercel API **masks the values** of its sensitive variables, including when decrypt is requested. Therefore their values were **not** copied to Cloudflare. Neon can return a connection string through its connected API, but cross-connector secret transfer was denied by the environment's security controls; do not attempt to bypass this safeguard.
+
+The operator must use the Cloudflare dashboard **Workers & Pages > real-estate-offer-generator > Settings > Variables and Secrets** to enter the following values, each as **Secret**:
+
+- `DATABASE_URL`: connection string from the existing **Real Estate Offer Generator** Neon project (`twilight-meadow-13667195`), not BUNYRA's database.
+- `GOOGLE_CLIENT_ID`: existing Google OAuth client ID.
+- `GOOGLE_CLIENT_SECRET`: corresponding Google OAuth client secret.
+- `ADMIN_EMAILS`: original administrative email list; preserve all original admins.
+
+`AUTH_SECRET` is already configured; do not overwrite it unless rotating intentionally.
+
+Add **exactly** this authorized Google OAuth redirect URI to the corresponding Google Cloud OAuth client:
+
+`https://real-estate-offer-generator.sayedelsenosy65.workers.dev/api/auth/callback/google`
+
+Then test sign-in, refresh-token acquisition, Sheets/Drive reads, Neon database reads, Cairo Plaza CAD map, and PDF offer generation under authenticated accounts. Do not delete or disconnect Vercel until all end-to-end checks pass.
+
+
+## Real deployment verification after configuring Cloudflare secrets
+
+As of 2026-10-28, Cloudflare reports all **five** expected secret names bound to `real-estate-offer-generator`: `DATABASE_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ADMIN_EMAILS`, and `AUTH_SECRET`. Their values were not read or logged. Non-secret `NEXTAUTH_URL` and `AUTH_TRUST_HOST` are configured.
+
+Cloudflare Builds test `91f7de90-a6ef-4842-b5f8-7428d669214f` uncovered a real Workers route failure: a GET to the retired offers history endpoint returned HTTP 500 because the PDF renderer was loaded eagerly. The fix moves runtime imports of `@react-pdf/renderer` and `@/lib/pdf` into the authenticated POST path.
+
+Cloudflare Builds test `616a06d7-b6d8-452a-864c-05ed7ea25977` **passed all seven post-deploy probes**:
+
+| Probe | Expected | Observed |
+| --- | ---: | ---: |
+| `/api/migration-health` | 200 | 200 |
+| `/api/auth/providers`, Google registered | 200 | 200 |
+| `/api/auth/session` with no cookie | 200 | 200 |
+| `/` home | 200 | 200 |
+| `GET /api/offers` (history disabled) | 410 | 410 |
+| `POST /api/offers` unauthenticated | 401 | 401 |
+| `/api/inventory?projectId=cairo-plaza` unauthenticated | 401 | 401 |
+
+Deployed Cloudflare version after these checks: `149a9010-96bb-4799-a4a7-3b157d8b19df`. The official Neon connection also confirmed `offer_generator` with six expected core tables and five projects. **That checks Neon from the connected database tool, not from inside the Worker.**
+
+**Not yet confirmed**: interactive Google OAuth callback and real signed-in session, Worker-to-Neon query through Auth.js, authenticated live Google Sheet/Drive retrieval, a valid PDF offer generated with the real project and payment plan, and complete CAD display in the browser. Keep the migration PR in draft and do not delete Vercel until these tests pass.
+
+
+## Runtime fixes after real Google sign-in and inventory tests (2026-10-28)
+
+User tests revealed `/api/auth/error?error=Configuration` and later HTTP 500/502 inventory failures. Cloudflare's Worker telemetry was examined with secret/token values deliberately excluded.
+
+1. The login callback's `AdapterError` was caused by **Prisma 7 compiling a WASM query compiler dynamically** in workerd: `WebAssembly.Module(): Wasm code generation disallowed by embedder`. The Prisma generator now declares `runtime = "cloudflare"`. This fix was validated by authenticated-relevant Prisma queries against `User` and `Project` executed **inside** the live Worker during a temporary migration-only probe, which was then removed.
+2. Additional runtime logs showed **Neon/Prisma promises crossing Cloudflare request boundaries**. The global cached Prisma client was removed, and the Auth.js PrismaAdapter now resolves its Prisma client when each adapter method is called, so an instance is not shared between unrelated HTTP requests.
+3. Google Drive XLSX download used `fetch({redirect:"error"})`, a mode unsupported by Workers, causing an invalid redirect error on `/api/inventory`. This was replaced with explicit manual redirects restricted to HTTPS Google download hostnames, without forwarding the bearer token to cross-origin destinations.
+
+The final build with these repairs and TypeScript checking passed:
+- Build UUID: `48ee0af8-64cb-48fb-90ce-bc3d933147bc`
+- Deployed Worker version: `be773964-a3cf-41fe-9ff4-c7073fdf3b4d`
+- Checks: seven route guards/health tests plus 5/5 overlapping anonymous home/session requests.
+- The migration branch remains a draft PR. Vercel is retained as fallback.
+
+**Remaining manual acceptance**: the account holder must repeat a real Google OAuth login and then open Cairo Plaza and another spreadsheet-driven project's inventory and download a real PDF offer. These user-authenticated interactions cannot be established by anonymous smoke tests. Do not treat the public database readiness check as ongoing; its temporary endpoint has been removed.
+
+
+## Private-link entry (2026-10-28)
+
+The account holder approved bearer-link access from **any device without Google sign-in**. This mode is **not** the same as opening the ordinary public site URL. The actual private link contains an unguessable credential in the URL fragment (`/access#key=...`), so the credential is not transmitted in GET URLs or referrers. A same-origin POST verifies the link and issues a signed HttpOnly/Secure/SameSite=Lax device cookie. Devices retain this access for at most 365 days, renewable by reopening the link.
+
+- The share credential is generated and stored only in Cloudflare's `SHARED_ACCESS_TOKEN` secret, never in GitHub.
+- `SHARED_ACCESS_OWNER_EMAIL` points only to the pre-existing Google-authorized owner account in Neon. The owner's Drive/Sheets OAuth tokens remain server-side and are not sent to shared browsers.
+- The real owner can copy the complete private link with the **نسخ رابط الدخول الخاص** button on the dashboard or admin settings, authenticated by their Google admin session.
+- Shared access can view live inventory, floorplans and create downloadable PDF offers. Administrative writes still require a real Google owner session. Google OAuth sign-in is restricted to the configured owner account.
+- Revocation: rotating `SHARED_ACCESS_TOKEN` in Cloudflare invalidates the link **and all existing shared device cookies**. Any new value must be at least 40 characters of high-entropy ASCII. The owner can then copy the newly generated link in the dashboard.
+- Build `5c6b1df0-f631-4f4e-8e79-99c529e67737` passed TypeScript, Worker deployment, 12 non-sensitive HTTP checks including anonymous and invalid link denial, and parallel requests. Deployed version `6ad02a42-9161-4f09-a5a6-7fcc57f35fc3`.
+- **Manual acceptance needed:** use the button on an authenticated owner's browser to copy a link, open it on a fresh browser/device and verify cookie redemption, live inventory and quotation PDF. Automated checks intentionally do not ingest the secret or impersonate a real user.
+
+
+## One-time production capacity evaluation — October 29, 2026
+
+Default project is now Cairo Plaza in the Offer Studio; Interactive Plans already defaulted to Cairo Plaza.
+
+A one-time **100 concurrent HTTP offer generation** test was executed via Cloudflare Builds against the deployed Worker. The temporary, high-entropy-token-gated route performed the same real Google Drive XLSX inventory fetch, Neon PostgreSQL reads, financial schedule calculation, Cairo Plaza CAD location lookup and PDF rendering as real offers. It intentionally did not create actual Google browser sessions or persist offers.
+
+Results recorded in Cloudflare Build `9292ea0b-a8d8-4ed1-9304-393a7691ba22`:
+- A single preflight end-to-end PDF: **1/1 succeeded**, HTTP 200, 24,826 bytes, 4,760 ms.
+- 100 concurrent end-to-end PDF requests: **97/100 succeeded**, **3/100 failed** with HTTP 503, whole burst completed in 5,461 ms.
+- Response times among all 100 requests: median 4,786 ms, p90 5,302 ms, p95 5,335 ms, p99 5,391 ms, max 5,434 ms.
+- Cloudflare Worker observability logged **`Worker exceeded CPU time limit`** for requests to the temporary endpoint during the burst. This is a confirmed service capacity issue, not a clean 100/100 readiness test.
+- The one-time test token was deleted, the endpoint and script were removed from GitHub, and the automated deployment command was restored.
+
+**Release assessment:** The existing stack succeeded at 97% of that real-pipeline burst, but is **not proven to sustain 100 simultaneous successful offers**. To improve reliability, prioritize reducing per-offer ExcelJS/XLSX parse CPU (e.g., live Drive revision validation against a safely versioned inventory snapshot) and/or increasing paid-plan Worker CPU allowance if authorized and applicable. After improvement, repeat the exact 100-request test and require 100/100, while monitoring PDF correctness, Google Drive quotas and Neon latency. Do not upgrade the Cloudflare plan or change billable limits without owner approval.
