@@ -20,7 +20,7 @@ export async function GET(req:NextRequest) {
       floor: null,
       schedules: [{
         name:"Monthly plan",durationMonths:24,installmentIntervalMonths:1,paymentCount:24,
-        futureInstallmentCount:23,totalPrice:"7500000.00",downPayment:"750000.00",
+        futureInstallmentCount:23,originalPrice:"7500000.00",discountPct:"0",secondDownPayment:"0.00",secondDownOffsetMonths:0,totalPrice:"7500000.00",downPayment:"750000.00",
         maintenance:"25000.00",maintenanceDueDate:"2027-06-28",deliveryMonths:12,deliveryDate:"2027-10-28",preDeliveryTotal:"2625000.00",postDeliveryTotal:"4875000.00",deliveryCollection:"0.00",
         deliveryCollectionPct:"0",totalIncludingMaintenance:"7525000.00",
         rows:[{number:1,type:"DOWN_PAYMENT",due:"2026-10-28",amount:"750000.00"},{number:2,type:"INSTALLMENT",due:"2027-01-28",amount:"964285.71"}]
