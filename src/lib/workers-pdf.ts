@@ -3,11 +3,12 @@ import Decimal from "decimal.js";
 import { formatOfferMoney } from "@/lib/offer-money";
 import { unitKey } from "@/lib/unit-code";
 import type { PdfUnitLocation } from "@/lib/cairo-offer-location";
+import type { NasaOfferLocation } from "@/lib/nasa-offer-location";
 import type { InventoryUnit } from "@/lib/sheets";
 import type { OfferSchedule, FloorGeometry } from "@/lib/pdf";
 
 export type Props = { company:string; logoUrl?:string|null; project:string; unit:InventoryUnit; issuedAt:string;
-  floor:FloorGeometry; location?:PdfUnitLocation|null; schedules:OfferSchedule[] };
+  floor:FloorGeometry; location?:PdfUnitLocation|null; nasaLocation?:NasaOfferLocation|null; schedules:OfferSchedule[] };
 const W=595.28,H=841.89, LEFT=43,RIGHT=W-43;
 const navy=rgb(0.09,0.16,0.26), gold=rgb(0.70,0.53,0.29), gray=rgb(0.47,0.55,0.64),
   pale=rgb(0.94,0.96,0.98), white=rgb(1,1,1), line=rgb(0.88,0.91,0.94);
@@ -109,7 +110,28 @@ export function cairoLocation(page:PDFPage,plan:PdfUnitLocation) {
       borderColor:rgb(0.61,0.34,0.09),borderWidth:0.65});
   }
 }
-export async function createPropertyOfferPdf({company,logoUrl,project,unit,issuedAt,floor,location,schedules}:Props):Promise<Uint8Array> {
+/** Draw the PDF-derived NASA reference with its matching vector outline.
+ * The geometry is illustrative only and is never used for saleable area.
+ */
+export async function drawNasaPdfLocation(pdf:PDFDocument,page:PDFPage,plan:NasaOfferLocation){
+  const data=/^data:image\/jpeg;base64,([A-Za-z0-9+/]+={0,2})$/.exec(plan.image);
+  if(!data)throw Error("NASA reference image is invalid");
+  const bytes=Uint8Array.from(atob(data[1]),c=>c.charCodeAt(0));
+  const image=await pdf.embedJpg(bytes);
+  const frameWidth=RIGHT-LEFT-18,frameHeight=306;
+  const scale=Math.min(frameWidth/image.width,frameHeight/image.height);
+  const width=image.width*scale,height=image.height*scale;
+  const x=LEFT+9+(frameWidth-width)/2;
+  const y=337+(frameHeight-height)/2;
+  page.drawImage(image,{x,y,width,height});
+  // pdf-lib's SVG path coordinates run downward relative to x,y+height.
+  page.drawSvgPath(plan.outline,{
+    x,y:y+height,scale:width/792,color:rgb(0.96,0.74,0.33),
+    opacity:0.60,borderColor:rgb(0.54,0.31,0.08),borderWidth:1.15
+  });
+}
+
+export async function createPropertyOfferPdf({company,logoUrl,project,unit,issuedAt,floor,location,nasaLocation,schedules}:Props):Promise<Uint8Array> {
   const pdf=await PDFDocument.create();
   const regular=await pdf.embedFont(StandardFonts.Helvetica);
   const bold=await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -148,6 +170,8 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
   map.drawRectangle({x:LEFT,y:327,width:RIGHT-LEFT,height:326,color:pale,borderColor:line,borderWidth:1});
   if(location){
     cairoLocation(map,location);
+  } else if(nasaLocation){
+    await drawNasaPdfLocation(pdf,map,nasaLocation);
   } else if(floor && floor.shapes.length>0 && floor.backgroundData?.startsWith("data:image/")){
     try {
       const match=/^data:image\/(png|jpeg);base64,([\s\S]+)$/.exec(floor.backgroundData);
@@ -172,7 +196,7 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
     });
   }
   map.drawText("Floor: "+printable(unit.floor),{x:LEFT,y:291,font:bold,size:12,color:navy});
-  map.drawText(location?.reviewed ? "Highlighted outline is pending final engineering verification." :
+  map.drawText(nasaLocation ? "NASA outline is approximately traced from PDF; engineering verification required." : location?.reviewed ? "Highlighted outline is pending final engineering verification." :
     "Engineering drawing shown for location reference, not measurement.",{
     x:LEFT,y:265,font:regular,size:9,color:gray
   });
