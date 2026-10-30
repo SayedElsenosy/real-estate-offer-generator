@@ -210,8 +210,8 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
     pair(page,"Down payment"+(Number(schedule.secondDownPayment)>0?" + 2nd after "+schedule.secondDownOffsetMonths+" months":""),
       "EGP "+formatOfferMoney(schedule.downPayment)+(Number(schedule.secondDownPayment)>0?" + "+formatOfferMoney(schedule.secondDownPayment):""),H-286,regular,bold);
     pair(page,"Expected delivery",schedule.deliveryMonths>0 ? "After "+schedule.deliveryMonths+" months" : "Not specified",H-317,regular,bold);
-    pair(page,"Total paid BEFORE delivery","EGP "+formatOfferMoney(schedule.preDeliveryTotal),H-348,regular,bold);
-    pair(page,"Balance after delivery","EGP "+formatOfferMoney(schedule.postDeliveryTotal),H-379,regular,bold);
+    pair(page,schedule.deliveryMonths>0?"Total paid BEFORE delivery":"Total down payments","EGP "+formatOfferMoney(schedule.preDeliveryTotal),H-348,regular,bold);
+    pair(page,schedule.deliveryMonths>0?"Balance after delivery":"Remaining installments","EGP "+formatOfferMoney(schedule.postDeliveryTotal),H-379,regular,bold);
     pair(page,"Maintenance deposit","EGP "+formatOfferMoney(schedule.maintenance),H-410,regular,bold);
     pair(page,"Maintenance due",schedule.maintenanceDueDate||"-",H-441,regular,bold);
     pair(page,"Total with maintenance","EGP "+formatOfferMoney(schedule.totalIncludingMaintenance),H-472,regular,bold);
