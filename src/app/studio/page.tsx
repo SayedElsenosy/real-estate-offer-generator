@@ -1,13 +1,10 @@
-import { redirect } from "next/navigation";
-import { currentUser } from "@/lib/guards";
-import { hasSharedAccess } from "@/lib/shared-access";
-import { db } from "@/lib/db";
-import Studio from "@/components/Studio";
-export const dynamic = "force-dynamic";
-export default async function StudioPage() {
-  const user = await currentUser();
-  if (!user) redirect("/");
-  const projects = await db().project.findMany({ select: {id:true,slug:true,name:true,paymentPlans:true}, orderBy: { name: "asc" } });
-  return <Studio projects={JSON.parse(JSON.stringify(projects))}
-    email={(await hasSharedAccess()) ? "Private link access" : (user.email || "")} />;
+import StudioBootstrap from "@/components/StudioBootstrap";
+
+// The page contains no user information, so vinext can serve its pre-rendered
+// HTML as a static asset without running authenticated SSR in the Worker.
+// All user/project/payment-plan reads occur through /api/studio/bootstrap.
+export const dynamic = "force-static";
+
+export default function StudioPage() {
+  return <StudioBootstrap />;
 }

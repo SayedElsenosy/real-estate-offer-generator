@@ -57,7 +57,7 @@ const translationMap: Record<string, string> = {
   "Arabic PDF": "العربية",
   "English PDF": "الإنجليزية",
   "Overview": "الرئيسية",
-  "Auto-refresh every 3 seconds while this tab is open": "تحديث تلقائي كل 3 ثوانٍ أثناء فتح التبويب",
+  "Auto-refresh every 10 seconds while this tab is open": "تحديث تلقائي كل 10 ثوانٍ أثناء فتح التبويب",
   "Checking for changes…": "جارٍ التحقق من التغييرات…",
   "Inventory synchronized": "المخزون متزامن",
   "Refresh now": "تحديث الآن",

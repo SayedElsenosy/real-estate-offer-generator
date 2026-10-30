@@ -22,11 +22,12 @@ async function signingKey() {
 }
 
 export async function hasSharedAccess(): Promise<boolean> {
-  const key = await signingKey();
-  if (!key) return false;
   const cookie = (await cookies()).get(COOKIE_NAME)?.value || "";
   const parts = cookie.split(".");
   if (parts.length !== 4 || parts[0] !== "v1") return false;
+  // Skip WebCrypto key import altogether on requests without a shared cookie.
+  const key = await signingKey();
+  if (!key) return false;
   const expiry = Number(parts[1]);
   if (!Number.isSafeInteger(expiry) || expiry <= Date.now() / 1000 ||
       expiry > Date.now() / 1000 + SESSION_SECONDS + 60) return false;
