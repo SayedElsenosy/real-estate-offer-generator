@@ -5,7 +5,7 @@ export type LiveInventoryUnit = {code:string;price:string;area:string;floor:stri
 export type LiveFloorPlan = {id:string;name:string;floor:string|null;viewBox:string;
   shapes:{unitCode:string;d:string}[];backgroundData?:string|null;reviewStatus:string};
 type Result = {units:LiveInventoryUnit[];floorPlans:LiveFloorPlan[];lastReadAt:number};
-const POLL_MS = 3000;
+const POLL_MS = 10000;
 
 // Poll live Google data while the page is visible. Avoid re-downloading JSON
 // or invalidating React state when the ETag has not changed.
