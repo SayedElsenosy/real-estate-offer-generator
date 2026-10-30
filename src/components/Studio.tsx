@@ -99,7 +99,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
     </header>
     {(error||offerError) && <div className="notice" role="alert" style={{marginBottom:18}}>{error||offerError}</div>}
     <div className="muted" style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginBottom:8}}>
-      <span>{tr("Auto-refresh every 3 seconds while this tab is open")}</span>
+      <span>{tr("Auto-refresh every 10 seconds while this tab is open")}</span>
       <span>{refreshing?tr("Checking for changes…"):lastReadAt?tr("Inventory synchronized"):""}</span>
       <button type="button" className="btn soft" style={{padding:"5px 12px"}} onClick={()=>void refresh()} disabled={refreshing}>
         {tr("Refresh now")}
