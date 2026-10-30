@@ -3,6 +3,12 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 type Language = "ar" | "en";
 const translationMap: Record<string, string> = {
+  "Plan discount %": "نسبة الخصم على الخطة",
+  "Second down payment %": "نسبة المقدم الثاني",
+  "Second down payment": "المقدم الثاني",
+  "Second down payment after (months)": "المقدم الثاني بعد (شهور)",
+  "Final quarterly installment at the end of the term": "آخر قسط ربع سنوي عند نهاية المدة",
+  "Adjustment per regular installment (EGP)": "تعديل قيمة كل قسط عادي (جنيه)",
   "Monthly payments": "أقساط شهرية",
   "Quarterly installments": "أقساط ربع سنوية",
   "Installment frequency": "دورية الأقساط",
