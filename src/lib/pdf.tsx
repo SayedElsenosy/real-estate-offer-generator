@@ -7,6 +7,7 @@ export type FloorGeometry = { viewBox: string; backgroundData: string | null; sh
 export type OfferSchedule = {
   name: string; durationMonths: number; installmentIntervalMonths: number;
   paymentCount: number; futureInstallmentCount: number;
+  originalPrice:string; discountPct:string; secondDownPayment:string; secondDownOffsetMonths:number;
   totalPrice: string; downPayment: string; maintenance: string;
   deliveryMonths: number; deliveryDate: string | null; deliveryCollection: string; deliveryCollectionPct: string;
   preDeliveryTotal:string; postDeliveryTotal:string; maintenanceDueDate:string|null;
