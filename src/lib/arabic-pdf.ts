@@ -86,7 +86,7 @@ function payRow(page:PDFPage,i:number,
   if(i%2===0)page.drawRectangle({x:LEFT,y:y-11,width:RIGHT-LEFT,height:27,color:pale});
   else page.drawLine({start:{x:LEFT,y:y-11},end:{x:RIGHT,y:y-11},
     color:border,thickness:0.35});
-  const name=payment.type==="DOWN_PAYMENT"?"المقدم":payment.type==="MAINTENANCE"?"وديعة الصيانة":"قسط";
+  const name=payment.type==="DOWN_PAYMENT"?"المقدم":payment.type==="SECOND_DOWN_PAYMENT"?"المقدم الثاني":payment.type==="MAINTENANCE"?"وديعة الصيانة":"قسط";
   enRight(page,payment.number??"-",RIGHT-14,y-2,f.latin,10,ink);
   ar(page,name,RIGHT-80,y-2,f.arabic,11,ink);
   enRight(page,payment.due,RIGHT-252,y-2,f.latin,10.2,ink);
@@ -163,11 +163,13 @@ export async function createArabicOfferPdf({
     let page=pdf.addPage([W,H]);
     heading(page,company,"جدول سداد الوحدة",schedule.name,logo,f);
     const cw=(RIGHT-LEFT-12)/2;
-    card(page,LEFT,630,cw,"سعر الوحدة",amount(schedule.totalPrice),f);
+    card(page,LEFT,630,cw,Number(schedule.discountPct)>0?"السعر بعد الخصم":"سعر الوحدة",amount(schedule.totalPrice),f);
     card(page,LEFT+cw+12,630,cw,"المقدم",amount(schedule.downPayment),f);
     card(page,LEFT,552,cw,"المسدد حتى الاستلام",amount(schedule.preDeliveryTotal),f);
     card(page,LEFT+cw+12,552,cw,"المتبقي بعد الاستلام",amount(schedule.postDeliveryTotal),f);
     pair(page,"مدة التقسيط شاملة المقدم",schedule.durationMonths,514,f);
+    if(Number(schedule.secondDownPayment)>0)
+      pair(page,"المقدم الثاني بعد "+schedule.secondDownOffsetMonths+" شهر",amount(schedule.secondDownPayment),328,f);
     pair(page,"دورية الأقساط",schedule.installmentIntervalMonths===3?
       "ربع سنوية":"شهرية",483,f,true);
     pair(page,"موعد الاستلام بعد عدد الشهور",schedule.deliveryMonths||"-",452,f);
