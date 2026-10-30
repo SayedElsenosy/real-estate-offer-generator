@@ -168,8 +168,7 @@ export async function createArabicOfferPdf({
     card(page,LEFT,552,cw,"المسدد حتى الاستلام",amount(schedule.preDeliveryTotal),f);
     card(page,LEFT+cw+12,552,cw,"المتبقي بعد الاستلام",amount(schedule.postDeliveryTotal),f);
     pair(page,"مدة التقسيط شاملة المقدم",schedule.durationMonths,514,f);
-    if(Number(schedule.secondDownPayment)>0)
-      pair(page,"المقدم الثاني بعد "+schedule.secondDownOffsetMonths+" شهر",amount(schedule.secondDownPayment),328,f);
+    // Second deposit appears as its own dated row in the schedule below.
     pair(page,"دورية الأقساط",schedule.installmentIntervalMonths===3?
       "ربع سنوية":"شهرية",483,f,true);
     pair(page,"موعد الاستلام بعد عدد الشهور",schedule.deliveryMonths||"-",452,f);
