@@ -23,5 +23,5 @@ assert.match(api,/currentUser\(\)/);
 assert.match(pdf,/drawNasaPdfLocation/);
 assert.match(ar,/drawNasaPdfLocation/);
 assert.match(offer,/getNasaOfferLocation\(user\.id,unit\.code,unit\.floor\)/);
-assert.match(offer,/getLiveInventory\(user\.id,project\.spreadsheetId/);
+assert.match(offer,/getLiveInventory\(user\.id,\s*project\.spreadsheetId/);
 console.log("PASS: NASA 7 floors and 668 boundaries, protected sources, live inventory mapping and both PDF languages.");
