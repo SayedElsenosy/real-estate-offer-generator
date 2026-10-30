@@ -8,7 +8,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { calculateSchedule, type PaymentTerms } from "@/lib/payment";
 
 type Unit = { code: string; price: string; area: string; floor: string; status: string; project: string };
-type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; installmentIntervalMonths?: number; deliveryMonths?: number|null; deliveryCollectionPct?: string; deliveryCollectionEnabled?: boolean };
+type Plan = { id: string; name: string; discountPct?:string; secondDownPaymentPct?:string; secondDownOffsetMonths?:number; quarterlyEndAtTerm?:boolean; ordinaryInstallmentRebate?:string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; installmentIntervalMonths?: number; deliveryMonths?: number|null; deliveryCollectionPct?: string; deliveryCollectionEnabled?: boolean };
 type Project = { id: string; slug: string; name: string; paymentPlans: Plan[] };
 function isAvailable(status: string): boolean {
   const normalized = String(status).normalize("NFKC").trim().toLowerCase().replace(/\s+/g,"");
@@ -41,6 +41,9 @@ export default function Studio({ projects, email }: { projects: Project[]; email
         name:plan.name,downPaymentPct:plan.downPaymentPct,months:plan.months,
         maintenancePct:plan.maintenancePct,startOffsetMonths:plan.startOffsetMonths,
         installmentIntervalMonths:plan.installmentIntervalMonths===3?3:1,
+        discountPct:plan.discountPct||"0",secondDownPaymentPct:plan.secondDownPaymentPct||"0",
+        secondDownOffsetMonths:plan.secondDownOffsetMonths||0,quarterlyEndAtTerm:!!plan.quarterlyEndAtTerm,
+        ordinaryInstallmentRebate:plan.ordinaryInstallmentRebate||"0",
         deliveryMonths:plan.deliveryMonths??undefined,
         deliveryCollectionEnabled:plan.deliveryCollectionEnabled,
         deliveryCollectionPct:plan.deliveryCollectionPct,
@@ -50,7 +53,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
       },date)),error:""};
     }catch(err){return {rows:[] as ReturnType<typeof calculateSchedule>[],
       error:err instanceof Error?err.message:"Invalid payment plan"};}
-  },[unit,selectedPlans.map(p=>p.id+":"+p.months+":"+p.deliveryMonths+":"+p.installmentIntervalMonths).join("|"),maintenanceDueDate]);
+  },[unit,selectedPlans.map(p=>p.id+":"+p.months+":"+p.deliveryMonths+":"+p.installmentIntervalMonths+":"+p.discountPct+":"+p.secondDownPaymentPct).join("|"),maintenanceDueDate]);
   const visibleUnits = useMemo(() => units.filter(item =>
     (item.code + " " + item.floor).toLowerCase().includes(search.toLowerCase())).slice(0, 100), [units, search]);
   function selectUnit(code: string, floorCode?: string) {
@@ -131,7 +134,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
           {project?.paymentPlans.map(plan => <label className="planrow" key={plan.id}>
             <input type="checkbox" checked={chosenPlans.includes(plan.id)} disabled={!unit || (chosenPlans.length >= 5 && !chosenPlans.includes(plan.id))}
               onChange={event => toggle(plan.id, event.target.checked)} />
-            <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% {tr("Down payment %")} · {plan.months} {tr("months")} · {tr(plan.installmentIntervalMonths===3?"Quarterly installments":"Monthly payments")} · {plan.maintenancePct}% {tr("Maintenance %")}{plan.deliveryMonths ? " · "+tr("Delivery after")+" "+plan.deliveryMonths+" "+tr("months") : ""}{plan.deliveryCollectionEnabled ? " · "+plan.deliveryCollectionPct+"% "+tr("Paid by delivery") : ""}</small></span>
+            <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% {tr("Down payment %")}{Number(plan.secondDownPaymentPct)>0?" + "+plan.secondDownPaymentPct+"% "+tr("Second down payment %"):""}{Number(plan.discountPct)>0?" · "+plan.discountPct+"% "+tr("Plan discount %"):""} · {plan.months} {tr("months")} · {tr(plan.installmentIntervalMonths===3?"Quarterly installments":"Monthly payments")} · {plan.maintenancePct}% {tr("Maintenance %")}{plan.deliveryMonths ? " · "+tr("Delivery after")+" "+plan.deliveryMonths+" "+tr("months") : ""}{plan.deliveryCollectionEnabled ? " · "+plan.deliveryCollectionPct+"% "+tr("Paid by delivery") : ""}</small></span>
           </label>)}
           {!project?.paymentPlans.length && <div className="notice">{tr("No plans yet. An administrator can add a plan (such as 10% down / 80 months) in Workspace Settings.")}</div>}
           {(selectedPlans.some(p=>Number(p.maintenancePct)>0))&&
@@ -167,7 +170,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
                   </thead>
                   <tbody>{schedule.rows.map((row,j)=><tr key={row.type+row.due+j} style={{borderBottom:"1px solid #edf0f4"}}>
                     <td style={{padding:8}}>{row.number??"—"}</td>
-                    <td style={{padding:8}}>{tr(row.type==="DOWN_PAYMENT"?"Down payment":row.type==="MAINTENANCE"?"Maintenance":"Installment")}</td>
+                    <td style={{padding:8}}>{tr(row.type==="DOWN_PAYMENT"?"Down payment":row.type==="SECOND_DOWN_PAYMENT"?"Second down payment":row.type==="MAINTENANCE"?"Maintenance":"Installment")}</td>
                     <td style={{padding:8}}>{row.due}</td>
                     <td style={{padding:8,textAlign:"end"}}>{nicePrice(row.amount)}</td>
                   </tr>)}</tbody>
