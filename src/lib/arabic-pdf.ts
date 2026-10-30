@@ -5,7 +5,7 @@ import plexRegular from "@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-ar
 import plexBold from "@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-700-normal.woff?inline";
 import Decimal from "decimal.js";
 import { formatOfferMoney } from "@/lib/offer-money";
-import { cairoLocation, embeddedLogo, type Props } from "@/lib/workers-pdf";
+import { cairoLocation,drawNasaPdfLocation, embeddedLogo, type Props } from "@/lib/workers-pdf";
 
 const W=595.28,H=841.89,LEFT=47,RIGHT=W-47;
 const navy=rgb(0.085,0.16,0.26),gold=rgb(0.72,0.55,0.31);
@@ -93,7 +93,7 @@ function payRow(page:PDFPage,i:number,
   en(page,amount(payment.amount),LEFT+13,y-2,f.latinBold,10.5,ink);
 }
 export async function createArabicOfferPdf({
-  company,logoUrl,project,unit,issuedAt,floor,location,schedules
+  company,logoUrl,project,unit,issuedAt,floor,location,nasaLocation,schedules
 }:Props):Promise<Uint8Array>{
   const pdf=await PDFDocument.create();
   pdf.registerFontkit(fontkit);
@@ -136,6 +136,7 @@ export async function createArabicOfferPdf({
   planPage.drawRectangle({x:LEFT,y:327,width:RIGHT-LEFT,height:326,
     color:pale,borderColor:border,borderWidth:0.8});
   if(location)cairoLocation(planPage,location);
+  else if(nasaLocation) await drawNasaPdfLocation(pdf,planPage,nasaLocation);
   else if(floor?.backgroundData?.startsWith("data:image/")){
     try{
       const match=/^data:image\/(png|jpeg);base64,([\s\S]+)$/.exec(floor.backgroundData);
@@ -151,7 +152,9 @@ export async function createArabicOfferPdf({
   }else ar(planPage,"مخطط الوحدة غير متوفر",RIGHT-20,485,f.arabic,13);
   ar(planPage,"الوحدة المحددة على المخطط",RIGHT,287,f.arabicBold,13);
   en(planPage,unit.code,LEFT,287,f.latinBold,11);
-  ar(planPage,location?.reviewed
+  ar(planPage,nasaLocation
+    ?"حدود وحدة ناسا تقريبية من صور PDF وتحتاج مراجعة هندسية"
+    :location?.reviewed
     ?"حدود الوحدة المعروضة قيد الاعتماد الهندسي النهائي"
     :"المخطط لتحديد الموقع ولا يعتمد عليه في حساب المساحة",
     RIGHT,263,f.arabic,10,gray);
