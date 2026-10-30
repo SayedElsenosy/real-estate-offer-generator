@@ -206,8 +206,9 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
     pair(page,"Term (down payment included)",schedule.durationMonths+" months",H-162,regular,bold);
     pair(page,"Payment cadence",schedule.installmentIntervalMonths===3?"Quarterly (every 3 months)":"Monthly",H-193,regular,bold);
     pair(page,"Payment slots",schedule.paymentCount,H-224,regular,bold);
-    pair(page,"Unit price","EGP "+formatOfferMoney(schedule.totalPrice),H-255,regular,bold);
-    pair(page,"Down payment","EGP "+formatOfferMoney(schedule.downPayment),H-286,regular,bold);
+    pair(page,"Unit price after discount ("+formatOfferMoney(schedule.discountPct)+"%)","EGP "+formatOfferMoney(schedule.totalPrice),H-255,regular,bold);
+    pair(page,"Down payment"+(Number(schedule.secondDownPayment)>0?" + 2nd after "+schedule.secondDownOffsetMonths+" months":""),
+      "EGP "+formatOfferMoney(schedule.downPayment)+(Number(schedule.secondDownPayment)>0?" + "+formatOfferMoney(schedule.secondDownPayment):""),H-286,regular,bold);
     pair(page,"Expected delivery",schedule.deliveryMonths>0 ? "After "+schedule.deliveryMonths+" months" : "Not specified",H-317,regular,bold);
     pair(page,"Total paid BEFORE delivery","EGP "+formatOfferMoney(schedule.preDeliveryTotal),H-348,regular,bold);
     pair(page,"Balance after delivery","EGP "+formatOfferMoney(schedule.postDeliveryTotal),H-379,regular,bold);
@@ -220,7 +221,7 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
         page=pdf.addPage([W,H]);header(page,company,"PAYMENT SCHEDULE","CONTINUED / "+printable(unit.code),bold,regular,logo);
         y=H-160;tableHeader(page,y,bold);y-=36;
       }
-      const type=entry.type==="DOWN_PAYMENT"?"DOWN PAYMENT (PAYMENT 1)":entry.type==="MAINTENANCE"?"MAINTENANCE":"INSTALLMENT";
+      const type=entry.type==="DOWN_PAYMENT"?"DOWN PAYMENT":entry.type==="SECOND_DOWN_PAYMENT"?"SECOND DOWN PAYMENT":entry.type==="MAINTENANCE"?"MAINTENANCE":"INSTALLMENT";
       row(page,index,[entry.number===null?"-":String(entry.number),type,entry.due,formatOfferMoney(entry.amount)],y,regular);y-=23;
     });
   }
