@@ -5,6 +5,7 @@ import { currentUser } from "@/lib/guards";
 import { getLiveInventory, isAvailable } from "@/lib/sheets";
 import { calculateSchedule } from "@/lib/payment";
 import { getCairoOfferLocation } from "@/lib/cairo-offer-location";
+import { getNasaOfferLocation } from "@/lib/nasa-offer-location";
 import { unitKey } from "@/lib/unit-code";
 import type { FloorGeometry } from "@/lib/pdf";
 import { createPropertyOfferPdf } from "@/lib/workers-pdf";
@@ -73,11 +74,13 @@ export async function POST(req: NextRequest) {
     const issuedAt = date.toISOString().slice(0, 10);
     const location = projectId === CAIRO_PLAZA_PROJECT_ID
       ? await getCairoOfferLocation(unit.code, unit.floor) : null;
+    const nasaLocation = projectId==="nasa"
+      ? await getNasaOfferLocation(user.id,unit.code,unit.floor) : null;
     // Workers-safe PDF engine. The former renderer relied on a Node URL/file
     // environment and failed with "Invalid URL string" on Cloudflare.
     const common = {
       company: project.companyName, logoUrl: trustedLogo(project.logoUrl),
-      project: project.name, unit, issuedAt, floor: geometry, location, schedules
+      project: project.name, unit, issuedAt, floor: geometry, location, nasaLocation, schedules
     };
     const pdfBytes = language==="ar"
       ? await (await import("@/lib/arabic-pdf")).createArabicOfferPdf(common)
