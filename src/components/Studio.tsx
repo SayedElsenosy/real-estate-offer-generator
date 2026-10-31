@@ -73,13 +73,17 @@ export default function Studio({ projects, email }: { projects: Project[]; email
     setGenerating(true); setOfferError("");
     try {
       const response = await fetch("/api/offers", { method: "POST",
-        headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({ projectId, unitCode: unit.code, unitFloor: unit.floor, planIds: chosenPlans,maintenanceDueDate:maintenanceDueDate||null,language:offerLanguage }) });
       if (!response.ok) {
-        const message = await response.json();
-        throw new Error(message.error || "PDF generation failed");
+          const message = await response.json().catch(() => null);
+          throw new Error(message?.error || "The server could not prepare the offer. Please try again.");
       }
-      const objectURL = URL.createObjectURL(await response.blob());
+        const { offer } = await response.json();
+        const bytes = offerLanguage === "ar"
+          ? await (await import("@/lib/arabic-pdf")).createArabicOfferPdf(offer)
+          : await (await import("@/lib/workers-pdf")).createPropertyOfferPdf(offer);
+        const objectURL = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: "application/pdf" }));
       const element = document.createElement("a");
       element.href = objectURL;
       element.download = (offerLanguage==="ar"?"Arabic-Offer-":"Property-Offer-") + unit.code.replace(/[^a-z0-9_-]/gi, "_") + ".pdf";

@@ -1,4 +1,4 @@
-import { PrismaNeon } from "@prisma/adapter-neon";
+import { PrismaNeon, PrismaNeonHttp } from "@prisma/adapter-neon";
 import { PrismaClient } from "@/generated/prisma/client";
 
 // Cloudflare Workers keep modules alive between requests but isolate async I/O
@@ -11,4 +11,12 @@ export function db(): PrismaClient {
   return new PrismaClient({
     adapter: new PrismaNeon({ connectionString })
   });
+}
+
+// Stateless HTTP queries avoid opening a WebSocket pool for each public read.
+// Keep db() for Auth.js and admin operations that can require transactions.
+export function publicDb(): PrismaClient {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) throw new Error("DATABASE_URL is not configured");
+  return new PrismaClient({ adapter: new PrismaNeonHttp(connectionString, {}) });
 }

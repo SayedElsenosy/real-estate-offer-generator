@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { publicDb as db } from "@/lib/db";
 import { getExcelInventory } from "@/lib/excel-inventory";
 
 export type InventoryUnit = {

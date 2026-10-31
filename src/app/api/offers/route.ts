@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { db } from "@/lib/db";
+import { publicDb as db } from "@/lib/db";
 import { currentUser } from "@/lib/guards";
-import { getLiveInventory, isAvailable } from "@/lib/sheets";
+import { isAvailable } from "@/lib/sheets";
+import { getRecentInventory } from "@/lib/inventory-cache";
 import { calculateSchedule } from "@/lib/payment";
 import { getCairoOfferLocation } from "@/lib/cairo-offer-location";
 import { getNasaOfferLocation } from "@/lib/nasa-offer-location";
@@ -35,9 +36,9 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const { projectId, unitCode, unitFloor, planIds, maintenanceDueDate, language } = inputSchema.parse(await req.json());
-    const project = await db().project.findUnique({ where: { id: projectId }, include: { floorPlans: true } });
+    const project = await db().project.findUnique({ where: { id: projectId }, include: { floorPlans: { where: { floor: unitFloor, reviewStatus: "APPROVED" } } } });
     if (!project?.spreadsheetId) return NextResponse.json({ error: "Project inventory is not connected" }, { status: 409 });
-    const units = await getLiveInventory(user.id, project.spreadsheetId, project.sheetRange, project.name);
+    const { units } = await getRecentInventory(user.id, project.spreadsheetId, project.sheetRange, project.name, true);
     const matchingUnits = units.filter(value =>
       unitKey(value.code) === unitKey(unitCode) && value.floor === unitFloor);
     if (matchingUnits.length > 1)
@@ -85,6 +86,13 @@ export async function POST(req: NextRequest) {
       company: project.companyName, logoUrl: trustedLogo(project.logoUrl),
       project: project.name, unit, issuedAt, floor: geometry, location, nasaLocation, schedules
     };
+    // The studio renders its PDF locally. Prices, availability and financial
+    // schedules still come exclusively from the authenticated server checks.
+    if (req.headers.get("accept")?.includes("application/json")) {
+      return NextResponse.json({ offer: common, language }, {
+        headers: { "Cache-Control": "private, no-store" }
+      });
+    }
     const pdfBytes = language==="ar"
       ? await (await import("@/lib/arabic-pdf")).createArabicOfferPdf(common)
       : await createPropertyOfferPdf(common);

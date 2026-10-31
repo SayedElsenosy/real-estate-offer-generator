@@ -22,20 +22,24 @@ export async function getRecentInventory(
   // downloading and reparsing the entire spreadsheet every polling interval.
   const isExcel = projectName.toLowerCase().replace(/\s+/g,"-")==="cairo-plaza";
   let revision: string|null = null;
-  if (isExcel && !forceFresh && cached?.revision) {
+  if (isExcel) {
     try {
       revision = await getDriveFileRevision(userId,spreadsheetId);
-      if (revision === cached.revision) {
+      if (cached?.revision && revision === cached.revision) {
         const lastReadAt = Date.now();
         entries.set(key,{...cached,lastReadAt,expiresAt:lastReadAt+REVALIDATE_MS});
         return {units:cached.units,lastReadAt,source:"recent"};
       }
     } catch { /* Fall back to full source verification; never serve stale stock. */ }
   }
-  // Offers always call getLiveInventory directly, bypassing this cache.
+  // Offers bypass the TTL and verify the Drive revision on every request.
+  // Only reuse rows when the live source revision matches exactly.
   const units = await getLiveInventory(userId, spreadsheetId, range, projectName);
-  if (isExcel && !revision) {
-    try {revision = await getDriveFileRevision(userId,spreadsheetId);}
+  if (isExcel && revision) {
+    try {
+      const afterRead = await getDriveFileRevision(userId,spreadsheetId);
+      if (afterRead !== revision) revision = null;
+    }
     catch {revision=null;}
   }
   const lastReadAt = Date.now();

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { currentUserWithAccess } from "@/lib/guards";
-import { db } from "@/lib/db";
+import { publicDb as db } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

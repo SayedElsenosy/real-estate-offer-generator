@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { publicDb as db } from "@/lib/db";
 import { currentUser } from "@/lib/guards";
 import { getRecentInventory } from "@/lib/inventory-cache";
 import { CAIRO_PLAZA_PROJECT_ID, hasAuthoritativeCairoDwgSource } from "@/lib/cairo-architectural-source";

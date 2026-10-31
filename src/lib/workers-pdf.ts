@@ -72,7 +72,7 @@ export async function embeddedLogo(pdf:PDFDocument,url?:string|null):Promise<PDF
     }
     const parsed=new URL(url);
     const hostname=parsed.hostname.toLowerCase();
-    const configured=(process.env.ALLOWED_LOGO_HOSTS||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
+    const configured=(typeof process !== "undefined" ? process.env.ALLOWED_LOGO_HOSTS || "" : "").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
     // Existing project logos are sourced from Facebook's read-only CDN.
     // Only explicitly configured hosts or known public image CDN hosts qualify.
     const allowed=hostname.endsWith(".fbcdn.net")||hostname==="fbcdn.net"||configured.includes(hostname);
