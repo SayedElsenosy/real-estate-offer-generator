@@ -22,7 +22,8 @@ export function PrivateAccessEntry() {
         });
         if (!response.ok) { setState("error"); return; }
         setState("ready");
-        location.replace("/studio");
+        // After proving the key, enter the shared portal, never the owner homepage.
+        location.replace("/shared");
       } catch (error) {
         if (!controller.signal.aborted) setState("error");
       }
