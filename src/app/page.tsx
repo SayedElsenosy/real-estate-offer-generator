@@ -1,18 +1,16 @@
 import Link from "next/link";
 import { auth, authReady, signIn, signOut } from "@/auth";
 import { Sidebar } from "@/components/Sidebar";
-import { hasSharedAccess } from "@/lib/shared-access";
-import { isAdmin } from "@/auth";
+ import { isAdmin } from "@/auth";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
 import { T } from "@/components/LanguageProvider";
 
 export const dynamic = "force-dynamic";
 export default async function Home() {
-  // Private-link visitors must never see a control that signs out the
-  // owner's Google session. Shared access takes precedence over OAuth here.
-  const shared = await hasSharedAccess();
-  const session = !shared && authReady ? await auth() : null;
-  return <div className="shell"><Sidebar active="home" email={shared ? "Private link access" : session?.user?.email} shared={shared} /><main className="main">
+  // The root URL belongs to the Google-authenticated owner ONLY.
+  // Shared-link cookies never grant a session or change this landing page.
+  const session = authReady ? await auth() : null;
+  return <div className="shell"><Sidebar active="home" email={session?.user?.email} shared={false} /><main className="main">
     <div className="header-line"><div><div className="eyebrow"><T text="OFFER MANAGEMENT PLATFORM / 2026" /></div><h1><T text="Make every offer exceptional." /></h1><p className="muted"><T text="Live inventory. Interactive floor locations. Flexible financial schedules. A premium proposal in minutes." /></p></div><div className="pill"><span className="dot" /> <T text="Independent workspace" /></div></div>
     <div className="metrics">
       <div className="metric"><div className="eyebrow"><T text="PROJECT PORTFOLIO" /></div><strong>05</strong><p className="muted">Cairo Plaza, Kawn, Nasa, Aqmar, Vida</p></div>
@@ -22,8 +20,8 @@ export default async function Home() {
     <div className="grid2">
       <section className="stack">
         <div className="info-card"><div className="eyebrow"><T text="PROPERTY OFFER STUDIO" /></div><h2><T text="A smarter way to present each property." /></h2><p><T text="From a single project overview to individual unit location and a precise installment table — all in one place." /></p>
-          {(session || shared) ? <div className="actionline"><Link className="btn gold" href="/studio"><T text="Open Offer Studio" /></Link>{session && !shared ? <form action={async () => { "use server"; await signOut({ redirectTo: "/" }); }}><button className="btn outline"><T text="Sign out" /></button></form> : null}</div> :
-           authReady ? <form action={async () => { "use server"; await signIn("google", { redirectTo: "/studio" }); }}><button className="btn gold"><T text="Continue with Google" /></button></form> :
+          {session ? <div className="actionline"><Link className="btn gold" href="/studio"><T text="Open Offer Studio" /></Link>{session ? <form action={async () => { "use server"; await signOut({ redirectTo: "/" }); }}><button className="btn outline"><T text="Sign out" /></button></form> : null}</div> :
+           authReady ? <form action={async () => { "use server"; await signIn("google", { redirectTo: "/" }); }}><button className="btn gold"><T text="Continue with Google" /></button></form> :
            <div className="notice"><T text="Google OAuth and Neon environment credentials have not been configured on this deployment. The application will enable sign-in after these are configured on the current deployment." /></div>}
         </div>
         {session?.user?.email && isAdmin(session.user.email) ? <div className="panel"><h2>رابط الدخول الخاص</h2><p>انسخ الرابط وافتحه على أي جهاز من غير تسجيل دخول جديد.</p><ShareLinkButton /></div> : null}
