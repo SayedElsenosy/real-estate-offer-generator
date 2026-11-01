@@ -5,7 +5,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { unitKey } from "@/lib/unit-code";
 import type { NasaFloorData } from "@/lib/nasa-floor-source";
 
-type LiveUnit={code:string;floor:string;status:string;area:string;price:string};
+type LiveUnit={code:string;floor:string;status:string;area:string;price:string;type?:string};
 type State="available"|"reserved"|"closed"|"unlisted";
 const colors:Record<State,{fill:string;en:string;ar:string}>={
   available:{fill:"#31a676",en:"Available",ar:"متاحة"},
@@ -148,6 +148,7 @@ export const NasaInteractiveMap=memo(function NasaInteractiveMap({
             </div>
             <h2 dir="ltr">{chosen.shape.code}</h2>
             <p>{t("Status","الحالة")}: <strong>{t(colors[chosen.status].en,colors[chosen.status].ar)}</strong></p>
+            <p>{t("Unit Type","نوع الوحدة")}: <strong>{chosen.live?.type?.trim()||"—"}</strong></p>
             <p>{t("Area from live sheet","المساحة من الشيت")}: {chosen.live?.area?chosen.live.area+" m²":"—"}</p>
             <p>{t("Current price","السعر الحالي")}: <strong>{money(chosen.live?.price||"")}</strong></p>
             {chosen.shape.review&&<p className="muted">{t("Unit outline needs visual engineering review.","حدود الوحدة تحتاج مراجعة هندسية بصرية.")}</p>}
