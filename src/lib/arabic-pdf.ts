@@ -89,7 +89,7 @@ function payRow(page:PDFPage,i:number,
   const name=payment.type==="DOWN_PAYMENT"?"المقدم":payment.type==="SECOND_DOWN_PAYMENT"?"المقدم الثاني":payment.type==="MAINTENANCE"?"وديعة الصيانة":"قسط";
   enRight(page,payment.number??"-",RIGHT-14,y-2,f.latin,10,ink);
   ar(page,name,RIGHT-80,y-2,f.arabic,11,ink);
-  enRight(page,payment.due,RIGHT-252,y-2,f.latin,10.2,ink);
+  enRight(page,payment.due||"-",RIGHT-252,y-2,f.latin,10.2,ink);
   en(page,amount(payment.amount),LEFT+13,y-2,f.latinBold,10.5,ink);
 }
 export async function createArabicOfferPdf({
@@ -173,9 +173,8 @@ export async function createArabicOfferPdf({
       "ربع سنوية":"شهرية",483,f,true);
     pair(page,"موعد الاستلام بعد عدد الشهور",schedule.deliveryMonths||"-",452,f);
     pair(page,"قيمة وديعة الصيانة",amount(schedule.maintenance),421,f);
-    pair(page,"تاريخ وديعة الصيانة",schedule.maintenanceDueDate||"-",390,f);
-    pair(page,"الإجمالي شاملا الصيانة",amount(schedule.totalIncludingMaintenance),359,f);
-    let y=316;
+    pair(page,"الإجمالي شاملا الصيانة",amount(schedule.totalIncludingMaintenance),390,f);
+    let y=347;
     tableHeader(page,y,f);y-=38;
     for(let i=0;i<schedule.rows.length;i++){
       if(y<91){

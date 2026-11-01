@@ -83,10 +83,8 @@ export function calculateSchedule(priceInput:string,terms:PaymentTerms,issueDate
     throw Error("Delivery month must fall within the payment term.");
   if (terms.deliveryCollectionEnabled && deliveryMonths<2)
     throw Error("Delivery months must be at least 2 when splitting payments.");
-  const maintenanceDate=terms.maintenanceDueDate || null;
-  if(maintenancePct.gt(0) && (!maintenanceDate || !validIsoDate(maintenanceDate)))
-    throw Error("Choose a valid maintenance deposit due date.");
-  if (maintenanceDate && !validIsoDate(maintenanceDate)) throw Error("Invalid maintenance due date.");
+  // Maintenance is a separate, undated deposit appended after the entire
+  // installment schedule; it never consumes a payment slot or changes its term.
   const down=money(price.mul(downPct).div(100));
   const secondDown=money(price.mul(secondPct).div(100));
   const maintenance=money(price.mul(maintenancePct).div(100));
@@ -128,10 +126,12 @@ export function calculateSchedule(priceInput:string,terms:PaymentTerms,issueDate
   };
   addRows(before,beforeAmount);
   addRows(after,afterAmount);
-  if(maintenance.gt(0)&&maintenanceDate)
-    rows.push({number:null,type:"MAINTENANCE",due:maintenanceDate,amount:maintenance.toFixed(2)});
   rows.sort((a,b)=>a.due.localeCompare(b.due) ||
-    (a.type==="DOWN_PAYMENT"?-1:a.type==="SECOND_DOWN_PAYMENT"?-1:a.type==="MAINTENANCE"?1:0));
+    (a.type==="DOWN_PAYMENT"?-1:a.type==="SECOND_DOWN_PAYMENT"?-1:0));
+  // Always the final row, irrespective of the last installment's due date.
+  // The empty due field intentionally denotes an undated maintenance deposit.
+  if(maintenance.gt(0))
+    rows.push({number:null,type:"MAINTENANCE",due:"",amount:maintenance.toFixed(2)});
   const total=rows.reduce((sum,row)=>sum.plus(row.amount),new Decimal(0));
   if (!total.eq(price.plus(maintenance)))
     throw Error("Payment schedule did not balance exactly to the unit price.");
@@ -157,7 +157,7 @@ export function calculateSchedule(priceInput:string,terms:PaymentTerms,issueDate
           (deliveryMonths===0?row.type==="DOWN_PAYMENT":
             row.due<shiftMonths(issueDate,deliveryMonths)))
           .reduce((acc,row)=>acc.plus(row.amount),new Decimal(0)))).toFixed(2),
-    maintenanceDueDate:maintenanceDate,
+    maintenanceDueDate:null,
     maintenance:maintenance.toFixed(2),totalIncludingMaintenance:price.plus(maintenance).toFixed(2),
     rows
   };

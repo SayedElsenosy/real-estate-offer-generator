@@ -28,7 +28,6 @@ export default function Studio({ projects, email }: { projects: Project[]; email
   const [generating, setGenerating] = useState(false);
   const [offerError,setOfferError] = useState("");
   const [search, setSearch] = useState("");
-  const [maintenanceDueDate,setMaintenanceDueDate]=useState("");
   const [offerLanguage,setOfferLanguage]=useState<"ar"|"en">("ar");
   const project = projects.find(p => p.id === projectId);
   const unit = units.find(value => value.code === selected && value.floor === floorNumber);
@@ -36,7 +35,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
   const schedules=useMemo(()=>{
     if(!unit||!selectedPlans.length)return {rows:[] as ReturnType<typeof calculateSchedule>[],error:""};
     try{
-      const date=new Date();const today=date.toISOString().slice(0,10);
+      const date=new Date();
       return {rows:selectedPlans.map(plan=>calculateSchedule(unit.price,{
         name:plan.name,downPaymentPct:plan.downPaymentPct,months:plan.months,
         maintenancePct:plan.maintenancePct,startOffsetMonths:plan.startOffsetMonths,
@@ -46,14 +45,11 @@ export default function Studio({ projects, email }: { projects: Project[]; email
         ordinaryInstallmentRebate:plan.ordinaryInstallmentRebate||"0",
         deliveryMonths:plan.deliveryMonths??undefined,
         deliveryCollectionEnabled:plan.deliveryCollectionEnabled,
-        deliveryCollectionPct:plan.deliveryCollectionPct,
-        // Show the payment table before a deposit date is chosen; the actual
-        // downloaded offer always requires the user's explicit date.
-        maintenanceDueDate:maintenanceDueDate||today
+        deliveryCollectionPct:plan.deliveryCollectionPct
       },date)),error:""};
     }catch(err){return {rows:[] as ReturnType<typeof calculateSchedule>[],
       error:err instanceof Error?err.message:"Invalid payment plan"};}
-  },[unit,selectedPlans.map(p=>p.id+":"+p.months+":"+p.deliveryMonths+":"+p.installmentIntervalMonths+":"+p.discountPct+":"+p.secondDownPaymentPct).join("|"),maintenanceDueDate]);
+  },[unit,selectedPlans.map(p=>p.id+":"+p.months+":"+p.deliveryMonths+":"+p.installmentIntervalMonths+":"+p.discountPct+":"+p.secondDownPaymentPct).join("|")]);
   const visibleUnits = useMemo(() => units.filter(item =>
     (item.code + " " + item.floor).toLowerCase().includes(search.toLowerCase())).slice(0, 100), [units, search]);
   function selectUnit(code: string, floorCode?: string) {
@@ -66,15 +62,12 @@ export default function Studio({ projects, email }: { projects: Project[]; email
   }
   async function issueOffer() {
     if (!unit || !chosenPlans.length || generating) return;
-    if (selectedPlans.some(p=>Number(p.maintenancePct)>0) && !maintenanceDueDate){
-      setOfferError(tr("Please select the maintenance deposit date."));return;
-    }
     if(schedules.error){setOfferError(schedules.error);return;}
     setGenerating(true); setOfferError("");
     try {
       const response = await fetch("/api/offers", { method: "POST",
           headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({ projectId, unitCode: unit.code, unitFloor: unit.floor, planIds: chosenPlans,maintenanceDueDate:maintenanceDueDate||null,language:offerLanguage }) });
+        body: JSON.stringify({ projectId, unitCode: unit.code, unitFloor: unit.floor, planIds: chosenPlans,language:offerLanguage }) });
       if (!response.ok) {
           const message = await response.json().catch(() => null);
           throw new Error(message?.error || "The server could not prepare the offer. Please try again.");
@@ -141,16 +134,11 @@ export default function Studio({ projects, email }: { projects: Project[]; email
             <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% {tr("Down payment %")}{Number(plan.secondDownPaymentPct)>0?" + "+plan.secondDownPaymentPct+"% "+tr("Second down payment %"):""}{Number(plan.discountPct)>0?" · "+plan.discountPct+"% "+tr("Plan discount %"):""} · {plan.months} {tr("months")} · {tr(plan.installmentIntervalMonths===3?"Quarterly installments":"Monthly payments")} · {plan.maintenancePct}% {tr("Maintenance %")}{plan.deliveryMonths ? " · "+tr("Delivery after")+" "+plan.deliveryMonths+" "+tr("months") : ""}{plan.deliveryCollectionEnabled ? " · "+plan.deliveryCollectionPct+"% "+tr("Paid by delivery") : ""}</small></span>
           </label>)}
           {!project?.paymentPlans.length && <div className="notice">{tr("No plans yet. An administrator can add a plan (such as 10% down / 80 months) in Workspace Settings.")}</div>}
-          {(selectedPlans.some(p=>Number(p.maintenancePct)>0))&&
-            <label className="fieldlabel" style={{marginTop:16}}>{tr("Maintenance deposit due date")}
-              <input type="date" className="field" value={maintenanceDueDate}
-                onChange={e=>setMaintenanceDueDate(e.target.value)}/>
-            </label>}
           {unit && selectedPlans.length>0 && <div style={{marginTop:18}}>
             <h3 style={{marginBottom:8}}>{tr("Live payment schedule preview")}</h3>
             {schedules.error&&<div className="notice" role="alert">{schedules.error}</div>}
-            {!maintenanceDueDate&&selectedPlans.some(p=>Number(p.maintenancePct)>0)&&
-              <p className="muted">{tr("Select the maintenance date before exporting. The schedule currently uses today as a temporary preview.")}</p>}
+            {selectedPlans.some(p=>Number(p.maintenancePct)>0)&&
+              <p className="muted">{tr("Maintenance deposit appears at the end of each plan without a due date.")}</p>}
             {schedules.rows.map((schedule,i)=><div key={selectedPlans[i].id}
               style={{marginBottom:16,border:"1px solid #e2e8f0",borderRadius:12,overflow:"hidden"}}>
               <div style={{padding:12,background:"#f6f8fb"}}>
@@ -175,7 +163,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
                   <tbody>{schedule.rows.map((row,j)=><tr key={row.type+row.due+j} style={{borderBottom:"1px solid #edf0f4"}}>
                     <td style={{padding:8}}>{row.number??"—"}</td>
                     <td style={{padding:8}}>{tr(row.type==="DOWN_PAYMENT"?"Down payment":row.type==="SECOND_DOWN_PAYMENT"?"Second down payment":row.type==="MAINTENANCE"?"Maintenance":"Installment")}</td>
-                    <td style={{padding:8}}>{row.due}</td>
+                    <td style={{padding:8}}>{row.due||"—"}</td>
                     <td style={{padding:8,textAlign:"end"}}>{nicePrice(row.amount)}</td>
                   </tr>)}</tbody>
                 </table>
@@ -189,7 +177,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
               <option value="en">{tr("English PDF")}</option>
             </select>
           </label>
-          <button className="btn gold" style={{width:"100%",marginTop:18}} disabled={!unit || !isAvailable(unit.status) || !!error || !!schedules.error || loading || chosenPlans.length===0 || generating || (selectedPlans.some(p=>Number(p.maintenancePct)>0)&&!maintenanceDueDate)} onClick={issueOffer}>
+          <button className="btn gold" style={{width:"100%",marginTop:18}} disabled={!unit || !isAvailable(unit.status) || !!error || !!schedules.error || loading || chosenPlans.length===0 || generating} onClick={issueOffer}>
             {tr(generating ? "Rendering proposal…" : "Generate premium PDF offer")}
           </button>
           <p className="muted" style={{fontSize:11}}>{tr("The server checks live price and availability again before producing the PDF.")}</p>

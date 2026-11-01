@@ -6,7 +6,7 @@ const base={name:"NASA source",discountPct:"5",maintenancePct:"8",installmentInt
   startOffsetMonths:3,quarterlyEndAtTerm:true,ordinaryInstallmentRebate:"3",
   secondDownPaymentPct:"0",secondDownOffsetMonths:0,
   deliveryCollectionEnabled:false,downPaymentPct:"10",months:144,
-  maintenanceDueDate:"2030-10-01"};
+  };
 function verify(term,expect){
   const s=calculateSchedule("9541800",term,start);
   const deposit=s.rows.filter(r=>r.type==="DOWN_PAYMENT");
@@ -15,6 +15,9 @@ function verify(term,expect){
   assert.equal(s.originalPrice,"9541800.00");
   assert.equal(s.totalPrice,"9064710.00");
   assert.equal(s.maintenance,"725176.80");
+  assert.equal(s.maintenanceDueDate,null);
+  assert.deepEqual(s.rows.at(-1),{number:null,type:"MAINTENANCE",due:"",amount:"725176.80"});
+  assert.equal(s.rows.at(-2)?.type,"INSTALLMENT");
   assert.equal(s.totalIncludingMaintenance,"9789886.80");
   assert.equal(deposit.length,1);
   assert.equal(inst.length,expect.count);
@@ -39,4 +42,4 @@ const nine=verify({...base,name:"9 Years",months:111,downPaymentPct:"2.5",
   down:"226617.75",second:"226617.75"});
 assert.equal(nine.rows.find(r=>r.type==="SECOND_DOWN_PAYMENT")?.due,"2027-01-01");
 assert.equal(nine.rows.find(r=>r.type==="SECOND_DOWN_PAYMENT")?.amount,"226617.75");
-console.log("PASS: NASA workbook 12y/10y/9y plans: 5% discount, 8% maintenance, precise 3 EGP rebates, 2nd deposit and exact totals");
+console.log("PASS: NASA workbook 12y/10y/9y plans: 5% discount, 8% maintenance, precise 3 EGP rebates, 2nd deposit, undated final maintenance and exact totals");
