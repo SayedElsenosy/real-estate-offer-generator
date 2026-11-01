@@ -213,16 +213,15 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
     pair(page,schedule.deliveryMonths>0?"Total paid BEFORE delivery":"Total down payments","EGP "+formatOfferMoney(schedule.preDeliveryTotal),H-348,regular,bold);
     pair(page,schedule.deliveryMonths>0?"Balance after delivery":"Remaining installments","EGP "+formatOfferMoney(schedule.postDeliveryTotal),H-379,regular,bold);
     pair(page,"Maintenance deposit","EGP "+formatOfferMoney(schedule.maintenance),H-410,regular,bold);
-    pair(page,"Maintenance due",schedule.maintenanceDueDate||"-",H-441,regular,bold);
-    pair(page,"Total with maintenance","EGP "+formatOfferMoney(schedule.totalIncludingMaintenance),H-472,regular,bold);
-    let y=H-518;tableHeader(page,y,bold);y-=35;
+    pair(page,"Total with maintenance","EGP "+formatOfferMoney(schedule.totalIncludingMaintenance),H-441,regular,bold);
+    let y=H-487;tableHeader(page,y,bold);y-=35;
     schedule.rows.forEach((entry,index)=>{
       if(y<85){
         page=pdf.addPage([W,H]);header(page,company,"PAYMENT SCHEDULE","CONTINUED / "+printable(unit.code),bold,regular,logo);
         y=H-160;tableHeader(page,y,bold);y-=36;
       }
       const type=entry.type==="DOWN_PAYMENT"?"DOWN PAYMENT":entry.type==="SECOND_DOWN_PAYMENT"?"SECOND DOWN PAYMENT":entry.type==="MAINTENANCE"?"MAINTENANCE":"INSTALLMENT";
-      row(page,index,[entry.number===null?"-":String(entry.number),type,entry.due,formatOfferMoney(entry.amount)],y,regular);y-=23;
+      row(page,index,[entry.number===null?"-":String(entry.number),type,entry.due||"-",formatOfferMoney(entry.amount)],y,regular);y-=23;
     });
   }
   return pdf.save({useObjectStreams:false});
