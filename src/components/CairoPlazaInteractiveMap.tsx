@@ -14,7 +14,7 @@ import sixth from "@/data/cairo-svg-floor-6.json";
 
 type Shape = {code:string;d?:string;x?:number;y?:number;status:"EXTRACTED"|"REVIEW"|"UNRESOLVED";printed?:number|null;area?:number|null;ratio?:number|null;reason?:string};
 type FloorData = {floor:string;name:string;units:Shape[]};
-type LiveUnit = {code:string;floor:string;status:string;area:string;price:string;project?:string};
+type LiveUnit = {code:string;floor:string;status:string;area:string;price:string;project?:string;type?:string};
 const data:Record<string,FloorData> = {
   "-1":basement,"0":ground,"1":first,"2":second,"3":third,
   "4":fourth,"5":fifth,"6":sixth
@@ -138,6 +138,7 @@ export const CairoPlazaInteractiveMap = memo(function CairoPlazaInteractiveMap({
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             <div><small className="muted">{t("Floor","الدور")}</small><div>{model.name}</div></div>
             <div><small className="muted">{t("Status","الحالة")}</small><div style={{fontWeight:600,color:colors[chosen.sale].fill}}>{t(colors[chosen.sale].en,colors[chosen.sale].ar)}</div></div>
+            <div><small className="muted">{t("Unit Type","نوع الوحدة")}</small><div>{chosen.live?.type?.trim()||"—"}</div></div>
             <div><small className="muted">{t("Area from inventory","المساحة من الشيت")}</small><div>{chosen.live?.area?chosen.live.area+" sqm":"—"}</div></div>
             <div><small className="muted">{t("Current price","السعر الحالي")}</small><div dir="ltr" style={{textAlign:"right",fontWeight:700}}>{amount(chosen.live?.price)}</div></div>
           </div>
