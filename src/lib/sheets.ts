@@ -1,5 +1,6 @@
 import { readGoogleAccount, saveGoogleAccessToken } from "@/lib/public-data";
 import { getExcelInventory } from "@/lib/excel-inventory";
+import { unitTypeColumn } from "@/lib/unit-type";
 
 export type InventoryUnit = {
   code: string;
@@ -8,6 +9,8 @@ export type InventoryUnit = {
   floor: string;
   status: string;
   project: string;
+  /** Official optional type/category from the live inventory heading. */
+  type?: string;
 };
 
 export function isAvailable(status: string): boolean {
@@ -143,6 +146,7 @@ export async function getLiveInventory(
   if (!headersRaw) return [];
   const headers = headersRaw.map(String);
   const columns = getColumns(projectName, headers);
+  const typeColumn = unitTypeColumn(headers);
   if (columns.code < 0 || columns.price < 0 || columns.status < 0)
     throw new Error("Sheet must include Unit Code, Total Price and Status columns.");
   const unique = new Map<string, InventoryUnit>();
@@ -158,7 +162,7 @@ export async function getLiveInventory(
     if (!status) continue;
     unique.set(code, {
       code, price: rawPrice, area: cell(columns.area), floor: cell(columns.floor),
-      status, project: projectName
+      status, project: projectName, type: cell(typeColumn)
     });
   }
   return [...unique.values()];
