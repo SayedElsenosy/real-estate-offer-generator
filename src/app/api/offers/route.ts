@@ -19,7 +19,6 @@ const inputSchema = z.object({
   unitCode: z.string().min(1),
   unitFloor: z.string().min(1),
   planIds: z.array(z.string()).min(1).max(5),
-  maintenanceDueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   language: z.enum(["ar","en"]).default("ar")
 });
 function trustedLogo(url: string | null): string | null {
@@ -35,7 +34,7 @@ export async function POST(req: NextRequest) {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    const { projectId, unitCode, unitFloor, planIds, maintenanceDueDate, language } = inputSchema.parse(await req.json());
+    const { projectId, unitCode, unitFloor, planIds, language } = inputSchema.parse(await req.json());
     const project = await readPublicProject(projectId, unitFloor);
     if (!project?.spreadsheetId) return NextResponse.json({ error: "Project inventory is not connected" }, { status: 409 });
     const { units } = await getRecentInventory(user.id, project.spreadsheetId, project.sheetRange, project.name, true);
@@ -59,7 +58,6 @@ export async function POST(req: NextRequest) {
       secondDownOffsetMonths:plan.secondDownOffsetMonths,quarterlyEndAtTerm:plan.quarterlyEndAtTerm,
       ordinaryInstallmentRebate:plan.ordinaryInstallmentRebate.toString(),
       deliveryMonths: plan.deliveryMonths ?? undefined,
-      maintenanceDueDate: maintenanceDueDate || null,
       deliveryCollectionEnabled: plan.deliveryCollectionEnabled,
       deliveryCollectionPct: plan.deliveryCollectionPct.toString()
     }, date));
