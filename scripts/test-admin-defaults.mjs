@@ -10,6 +10,11 @@ const shared=read("components/SharedLanding.tsx");
 const sharedPage=read("app/shared/page.tsx");
 const sidebar=read("components/Sidebar.tsx");
 const entry=read("components/PrivateAccessEntry.tsx");
+const linkApi=read("app/api/access/owner-link/route.ts");
+assert.match(linkApi,/\/access#key=/,"Existing shared URL format and token must remain unchanged.");
+assert.match(entry,/fragment\.get\("key"\)/,"Existing private-link fragment must still be accepted.");
+assert.match(entry,/history\.replaceState\(null, "", "\/access"\)/,
+  "Remove secret fragment from browser history before verifying access.");
 assert.doesNotMatch(home,/hasSharedAccess\(|import.*shared-access|session \|\| shared/,
   "Root page must never use the shared-access cookie for authentication.");
 assert.match(home,/const session = authReady \? await auth\(\) : null;/,
