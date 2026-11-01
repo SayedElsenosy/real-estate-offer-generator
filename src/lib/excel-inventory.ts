@@ -1,5 +1,6 @@
 import { readXlsxRows } from "@/lib/xlsx-values";
 import type { InventoryUnit } from "@/lib/sheets";
+import { unitTypeColumn } from "@/lib/unit-type";
 
 const MAX_XLSX_BYTES = 10 * 1024 * 1024;
 
@@ -113,6 +114,7 @@ export async function getExcelInventory(
     price: columnNamed("totalprice")
   };
 
+  const typeColumn = unitTypeColumn(headings);
   const items = new Map<string, InventoryUnit>();
   rows.slice(1).forEach(row => {
     const code = valueAt(row, columns.code);
@@ -122,7 +124,8 @@ export async function getExcelInventory(
     if (!code || !status || !Number.isFinite(numericPrice) || numericPrice <= 0) return;
     if (items.has(code)) throw new Error("Duplicate Cairo Plaza Unit Code: " + code);
     items.set(code, {
-      code, price, area: valueAt(row, columns.area), floor: valueAt(row, columns.floor), status, project: projectName
+      code, price, area: valueAt(row, columns.area), floor: valueAt(row, columns.floor), status, project: projectName,
+      type: typeColumn >= 0 ? valueAt(row, typeColumn + 1) : ""
     });
   });
   return [...items.values()];
