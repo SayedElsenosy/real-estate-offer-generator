@@ -9,7 +9,7 @@ import { NasaInteractiveMap } from "@/components/NasaInteractiveMap";
 import { unitKey } from "@/lib/unit-code";
 
 type Project={id:string;name:string};
-type Unit={code:string;floor:string;status:string;area:string;price:string};
+type Unit={code:string;floor:string;status:string;area:string;price:string;type?:string};
 type Shape={unitCode:string;d:string};
 type Floor={id:string;name:string;floor:string|null;viewBox:string;shapes:Shape[];backgroundData?:string|null;reviewStatus:string};
 type Result={units?:Unit[];floorPlans?:Floor[];error?:string};
@@ -123,6 +123,7 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
         </div>
         {currentShape&&<div className="notice" style={{marginTop:10}}>
           <b>{currentShape.unitCode}</b> · {currentStock?.status||t("Not in inventory","غير موجودة بالمخزون")}
+          {" · "}{t("Unit Type","نوع الوحدة")}: {currentStock?.type?.trim()||"—"}
           {" · "}{currentStock?.area||"—"} {t("sqm","م²")} · {currentStock?.price||"—"} EGP
         </div>}
       </section>}

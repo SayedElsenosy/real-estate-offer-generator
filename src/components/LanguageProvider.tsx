@@ -119,6 +119,7 @@ const translationMap: Record<string, string> = {
   "Select a unit": "اختر وحدة",
   "Project": "المشروع",
   "Unit Code": "كود الوحدة",
+  "Unit Type": "نوع الوحدة",
   "Area": "المساحة",
   "Status": "الحالة",
   "Price": "السعر",
