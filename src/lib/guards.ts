@@ -1,5 +1,6 @@
 import { auth, authReady, isAdmin } from "@/auth";
-import { db, publicDb } from "@/lib/db";
+import { db } from "@/lib/db";
+import { readSharedOwner } from "@/lib/public-data";
 import { hasSharedAccess, sharedOwnerEmail } from "@/lib/shared-access";
 
 // Check a valid private-link cookie first. The shared flow does not require
@@ -9,9 +10,7 @@ export async function currentUserWithAccess() {
   if (await hasSharedAccess()) {
     const email = sharedOwnerEmail();
     if (email) {
-      const user = await publicDb().user.findFirst({
-        where: { email: { equals: email, mode: "insensitive" } }
-      });
+      const user = await readSharedOwner(email);
       if (user) return { user, shared: true };
     }
   }

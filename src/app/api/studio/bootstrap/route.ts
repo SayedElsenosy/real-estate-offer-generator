@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { currentUserWithAccess } from "@/lib/guards";
-import { publicDb as db } from "@/lib/db";
+import { readStudioProjects } from "@/lib/public-data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,10 +15,7 @@ export async function GET() {
   if (!access) return NextResponse.json(
     { error: "Unauthorized" }, { status: 401, headers: NO_STORE }
   );
-  const projects = await db().project.findMany({
-    select: { id: true, slug: true, name: true, paymentPlans: true },
-    orderBy: { name: "asc" }
-  });
+  const projects = await readStudioProjects();
   return NextResponse.json({
     projects: JSON.parse(JSON.stringify(projects)),
     email: access.shared ? "Private link access" : (access.user.email || "")

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { publicDb as db } from "@/lib/db";
+import { readPublicProject, readOfferPlans } from "@/lib/public-data";
 import { currentUser } from "@/lib/guards";
 import { isAvailable } from "@/lib/sheets";
 import { getRecentInventory } from "@/lib/inventory-cache";
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const { projectId, unitCode, unitFloor, planIds, maintenanceDueDate, language } = inputSchema.parse(await req.json());
-    const project = await db().project.findUnique({ where: { id: projectId }, include: { floorPlans: { where: { floor: unitFloor, reviewStatus: "APPROVED" } } } });
+    const project = await readPublicProject(projectId, unitFloor);
     if (!project?.spreadsheetId) return NextResponse.json({ error: "Project inventory is not connected" }, { status: 409 });
     const { units } = await getRecentInventory(user.id, project.spreadsheetId, project.sheetRange, project.name, true);
     const matchingUnits = units.filter(value =>
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     if (!isAvailable(unit.status)) return NextResponse.json({ error: "Unit is no longer available" }, { status: 409 });
     const uniquePlanIds = [...new Set(planIds)];
     if (uniquePlanIds.length !== planIds.length) return NextResponse.json({ error: "Duplicate plan selection" }, { status: 400 });
-    const plans = await db().paymentPlan.findMany({ where: { id: { in: uniquePlanIds }, projectId } });
+    const plans = await readOfferPlans(projectId, uniquePlanIds);
     if (plans.length !== uniquePlanIds.length) return NextResponse.json({ error: "Invalid payment plan" }, { status: 400 });
     const date = new Date();
     const schedules = plans.map(plan => calculateSchedule(unit.price, {

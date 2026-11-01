@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { publicDb as db } from "@/lib/db";
+import { readPublicProject } from "@/lib/public-data";
 import { currentUser } from "@/lib/guards";
 import { getRecentInventory } from "@/lib/inventory-cache";
 import { CAIRO_PLAZA_PROJECT_ID, hasAuthoritativeCairoDwgSource } from "@/lib/cairo-architectural-source";
@@ -23,10 +23,7 @@ export async function GET(req: NextRequest) {
   // The studio does not need floor geometries. Cairo Plaza keeps its drawings
   // as static build assets, so never download legacy DB background blobs.
   const withFloors = req.nextUrl.searchParams.get("includeFloors") === "1" && id !== CAIRO_PLAZA_PROJECT_ID;
-  const project = await db().project.findUnique({
-    where: { id },
-    ...(withFloors ? { include: { floorPlans: true } } : {})
-  });
+  const project = await readPublicProject(id, withFloors);
   if (!project) return NextResponse.json({ error: "Unknown project" }, { status: 404, headers: NO_STORE });
   const floorPlans = withFloors && "floorPlans" in project
     ? safeFloorPlans(id, project.floorPlans as any[]) : [];

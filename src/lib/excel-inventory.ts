@@ -1,4 +1,4 @@
-import ExcelJS from "exceljs";
+import { readXlsxRows } from "@/lib/xlsx-values";
 import type { InventoryUnit } from "@/lib/sheets";
 
 const MAX_XLSX_BYTES = 10 * 1024 * 1024;
@@ -7,11 +7,8 @@ function normalize(value: string) {
   return value.normalize("NFKC").toLowerCase().replace(/[^a-z0-9\u0600-\u06ff]/g, "");
 }
 
-function valueAt(row: ExcelJS.Row, column: number): string {
-  const cell = row.getCell(column);
-  const value = cell.value;
-  if (typeof value === "number" || typeof value === "string") return String(value).trim();
-  return (cell.text || "").trim();
+function valueAt(row: string[], column: number): string {
+  return (row[column - 1] || "").trim();
 }
 
 /**
@@ -88,21 +85,16 @@ export async function getExcelInventory(
   const announcedSize = Number(response.headers.get("content-length") || 0);
   if (announcedSize > MAX_XLSX_BYTES)
     throw new Error("Excel inventory exceeds the allowed 10MB read limit.");
-  const bytes = Buffer.from(await response.arrayBuffer());
+  const bytes = new Uint8Array(await response.arrayBuffer());
   if (!bytes.length || bytes.length > MAX_XLSX_BYTES || bytes[0] !== 0x50 || bytes[1] !== 0x4b)
     throw new Error("Google Drive did not return a valid supported XLSX file.");
 
-  const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(bytes as unknown as Parameters<typeof workbook.xlsx.load>[0]);
-  const sheet = workbook.getWorksheet(tab);
-  if (!sheet)
-    throw new Error("The Excel workbook does not contain the configured tab: " + tab);
-
-  const headings = sheet.getRow(1);
+  const rows = await readXlsxRows(bytes, tab);
+  const headings = rows[0] || [];
   const columnNamed = (label: string | string[]): number => {
     const aliases = (Array.isArray(label) ? label : [label]).map(normalize);
     const found: number[] = [];
-    for (let i = 1; i <= headings.cellCount; i++) {
+    for (let i = 1; i <= headings.length; i++) {
       if (aliases.includes(normalize(valueAt(headings, i)))) found.push(i);
     }
     if (found.length !== 1)
@@ -122,8 +114,7 @@ export async function getExcelInventory(
   };
 
   const items = new Map<string, InventoryUnit>();
-  sheet.eachRow((row, rowNumber) => {
-    if (rowNumber === 1) return;
+  rows.slice(1).forEach(row => {
     const code = valueAt(row, columns.code);
     const price = valueAt(row, columns.price);
     const status = valueAt(row, columns.status);

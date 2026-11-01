@@ -1,4 +1,4 @@
-import { publicDb as db } from "@/lib/db";
+import { readGoogleAccount, saveGoogleAccessToken } from "@/lib/public-data";
 import { getExcelInventory } from "@/lib/excel-inventory";
 
 export type InventoryUnit = {
@@ -16,7 +16,7 @@ export function isAvailable(status: string): boolean {
 }
 
 async function accessToken(userId: string): Promise<string> {
-  const account = await db().account.findFirst({ where: { userId, provider: "google" } });
+  const account = await readGoogleAccount(userId);
   if (!account) throw new Error("Google account is not connected");
   if (account.access_token && account.expires_at &&
     account.expires_at > Math.floor(Date.now() / 1000) + 90)
@@ -36,11 +36,7 @@ async function accessToken(userId: string): Promise<string> {
   });
   if (!response.ok) throw new Error("Google token refresh failed. Please sign in again.");
   const payload = await response.json() as { access_token: string; expires_in: number };
-  await db().account.update({
-    where: { id: account.id },
-    data: { access_token: payload.access_token,
-      expires_at: Math.floor(Date.now() / 1000) + payload.expires_in }
-  });
+  await saveGoogleAccessToken(account.id, payload.access_token, Math.floor(Date.now() / 1000) + payload.expires_in);
   return payload.access_token;
 }
 
