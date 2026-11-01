@@ -5,6 +5,12 @@ const admin=read("components/AdminPanel.tsx");
 const page=read("app/admin/page.tsx");
 const lang=read("components/LanguageProvider.tsx");
 const share=read("components/ShareLinkButton.tsx");
+const home=read("app/page.tsx");
+assert.match(home,/const shared = await hasSharedAccess\(\);\s*const session = !shared && authReady \? await auth\(\) : null;/,
+  "Shared-link access must suppress owner OAuth session on the public home page.");
+assert.match(home,/session && !shared \? <form action=\{async \(\) => \{ "use server"; await signOut/,
+  "Sign out must render only for direct owner sessions, never shared links.");
+
 assert.match(admin,/items\.find\(p=>p\.id==="cairo-plaza"\)\?\.id\s*\|\|\s*items\[0\]/);
 assert.match(admin,/<details className="panel"/);
 assert.match(admin,/<ShareLinkButton\s*\/>/);
@@ -13,4 +19,4 @@ assert.match(page,/return <AdminPanel/);
 assert.match(lang,/useState<Language>\("en"\)/);
 assert.doesNotMatch(lang,/localStorage\.getItem\("offer_atelier_language_v2"\)/);
 assert.match(share,/useLanguage\(\)/);
-console.log("PASS: Cairo Plaza default in Admin, private link within layout, English initial locale, bilingual sharing.");
+console.log("PASS: Cairo Plaza default in Admin, private link within layout, English initial locale, bilingual sharing, no sign-out on shared links.");
