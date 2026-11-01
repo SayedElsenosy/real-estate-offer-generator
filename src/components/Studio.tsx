@@ -7,7 +7,7 @@ import { unitKey } from "@/lib/unit-code";
 import { useLanguage } from "@/components/LanguageProvider";
 import { calculateSchedule, type PaymentTerms } from "@/lib/payment";
 
-type Unit = { code: string; price: string; area: string; floor: string; status: string; project: string };
+type Unit = { code: string; price: string; area: string; floor: string; status: string; project: string; type?: string };
 type Plan = { id: string; name: string; discountPct?:string; secondDownPaymentPct?:string; secondDownOffsetMonths?:number; quarterlyEndAtTerm?:boolean; ordinaryInstallmentRebate?:string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; installmentIntervalMonths?: number; deliveryMonths?: number|null; deliveryCollectionPct?: string; deliveryCollectionEnabled?: boolean };
 type Project = { id: string; slug: string; name: string; paymentPlans: Plan[] };
 function isAvailable(status: string): boolean {
@@ -113,7 +113,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
           <input className="field" placeholder={tr("Search Unit Code or floor...")} value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:15}} />
           <div className="list">{visibleUnits.map(value => <button type="button" key={value.code+"::"+value.floor} className={"unit" + (value.code === selected ? " active" : "")}
             disabled={!isAvailable(value.status)} onClick={() => selectUnit(value.code, value.floor)}>
-            <span><b>{value.code}</b><small>{tr("Floor")} {value.floor || "—"} · {value.area || "—"} m²</small></span>
+            <span><b>{value.code}</b><small>{tr("Floor")} {value.floor || "—"} · {value.area || "—"} m²{value.type?.trim() ? " · "+value.type.trim() : ""}</small></span>
             <span style={{textAlign:"right"}}><b>{nicePrice(value.price)}</b><small>{tr(value.status)}</small></span>
           </button>)}
           {!visibleUnits.length && <p className="muted">{tr(loading ? "Loading authorized inventory…" : "No matching live inventory. Confirm the Sheet connection in Settings.")}</p>}</div>
@@ -123,7 +123,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
       <div className="stack">
         <section className="panel"><div className="eyebrow">{tr("PROPERTY SUMMARY")}</div><h2 style={{marginTop:12}}>{unit ? unit.code : tr("Select a unit")}</h2>
           {unit ? <>
-            {([["Project", project?.name || "—"],["Unit Code",unit.code],["Floor",unit.floor || "—"],["Area",unit.area ? unit.area+" sqm":"—"],["Status",tr(unit.status)],["Price",nicePrice(unit.price)]] as [string,string][]).map(([label,value]) =>
+            {([["Project", project?.name || "—"],["Unit Code",unit.code],["Unit Type",unit.type?.trim() || "—"],["Floor",unit.floor || "—"],["Area",unit.area ? unit.area+" sqm":"—"],["Status",tr(unit.status)],["Price",nicePrice(unit.price)]] as [string,string][]).map(([label,value]) =>
               <div className="detailrow" key={label}><span>{tr(label)}</span><b>{value}</b></div>)}
           </> : <p className="muted">{tr("Current price, location and availability appear here once you select a unit.")}</p>}
         </section>
