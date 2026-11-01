@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import ExcelJS from 'exceljs';
+import JSZip from 'jszip';
 import {readXlsxRows} from '../src/lib/xlsx-values.ts';
 const wb=new ExcelJS.Workbook();
 const sheet=wb.addWorksheet('Inventory & Prices');
@@ -17,4 +18,9 @@ for(let r=1;r<=4;r++)for(let c=1;c<=5;c++){
 }
 await assert.rejects(()=>readXlsxRows(bytes,'Missing'),/configured tab/);
 await assert.rejects(()=>readXlsxRows(bytes.slice(0,20),'Inventory'),/Invalid/);
+const zip=await JSZip.loadAsync(bytes);
+const xml=await zip.file('xl/worksheets/sheet1.xml').async('string');
+zip.file('xl/worksheets/sheet1.xml',xml.replace('<v>64</v>','<v>64.000</v>').replace('<v>-1</v>','<v>-1.0</v>'));
+const normalized=await readXlsxRows(await zip.generateAsync({type:'uint8array'}),'Inventory & Prices');
+assert.equal(normalized[1][1],'64');assert.equal(normalized[1][2],'-1','Numeric floor identity must match ExcelJS exactly');
 console.log('PASS: selective XLSX reader matches ExcelJS for numbers, formula results, Arabic, XML entities, rich text and sparse columns');

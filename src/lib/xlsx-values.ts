@@ -76,7 +76,9 @@ export async function readXlsxRows(bytes: Uint8Array, tab: string): Promise<stri
       if(col>16384)throw Error('Invalid XLSX column');
       const inner=cell[2]||'',v=/<(?:\w+:)?v(?:\s[^>]*)?>([\s\S]*?)<\/(?:\w+:)?v>/.exec(inner)?.[1]??'';
       if(a.t==='s' && (!/^\d+$/.test(v)||Number(v)>=shared.length))throw Error('Invalid XLSX shared string');
-      row[col-1]=(a.t==='s'?shared[Number(v)]:a.t==='inlineStr'?texts(inner):a.t==='e'?'':xmlText(v)).trim();
+      const numeric = (!a.t || a.t === 'n') && v !== '';
+      if(numeric && !Number.isFinite(Number(v)))throw Error('Invalid numeric XLSX value');
+      row[col-1]=(a.t==='s'?shared[Number(v)]:a.t==='inlineStr'?texts(inner):a.t==='e'?'':a.t==='b'?(v==='1'?'true':'false'):numeric?String(Number(v)):xmlText(v)).trim();
     }
     const number=Number(attrs(match[0].slice(0,match[0].indexOf('>')+1)).r);
     if(number===1)rows.unshift(row);else rows.push(row);
