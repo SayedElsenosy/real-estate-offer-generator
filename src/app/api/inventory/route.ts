@@ -31,9 +31,13 @@ export async function GET(req: NextRequest) {
     units: [], floorPlans, error: "A private inventory spreadsheet has not been connected to this project."
   }, { status: 409, headers: NO_STORE });
   try {
-    const { units, lastReadAt } = await getRecentInventory(
+    const { units: sourceUnits, lastReadAt } = await getRecentInventory(
       user.id, project.spreadsheetId, project.sheetRange, project.name
     );
+    // Keep complete sheet rows server-side, where they are needed only
+    // after a unit is selected. Avoid large polling payloads and leaking
+    // potentially sensitive columns to every shared visitor.
+    const units = sourceUnits.map(({sourceHeaders,sourceCells,...publicUnit})=>publicUnit);
     // The browser always requests fresh metadata, but receives no list if
     // status, area and price have not changed.
     const payload = { units, ...(withFloors ? {floorPlans} : {}), lastReadAt };

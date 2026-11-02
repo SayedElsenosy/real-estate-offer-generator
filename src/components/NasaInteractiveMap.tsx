@@ -3,6 +3,7 @@
 import { memo,useEffect,useMemo,useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { unitKey } from "@/lib/unit-code";
+import { UnitSourceDetails } from "@/components/UnitSourceDetails";
 import type { NasaFloorData } from "@/lib/nasa-floor-source";
 
 type LiveUnit={code:string;floor:string;status:string;area:string;price:string;type?:string};
@@ -151,6 +152,7 @@ export const NasaInteractiveMap=memo(function NasaInteractiveMap({
             <p>{t("Unit Type","نوع الوحدة")}: <strong>{chosen.live?.type?.trim()||"—"}</strong></p>
             <p>{t("Area from live sheet","المساحة من الشيت")}: {chosen.live?.area?chosen.live.area+" m²":"—"}</p>
             <p>{t("Current price","السعر الحالي")}: <strong>{money(chosen.live?.price||"")}</strong></p>
+            <UnitSourceDetails projectId="nasa" code={chosen.live?.code||""} floor={chosen.live?.floor}/>
             {chosen.shape.review&&<p className="muted">{t("Unit outline needs visual engineering review.","حدود الوحدة تحتاج مراجعة هندسية بصرية.")}</p>}
             {!chosen.live&&<p className="muted">{t("No matching code/floor in the connected NASA inventory; no price or availability has been inferred.","لا يوجد كود ودور مطابقان في مخزون ناسا؛ لم يتم تخمين أي سعر أو حالة.")}</p>}
           </div>:<p className="muted">{t("Choose a unit on the drawing to see its information.","اختر وحدة من المخطط لمشاهدة تفاصيلها.")}</p>}

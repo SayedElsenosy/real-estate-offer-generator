@@ -3,6 +3,7 @@
 import { memo, useMemo, useState } from "react";
 import { unitKey } from "@/lib/unit-code";
 import { useLanguage } from "@/components/LanguageProvider";
+import { UnitSourceDetails } from "@/components/UnitSourceDetails";
 import basement from "@/data/cairo-svg-floor--1.json";
 import ground from "@/data/cairo-svg-floor-0.json";
 import first from "@/data/cairo-svg-floor-1.json";
@@ -142,6 +143,7 @@ export const CairoPlazaInteractiveMap = memo(function CairoPlazaInteractiveMap({
             <div><small className="muted">{t("Area from inventory","المساحة من الشيت")}</small><div>{chosen.live?.area?chosen.live.area+" sqm":"—"}</div></div>
             <div><small className="muted">{t("Current price","السعر الحالي")}</small><div dir="ltr" style={{textAlign:"right",fontWeight:700}}>{amount(chosen.live?.price)}</div></div>
           </div>
+          <UnitSourceDetails projectId="cairo-plaza" code={chosen.live?.code||""} floor={chosen.live?.floor}/>
           <p style={{margin:"12px 0 0",fontSize:12,color:"#64748b"}}>
             {chosen.shape.status==="UNRESOLVED"?t("This unit outline needs engineering review.","حدود هذه الوحدة تحتاج استكمال المراجعة الهندسية."):
              chosen.shape.status==="REVIEW"?t("Selectable outline; wall divisions or measured area still need engineering approval.","المضلع ظاهر للتفاعل؛ مساحته أو فاصل الجدران يحتاج اعتمادًا هندسيًا نهائيًا."):t("Outline extracted from engineering SVG.","حدود الوحدة مستخرجة من ملف SVG الهندسي.")}
