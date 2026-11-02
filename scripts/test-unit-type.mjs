@@ -19,8 +19,8 @@ const studio=read("components/Studio.tsx");
 const cairo=read("components/CairoPlazaInteractiveMap.tsx");
 const nasa=read("components/NasaInteractiveMap.tsx");
 const plans=read("components/ArchitecturalPlan.tsx");
-assert.match(sheets,/unitTypeColumn\(headers\)/);
-assert.match(excel,/unitTypeColumn\(headings\)/);
+assert.match(sheets,/unitTypeColumnForProject\(headers,projectName\)/);
+assert.match(excel,/unitTypeColumnForProject\(headings,projectName\)/);
 for (const [name,source] of [
   ["Studio",studio],["Cairo Plaza",cairo],["NASA",nasa],["Architectural Plan",plans]
 ]) {
