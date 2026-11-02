@@ -7,19 +7,11 @@ export const metadata = {
 };
 
 /**
- * The public root is an entry point to the SAME existing shared link.
- * Read the key from the Worker secret at request time: never commit it to Git,
- * embed it into the browser bundle, or invent a replacement access key.
- * The user deliberately made the root URL a public invitation URL.
+ * Opening the public domain is an explicit public-entry invitation.
+ * Do not reveal the permanent /access#key token in a redirect, page,
+ * response header, HTML or browser history. A route handler creates the
+ * same restricted, signed shared-access cookie server-side.
  */
 export default function Home() {
-  const token = process.env.SHARED_ACCESS_TOKEN;
-  if (!token || !/^[A-Za-z0-9_-]{40,128}$/.test(token)) {
-    return <main style={{ padding: 32 }}>
-      <h1>Property Offer Studio</h1>
-      <p>The public access link is not configured.</p>
-      <a href="/admin">Administrator sign in</a>
-    </main>;
-  }
-  redirect("/access#key=" + encodeURIComponent(token));
+  redirect("/public-entry");
 }
