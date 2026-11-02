@@ -4,7 +4,7 @@
  * Different developers use different Arabic/English header spellings.
  */
 const ALIASES = new Set([
-  "type", "unittype", "typeofunit", "propertytype", "unitcategory",
+  "type", "tybe", "unittype", "typeofunit", "propertytype", "unitcategory",
   "unitusage", "usage", "unituse",
   "نوع", "نوعالوحدة", "نوعالوحده", "نوعالعقار", "تصنيفالوحدة",
   "تصنيفالوحده", "استخدامالوحدة", "استخدامالوحده"
@@ -26,4 +26,25 @@ export function unitTypeColumn(headers: readonly string[]): number {
     match = i;
   }
   return match;
+}
+
+/**
+ * Verified project-specific column choices. Aqmar has two TYPE headings
+ * (B and N), and NASA's official inventory spells TYPE as "TYBE" in D.
+ * Keep canonical price/status mapping independent of these metadata fields.
+ */
+const PROJECT_TYPE_COLUMNS: Record<string, { index: number; headers: string[] }> = {
+  nasa: { index: 3, headers: ["tybe","type","unittype"] },
+  kawn: { index: 4, headers: ["unittype"] },
+  aqmar: { index: 13, headers: ["type","unittype"] },
+  vida: { index: 5, headers: ["unittype","type"] }
+};
+
+export function unitTypeColumnForProject(headers: readonly string[], projectName: string): number {
+  const key = projectName.normalize("NFKC").toLowerCase().replace(/[\\s_-]+/g,"");
+  const known = PROJECT_TYPE_COLUMNS[key];
+  if (known && known.headers.includes(normalizeHeader(headers[known.index] || ""))) {
+    return known.index;
+  }
+  return unitTypeColumn(headers);
 }
