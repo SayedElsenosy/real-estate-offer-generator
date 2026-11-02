@@ -44,7 +44,7 @@ assert.match(admin,/items\.find\(p=>p\.id==="cairo-plaza"\)\?\.id\s*\|\|\s*items
 assert.match(admin,/<details className="panel"/);
 assert.match(admin,/<ShareLinkButton\s*\/>/);
 assert.doesNotMatch(page,/ShareLinkButton|padding:"18px 28px"/);
-assert.match(page,/return <AdminPanel/);
+assert.match(page,/<AdminPanel email=/);
 assert.match(lang,/useState<Language>\("en"\)/);
 assert.doesNotMatch(lang,/localStorage\.getItem\("offer_atelier_language_v2"\)/);
 assert.match(share,/useLanguage\(\)/);
