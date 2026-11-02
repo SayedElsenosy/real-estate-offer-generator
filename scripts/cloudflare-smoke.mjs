@@ -12,8 +12,11 @@ const probes = [
   {path:"/studio", name:"studio serves a non-sensitive static shell", expected:200},
   {path:"/api/studio/bootstrap", name:"studio projects reject anonymous users", expected:401},
   {path:"/api/auth/session", name:"unauthenticated auth session", expected:200},
-  {path:"/", name:"public root redirects to existing shared link", expected:307,
-    location:url=>url.pathname==="/access"&&/^#key=[A-Za-z0-9_-]{40,128}$/.test(url.hash)},
+  {path:"/", name:"public root redirects to safe public entry", expected:307,
+    location:url=>url.pathname==="/public-entry"&&!url.hash},
+  {path:"/public-entry", name:"public entry grants viewer cookie without exposing token", expected:303,
+    location:url=>url.pathname==="/shared"&&!url.hash,
+    cookie:value=>Boolean(value&&value.includes("offer_atelier_shared="))},
   {path:"/access", name:"existing shared-link entry remains available", expected:200},
   {path:"/shared", name:"shared offer portal remains available", expected:200},
   {path:"/admin", name:"owner admin requires separate Google login", expected:307,
@@ -32,7 +35,8 @@ for(const probe of probes){
     const isPdf = !probe.pdf || (response.headers.get("content-type")||"").includes("application/pdf") && new TextDecoder().decode((await response.arrayBuffer()).slice(0,5))==="%PDF-";
     const target=response.headers.get("location");
     const locationOk=!probe.location||(Boolean(target)&&probe.location(new URL(target,origin)));
-    const ok=response.status===probe.expected&&(!probe.match||probe.match(body??{}))&&locationOk&&isPdf;
+    const cookieOk=!probe.cookie||probe.cookie(response.headers.get("set-cookie"));
+    const ok=response.status===probe.expected&&(!probe.match||probe.match(body??{}))&&locationOk&&cookieOk&&isPdf;
     console.log((ok?"PASS":"FAIL")+": "+probe.name+" (HTTP "+response.status+")");
     if(!ok)failures++;
   }catch(e){failures++;console.error("FAIL: "+probe.name+" (request error: "+(e?.name||"unknown")+")");}
