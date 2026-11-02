@@ -17,7 +17,7 @@ export function extractUnitSourceFields(
 ): UnitSourceField[] {
   const fields: UnitSourceField[] = [];
   for (let i=0; i<Math.min(headers.length,64); i++) {
-    const label = String(headers[i]??"").replace(/\\s+/g," ").trim().slice(0,100);
+    const label = String(headers[i]??"").replace(/\s+/g," ").trim().slice(0,100);
     if (!label || unsafeColumn(label)) continue;
     fields.push({column:i+1,label,value:stringify(cells[i])});
   }
