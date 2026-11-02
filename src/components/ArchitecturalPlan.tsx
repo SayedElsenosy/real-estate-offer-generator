@@ -6,6 +6,7 @@ import { useLiveInventory } from "@/hooks/useLiveInventory";
 import { Sidebar } from "@/components/Sidebar";
 import { CairoPlazaInteractiveMap } from "@/components/CairoPlazaInteractiveMap";
 import { NasaInteractiveMap } from "@/components/NasaInteractiveMap";
+import { UnitSourceDetails } from "@/components/UnitSourceDetails";
 import { unitKey } from "@/lib/unit-code";
 
 type Project={id:string;name:string};
@@ -126,6 +127,7 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
           {" · "}{t("Unit Type","نوع الوحدة")}: {currentStock?.type?.trim()||"—"}
           {" · "}{currentStock?.area||"—"} {t("sqm","م²")} · {currentStock?.price||"—"} EGP
         </div>}
+        {currentStock && <UnitSourceDetails projectId={projectId} code={currentStock.code} floor={currentStock.floor}/>}
       </section>}
       {!isCairo&&!isNasa&&!loading&&!error&&!otherFloor&&<section className="panel">
         <h2>{t("No approved unit outlines for this project yet","لا توجد حدود وحدات معتمدة لهذا المشروع حتى الآن")}</h2>
