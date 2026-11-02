@@ -45,7 +45,7 @@ for(const probe of probes){
 // overlapping requests and that a sequential test can miss.
 const concurrent = await Promise.allSettled(Array.from({length:5},async (_,i)=>{
   const path=i%2===0?"/":"/api/auth/session";
-  const response=await fetch(new URL(path,origin),{signal:AbortSignal.timeout(20000)});
+  const response=await fetch(new URL(path,origin),{redirect:"manual",signal:AbortSignal.timeout(20000)});
   return {path,status:response.status};
 }));
 const concurrentOk=concurrent.every(r=>r.status==="fulfilled"&&r.value.status===(r.value.path==="/"?307:200));
