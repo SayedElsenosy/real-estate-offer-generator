@@ -41,7 +41,7 @@ const PROJECT_TYPE_COLUMNS: Record<string, { index: number; headers: string[] }>
 };
 
 export function unitTypeColumnForProject(headers: readonly string[], projectName: string): number {
-  const key = projectName.normalize("NFKC").toLowerCase().replace(/[\\s_-]+/g,"");
+  const key = projectName.normalize("NFKC").toLowerCase().replace(/[\s_-]+/g,"");
   const known = PROJECT_TYPE_COLUMNS[key];
   if (known && known.headers.includes(normalizeHeader(headers[known.index] || ""))) {
     return known.index;
