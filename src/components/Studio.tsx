@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { unitKey } from "@/lib/unit-code";
 import { useLanguage } from "@/components/LanguageProvider";
 import { calculateSchedule, type PaymentTerms } from "@/lib/payment";
+import { UnitSourceDetails } from "@/components/UnitSourceDetails";
 
 type Unit = { code: string; price: string; area: string; floor: string; status: string; project: string; type?: string };
 type Plan = { id: string; name: string; discountPct?:string; secondDownPaymentPct?:string; secondDownOffsetMonths?:number; quarterlyEndAtTerm?:boolean; ordinaryInstallmentRebate?:string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; installmentIntervalMonths?: number; deliveryMonths?: number|null; deliveryCollectionPct?: string; deliveryCollectionEnabled?: boolean };
@@ -125,6 +126,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
           {unit ? <>
             {([["Project", project?.name || "—"],["Unit Code",unit.code],["Unit Type",unit.type?.trim() || "—"],["Floor",unit.floor || "—"],["Area",unit.area ? unit.area+" sqm":"—"],["Status",tr(unit.status)],["Price",nicePrice(unit.price)]] as [string,string][]).map(([label,value]) =>
               <div className="detailrow" key={label}><span>{tr(label)}</span><b>{value}</b></div>)}
+            <UnitSourceDetails projectId={projectId} code={unit.code} floor={unit.floor}/>
           </> : <p className="muted">{tr("Current price, location and availability appear here once you select a unit.")}</p>}
         </section>
         <section className="panel"><div className="eyebrow">{tr("CUSTOM TERMS")}</div><h2 style={{marginTop:12}}>{tr("Payment plan options")}</h2><p className="muted">{tr("Each selected plan produces its own detailed payment schedule in the proposal PDF.")}</p>
