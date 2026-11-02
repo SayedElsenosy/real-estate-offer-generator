@@ -17,9 +17,13 @@ assert.match(entry,/history\.replaceState\(null, "", "\/access"\)/,
   "Remove secret fragment from browser history before verifying access.");
 const adminLogin=read("app/admin/login/page.tsx");
 const authModule=read("auth.ts");
-assert.match(home,/process\.env\.SHARED_ACCESS_TOKEN/,"Root must use the existing Worker-held public link secret.");
-assert.match(home,/redirect\("\/access#key=" \+ encodeURIComponent\(token\)\)/,
-  "Main URL must redirect to the exact current /access#key link.");
+const publicEntry=read("app/public-entry/route.ts");
+assert.match(home,/redirect\("\/public-entry"\)/,"Root must redirect to safe public entry.");
+assert.match(publicEntry,/issueSharedAccessCookie\(\)/,"Server must issue restricted shared-access cookie.");
+assert.match(publicEntry,/NextResponse\.redirect\(new URL\("\/shared",req\.url\)/,
+  "Public entry must forward to the shared viewer, never the admin.");
+assert.doesNotMatch(home+publicEntry,/access#key=" \+|encodeURIComponent\(token\)|process\.env\.SHARED_ACCESS_TOKEN/,
+  "Root or public entry must never disclose the permanent private-link key.");
 assert.doesNotMatch(home,/await auth\(|await signIn\(|await signOut\(/,
   "Public root must not invoke Google OAuth or database auth.");
 assert.match(page,/redirect\("\/admin\/login"\)/,
@@ -48,4 +52,4 @@ assert.match(page,/<AdminPanel email=/);
 assert.match(lang,/useState<Language>\("en"\)/);
 assert.doesNotMatch(lang,/localStorage\.getItem\("offer_atelier_language_v2"\)/);
 assert.match(share,/useLanguage\(\)/);
-console.log("PASS: Cairo Plaza default in Admin, private link within layout, English initial locale, bilingual sharing, public-root redirect, separate owner OAuth, and original shared-access URL.");
+console.log("PASS: Cairo Plaza default in Admin, private link within layout, English initial locale, bilingual sharing, safe public-entry cookie, separate owner OAuth, and original shared-access URL.");
