@@ -12,7 +12,13 @@ const probes = [
   {path:"/studio", name:"studio serves a non-sensitive static shell", expected:200},
   {path:"/api/studio/bootstrap", name:"studio projects reject anonymous users", expected:401},
   {path:"/api/auth/session", name:"unauthenticated auth session", expected:200},
-  {path:"/", name:"home page", expected:200},
+  {path:"/", name:"public root redirects to existing shared link", expected:307,
+    location:url=>url.pathname==="/access"&&/^#key=[A-Za-z0-9_-]{40,128}$/.test(url.hash)},
+  {path:"/access", name:"existing shared-link entry remains available", expected:200},
+  {path:"/shared", name:"shared offer portal remains available", expected:200},
+  {path:"/admin", name:"owner admin requires separate Google login", expected:307,
+    location:url=>url.pathname==="/admin/login"},
+  {path:"/admin/login", name:"owner Google login screen", expected:200},
   {path:"/api/offers", name:"quote history remains disabled", expected:410},
   {path:"/api/offers", method:"POST", name:"quote generation rejects unauthenticated users", expected:401},
   {path:"/api/inventory?projectId=cairo-plaza", name:"inventory rejects anonymous users", expected:401},
@@ -24,7 +30,9 @@ for(const probe of probes){
     let body=null;
     if(probe.match){try{body=await response.json();}catch{}}
     const isPdf = !probe.pdf || (response.headers.get("content-type")||"").includes("application/pdf") && new TextDecoder().decode((await response.arrayBuffer()).slice(0,5))==="%PDF-";
-    const ok=response.status===probe.expected&&(!probe.match||probe.match(body??{}))&&isPdf;
+    const target=response.headers.get("location");
+    const locationOk=!probe.location||(Boolean(target)&&probe.location(new URL(target,origin)));
+    const ok=response.status===probe.expected&&(!probe.match||probe.match(body??{}))&&locationOk&&isPdf;
     console.log((ok?"PASS":"FAIL")+": "+probe.name+" (HTTP "+response.status+")");
     if(!ok)failures++;
   }catch(e){failures++;console.error("FAIL: "+probe.name+" (request error: "+(e?.name||"unknown")+")");}
@@ -34,9 +42,9 @@ for(const probe of probes){
 const concurrent = await Promise.allSettled(Array.from({length:5},async (_,i)=>{
   const path=i%2===0?"/":"/api/auth/session";
   const response=await fetch(new URL(path,origin),{signal:AbortSignal.timeout(20000)});
-  return response.status;
+  return {path,status:response.status};
 }));
-const concurrentOk=concurrent.every(r=>r.status==="fulfilled"&&r.value===200);
-console.log((concurrentOk?"PASS":"FAIL")+": parallel home/session requests ("+concurrent.filter(r=>r.status==="fulfilled"&&r.value===200).length+"/5)");
+const concurrentOk=concurrent.every(r=>r.status==="fulfilled"&&r.value.status===(r.value.path==="/"?307:200));
+console.log((concurrentOk?"PASS":"FAIL")+": parallel public redirect/session requests ("+concurrent.filter(r=>r.status==="fulfilled"&&r.value.status===(r.value.path==="/"?307:200)).length+"/5)");
 if(!concurrentOk)failures++;
 if(failures)process.exitCode=1;

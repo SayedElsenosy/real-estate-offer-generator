@@ -15,12 +15,21 @@ assert.match(linkApi,/\/access#key=/,"Existing shared URL format and token must 
 assert.match(entry,/fragment\.get\("key"\)/,"Existing private-link fragment must still be accepted.");
 assert.match(entry,/history\.replaceState\(null, "", "\/access"\)/,
   "Remove secret fragment from browser history before verifying access.");
-assert.doesNotMatch(home,/hasSharedAccess\(|import.*shared-access|session \|\| shared/,
-  "Root page must never use the shared-access cookie for authentication.");
-assert.match(home,/const session = authReady \? await auth\(\) : null;/,
-  "Main URL must use the owner's Google session only.");
-assert.match(home,/session \? <form action=\{async \(\) => \{ "use server"; await signOut/,
-  "Only direct Google sessions can see sign-out on the owner home.");
+const adminLogin=read("app/admin/login/page.tsx");
+const authModule=read("auth.ts");
+assert.match(home,/process\.env\.SHARED_ACCESS_TOKEN/,"Root must use the existing Worker-held public link secret.");
+assert.match(home,/redirect\("\/access#key=" \+ encodeURIComponent\(token\)\)/,
+  "Main URL must redirect to the exact current /access#key link.");
+assert.doesNotMatch(home,/await auth\(|await signIn\(|await signOut\(/,
+  "Public root must not invoke Google OAuth or database auth.");
+assert.match(page,/redirect\("\/admin\/login"\)/,
+  "Unauthenticated /admin must route to independent owner Google login.");
+assert.match(adminLogin,/await signIn\("google", \{ redirectTo: "\/admin" \}\)/,
+  "Owner login must return directly to /admin, not the public root.");
+assert.match(authModule,/pages:\s*\{\s*signIn:\s*"\/admin\/login"/,
+  "OAuth sign-in errors and prompts must never redirect to public root.");
+assert.match(page,/await signOut\(\{ redirectTo: "\/admin\/login" \}\)/,
+  "Owner retains a sign-out action on the administrator page.");
 assert.match(sharedPage,/force-static/,"Shared landing must stay a lightweight static shell.");
 assert.match(shared,/fetch\("\/api\/access"/,"Shared portal must verify its cookie.");
 assert.match(shared,/data\.active/,"Shared portal must reject visitors without permission.");
@@ -35,8 +44,8 @@ assert.match(admin,/items\.find\(p=>p\.id==="cairo-plaza"\)\?\.id\s*\|\|\s*items
 assert.match(admin,/<details className="panel"/);
 assert.match(admin,/<ShareLinkButton\s*\/>/);
 assert.doesNotMatch(page,/ShareLinkButton|padding:"18px 28px"/);
-assert.match(page,/return <AdminPanel/);
+assert.match(page,/<AdminPanel email=/);
 assert.match(lang,/useState<Language>\("en"\)/);
 assert.doesNotMatch(lang,/localStorage\.getItem\("offer_atelier_language_v2"\)/);
 assert.match(share,/useLanguage\(\)/);
-console.log("PASS: Cairo Plaza default in Admin, private link within layout, English initial locale, bilingual sharing, independent owner and shared landing routes.");
+console.log("PASS: Cairo Plaza default in Admin, private link within layout, English initial locale, bilingual sharing, public-root redirect, separate owner OAuth, and original shared-access URL.");
