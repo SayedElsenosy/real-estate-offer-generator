@@ -16,6 +16,12 @@ export default async function AdminPage() {
     ? {...project, floorPlans: project.floorPlans.map(f => hasAuthoritativeCairoDwgSource(f) ? f
         : {...f, shapes: [], markers: [], backgroundData: null, reviewStatus: "DRAFT"})}
     : project);
-  return <AdminPanel email={session.user.email} projects={JSON.parse(JSON.stringify(safeProjects))}
-    onSignOut={async () => { "use server"; await signOut({ redirectTo: "/admin/login" }); }} />;
+  return <>
+    <div style={{position:"fixed",bottom:16,right:16,zIndex:100}}>
+      <form action={async () => { "use server"; await signOut({ redirectTo: "/admin/login" }); }}>
+        <button type="submit" className="btn outline">Sign out</button>
+      </form>
+    </div>
+    <AdminPanel email={session.user.email} projects={JSON.parse(JSON.stringify(safeProjects))} />
+  </>
 }
