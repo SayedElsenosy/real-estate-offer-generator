@@ -66,5 +66,5 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       return Boolean(owner && user.email?.trim().toLowerCase() === owner);
     }
   },
-  pages: { signIn: "/" }
+  pages: { signIn: "/admin/login" }
 });
