@@ -66,5 +66,27 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       return Boolean(owner && user.email?.trim().toLowerCase() === owner);
     }
   },
+  events: {
+    async signIn({ user, account }) {
+      if (account?.provider !== "google" || !user.id ||
+          !account.access_token || !account.expires_at) return;
+
+      // Auth.js links the account on first login. On subsequent logins,
+      // persist Google's new authorization for the shared inventory reader.
+      await db().account.updateMany({
+        where: {
+          userId: user.id,
+          provider: account.provider,
+          providerAccountId: account.providerAccountId
+        },
+        data: {
+          access_token: account.access_token,
+          expires_at: account.expires_at,
+          ...(account.refresh_token ? { refresh_token: account.refresh_token } : {}),
+          ...(account.scope ? { scope: account.scope } : {})
+        }
+      });
+    }
+  },
   pages: { signIn: "/admin/login" }
 });
