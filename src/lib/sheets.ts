@@ -21,7 +21,66 @@ export function isAvailable(status: string): boolean {
   return ["available", "avail", "for sale", "forsale", "متاح", "متاحة", "متوفر", "متوفرة"].includes(normalized);
 }
 
+let inventoryToken: { email: string; token: string; expiresAt: number } | undefined;
+
+function base64Url(bytes: Uint8Array): string {
+  return btoa(Array.from(bytes, byte => String.fromCharCode(byte)).join(""))
+    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+async function inventoryServiceToken(credentials: string): Promise<string> {
+  const { client_email: email, private_key: pem } = JSON.parse(credentials) as {
+    client_email?: string;
+    private_key?: string;
+  };
+  if (!email || !pem) throw new Error("Inventory service account configuration is incomplete");
+
+  const now = Math.floor(Date.now() / 1000);
+  if (inventoryToken?.email === email && inventoryToken.expiresAt > now + 90)
+    return inventoryToken.token;
+
+  const tokenUrl = "https://oauth2.googleapis.com/token";
+  const encoder = new TextEncoder();
+  const keyBytes = Uint8Array.from(
+    atob(pem.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, "")),
+    char => char.charCodeAt(0)
+  );
+  const key = await crypto.subtle.importKey(
+    "pkcs8", keyBytes, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]
+  );
+  const claims = {
+    iss: email,
+    scope: "https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly",
+    aud: tokenUrl,
+    iat: now,
+    exp: now + 3600
+  };
+  const unsigned = base64Url(encoder.encode(JSON.stringify({ alg: "RS256", typ: "JWT" }))) +
+    "." + base64Url(encoder.encode(JSON.stringify(claims)));
+  const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, encoder.encode(unsigned));
+  const response = await fetch(tokenUrl, {
+    method: "POST",
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      assertion: unsigned + "." + base64Url(new Uint8Array(signature))
+    }),
+    cache: "no-store"
+  });
+  if (!response.ok) {
+    console.warn("Inventory service account token request failed", { status: response.status });
+    throw new Error("Google inventory service authorization failed");
+  }
+  const payload = await response.json() as { access_token?: string; expires_in?: number };
+  if (!payload.access_token || typeof payload.expires_in !== "number")
+    throw new Error("Google returned an incomplete inventory service token");
+  inventoryToken = { email, token: payload.access_token, expiresAt: now + payload.expires_in };
+  return inventoryToken.token;
+}
+
 async function accessToken(userId: string): Promise<string> {
+  const credentials = process.env.GOOGLE_INVENTORY_SERVICE_ACCOUNT;
+  if (credentials) return inventoryServiceToken(credentials);
+
   const account = await readGoogleAccount(userId);
   if (!account) throw new Error("Google account is not connected");
   if (account.access_token && account.expires_at &&
