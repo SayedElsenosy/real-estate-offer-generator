@@ -5,6 +5,7 @@ import { currentUser } from "@/lib/guards";
 import { isAvailable } from "@/lib/sheets";
 import { getRecentInventory } from "@/lib/inventory-cache";
 import { calculateSchedule } from "@/lib/payment";
+import { calculateVidaWorkbookSchedule, isVidaWorkbookPlanId } from "@/lib/vida-payments";
 import { getCairoOfferLocation } from "@/lib/cairo-offer-location";
 import { getNasaOfferLocation } from "@/lib/nasa-offer-location";
 import { getVidaPdfDrawing } from "@/lib/vida-brochure-download";
@@ -51,7 +52,9 @@ export async function POST(req: NextRequest) {
     const plans = await readOfferPlans(projectId, uniquePlanIds);
     if (plans.length !== uniquePlanIds.length) return NextResponse.json({ error: "Invalid payment plan" }, { status: 400 });
     const date = new Date();
-    const schedules = plans.map(plan => calculateSchedule(unit.price, {
+    const schedules = plans.map(plan => projectId==="vida" && isVidaWorkbookPlanId(plan.id)
+      ? calculateVidaWorkbookSchedule(unit.price,plan.id,date)
+      : calculateSchedule(unit.price, {
       name: plan.name, downPaymentPct: plan.downPaymentPct.toString(), months: plan.months,
       maintenancePct: plan.maintenancePct.toString(), startOffsetMonths: plan.startOffsetMonths,
       installmentIntervalMonths: plan.installmentIntervalMonths===3?3:1,
