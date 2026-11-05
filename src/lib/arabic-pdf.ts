@@ -6,7 +6,7 @@ import plexBold from "@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabi
 import Decimal from "decimal.js";
 import { formatOfferMoney } from "@/lib/offer-money";
 import { cairoLocation,drawNasaPdfLocation, embeddedLogo, type Props } from "@/lib/workers-pdf";
-import { drawOriginalVidaImage } from "@/lib/vida-pdf-image";
+import { drawOriginalVidaImage,drawOriginalVidaSiteWithMarker } from "@/lib/vida-pdf-image";
 
 const W=595.28,H=841.89,LEFT=47,RIGHT=W-47;
 const navy=rgb(0.085,0.16,0.26),gold=rgb(0.72,0.55,0.31);
@@ -165,10 +165,18 @@ export async function createArabicOfferPdf({
   if(vidaDrawing?.status==="matched"&&vidaDrawing.masterImage){
     const master=pdf.addPage([W,H]);
     heading(master,company,"موقع المبنى في المشروع","فيدا - المرحلة "+vidaDrawing.phase,logo,f);
-    await drawOriginalVidaImage(pdf,master,vidaDrawing.masterImage,{x:LEFT+8,y:209,width:RIGHT-LEFT-16,height:474});
-    ar(master,"مبنى رقم "+vidaDrawing.building+" - من صفحة الترقيم الأصلية بالبروشور",RIGHT,178,f.arabicBold,11,ink);
-    en(master,unit.code,LEFT,158,f.latinBold,11);
-    ar(master,"الصورة مقتطعة من البروشور الأصلي دون إعادة رسم",RIGHT,139,f.arabic,9,gray);
+    await drawOriginalVidaSiteWithMarker(pdf,master,vidaDrawing.masterImage,
+      vidaDrawing.building,{x:LEFT+8,y:238,width:RIGHT-LEFT-16,height:444});
+    if(vidaDrawing.locatorImage){
+      await drawOriginalVidaImage(pdf,master,vidaDrawing.locatorImage,
+        {x:LEFT+7,y:44,width:180,height:170});
+    }
+    ar(master,"مبنى رقم "+vidaDrawing.building,RIGHT,194,f.arabicBold,11,ink);
+    en(master,unit.code,LEFT+195,175,f.latinBold,11);
+    ar(master,"التوزيع الأصلي للوحدات داخل الدور",RIGHT,151,f.arabicBold,10,ink);
+    ar(master,"قد يظلّل البروشور عدة وحدات متماثلة",RIGHT,129,f.arabic,9,gray);
+    ar(master,"حدود الشقة الواحدة تحتاج تأكيدا هندسيا",RIGHT,107,f.arabic,9,gray);
+    ar(master,"الدائرة البرتقالية: مكان المبنى في الماستر بلان",RIGHT,84,f.arabic,9,gray);
   }
   for(const schedule of schedules){
     let page=pdf.addPage([W,H]);
