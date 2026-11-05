@@ -39,7 +39,7 @@ for(const p of [eight,six]){
  assert.equal(p.rows.length,p.paymentCount+1,"Plus separate final maintenance");
  const sum=p.rows.reduce((v,row)=>v.plus(row.amount),new Decimal(0));
  assert.equal(sum.toFixed(2),p.totalIncludingMaintenance,"Every cent must balance");
- assert.ok(p.rows.every(x=>/^\\d+\\.\\d{2}$/.test(x.amount)),"All amounts are two-decimal EGP");
+ assert.ok(p.rows.every(x=>x.amount.includes(".") && x.amount.split(".")[1]?.length===2 && Number.isFinite(Number(x.amount))),"All amounts are two-decimal EGP");
  assert.equal(p.rows.filter(x=>x.type==="MAINTENANCE").length,1);
 }
 const server=readFileSync("src/app/api/offers/route.ts","utf8");
