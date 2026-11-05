@@ -29,9 +29,9 @@ export function VidaSitePicker({selectedBuilding,selectedPhase,onSelectBuilding,
            aria-pressed={selected}
            points={vidaHotspotPoints(s)}
            fill={selected?"#f1a521":other?"#94a3b8":disabled?"#64748b":"#24a56d"}
-           fillOpacity={selected?.30:other?.05:disabled?.09:.055}
+           fillOpacity={selected ? 0.30 : other ? 0.05 : disabled ? 0.09 : 0.055}
            stroke={selected?"#ca7517":other?"#7f8b98":disabled?"#8d929a":"#116b51"}
-           strokeOpacity={selected?1:other?.24:disabled?.32:.48}
+           strokeOpacity={selected ? 1 : other ? 0.24 : disabled ? 0.32 : 0.48}
            strokeWidth={selected?4:other?1.2:1.7}
            strokeDasharray={disabled?"5 5":undefined}
            style={{cursor:"pointer",outline:"none"}}
