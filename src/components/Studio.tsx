@@ -74,6 +74,12 @@ export default function Studio({ projects, email }: { projects: Project[]; email
           throw new Error(message?.error || "The server could not prepare the offer. Please try again.");
       }
         const { offer } = await response.json();
+        if (projectId === "vida" && offer.vidaBrochure) {
+          const { loadVidaBrochureImages } = await import("@/lib/vida-assets-client");
+          // Fail the download if the original source cannot be loaded;
+          // never silently substitute a generated or wrong unit drawing.
+          offer.vidaImages = await loadVidaBrochureImages(offer.vidaBrochure);
+        }
         const bytes = offerLanguage === "ar"
           ? await (await import("@/lib/arabic-pdf")).createArabicOfferPdf(offer)
           : await (await import("@/lib/workers-pdf")).createPropertyOfferPdf(offer);
