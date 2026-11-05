@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test:cairo": "node scripts/test-cairo-regression.cjs",
     "dev:cloudflare": "vinext dev",
-    "build:cloudflare": "node --experimental-strip-types scripts/test-unit-type.mjs && node --experimental-strip-types scripts/test-unit-details.mjs && node --experimental-strip-types scripts/test-vida-brochure.mjs && node --experimental-strip-types scripts/test-xlsx-values.mjs && node scripts/test-inventory-freshness.mjs && prisma generate && vinext build",
+    "build:cloudflare": "node --experimental-strip-types scripts/test-unit-type.mjs && node --experimental-strip-types scripts/test-unit-details.mjs && node --experimental-strip-types scripts/test-vida-brochure.mjs && node --experimental-strip-types scripts/test-vida-payment.mjs && node --experimental-strip-types scripts/test-xlsx-values.mjs && node scripts/test-inventory-freshness.mjs && prisma generate && vinext build",
     "preview:cloudflare": "vinext start",
     "deploy:cloudflare": "npx @vinext/cloudflare deploy"
   },
