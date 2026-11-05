@@ -25,7 +25,7 @@ export async function drawOriginalVidaSiteWithMarker(
  pdf:PDFDocument,page:PDFPage,encoded:string,building:number,
  frame:{x:number;y:number;width:number;height:number}
 ):Promise<void>{
- const m=/^data:image\\/jpeg;base64,([A-Za-z0-9+/]+={0,2})$/.exec(encoded);
+ const m=/^data:image\/jpeg;base64,([A-Za-z0-9+/]+={0,2})$/.exec(encoded);
  if(!m)throw Error("Invalid original Vida masterplan image");
  const image=await pdf.embedJpg(Uint8Array.from(atob(m[1]),v=>v.charCodeAt(0)));
  const scale=Math.min(frame.width/image.width,frame.height/image.height);
