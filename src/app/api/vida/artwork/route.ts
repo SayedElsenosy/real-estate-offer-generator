@@ -18,7 +18,7 @@ export async function GET(req:NextRequest){
   try{
     const token=await getGoogleAccessToken(user.id);
     const data=await readVidaBrochureJpeg(token,fileId);
-    return new Response(data,{headers:{"Content-Type":"image/jpeg",
+    return new Response(new Uint8Array(data),{headers:{"Content-Type":"image/jpeg",
       "Cache-Control":"private, max-age=300","X-Content-Type-Options":"nosniff"}});
   }catch(e){
     return NextResponse.json({error:"Original drawing unavailable to this Google account"},
