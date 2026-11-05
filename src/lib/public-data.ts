@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import type { User, Project, PaymentPlan, FloorPlan, Account } from "@/generated/prisma/client";
+import { vidaWorkbookPlans } from "@/lib/vida-payments";
 
 // Parameterized, stateless HTTP queries for the shared-link read path. Avoid
 // initializing Prisma's WASM query compiler on every public request. Admin
@@ -15,7 +16,10 @@ export async function readSharedOwner(email: string) {
 export async function readStudioProjects() {
   const projects = await query<Pick<Project,"id"|"slug"|"name">>('SELECT id, slug, name FROM "Project" ORDER BY name');
   const plans = await query<PaymentPlan>('SELECT * FROM "PaymentPlan" ORDER BY "createdAt", id');
-  return projects.map(p => ({...p, paymentPlans: plans.filter(plan => plan.projectId === p.id)}));
+  return projects.map(p => ({...p, paymentPlans: [
+    ...plans.filter(plan => plan.projectId === p.id),
+    ...(p.id==="vida" ? vidaWorkbookPlans():[])
+  ]}));
 }
 export async function readPublicProject(id: string, floors: boolean | string = false) {
   const project = (await query<Project>('SELECT * FROM "Project" WHERE id = $1', [id]))[0];
@@ -25,8 +29,9 @@ export async function readPublicProject(id: string, floors: boolean | string = f
     : await query<FloorPlan>('SELECT * FROM "FloorPlan" WHERE "projectId" = $1', [id]);
   return {...project, floorPlans};
 }
-export function readOfferPlans(projectId: string, ids: string[]) {
-  return query<PaymentPlan>('SELECT * FROM "PaymentPlan" WHERE "projectId" = $1 AND id = ANY($2::text[])', [projectId, ids]);
+export async function readOfferPlans(projectId: string, ids: string[]) {
+  const saved=await query<PaymentPlan>('SELECT * FROM "PaymentPlan" WHERE "projectId" = $1 AND id = ANY($2::text[])', [projectId, ids]);
+  return [...saved,...(projectId==="vida" ? vidaWorkbookPlans().filter(p=>ids.includes(p.id)):[])];
 }
 export async function readGoogleAccount(userId: string) {
   return (await query<Account>('SELECT * FROM "Account" WHERE "userId" = $1 AND provider = $2 LIMIT 1', [userId, 'google']))[0] ?? null;
