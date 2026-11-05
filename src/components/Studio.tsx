@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLiveInventory } from "@/hooks/useLiveInventory";
 import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
@@ -7,6 +7,7 @@ import { unitKey } from "@/lib/unit-code";
 import { useLanguage } from "@/components/LanguageProvider";
 import { calculateSchedule, type PaymentTerms } from "@/lib/payment";
 import { UnitSourceDetails } from "@/components/UnitSourceDetails";
+import { VidaBrochurePreview } from "@/components/VidaBrochurePreview";
 
 type Unit = { code: string; price: string; area: string; floor: string; status: string; project: string; type?: string };
 type Plan = { id: string; name: string; discountPct?:string; secondDownPaymentPct?:string; secondDownOffsetMonths?:number; quarterlyEndAtTerm?:boolean; ordinaryInstallmentRebate?:string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; installmentIntervalMonths?: number; deliveryMonths?: number|null; deliveryCollectionPct?: string; deliveryCollectionEnabled?: boolean };
@@ -30,6 +31,15 @@ export default function Studio({ projects, email }: { projects: Project[]; email
   const [offerError,setOfferError] = useState("");
   const [search, setSearch] = useState("");
   const [offerLanguage,setOfferLanguage]=useState<"ar"|"en">("ar");
+  useEffect(()=>{
+    // Deep-link from an explicitly selected Vida building/floor/unit in plans.
+    const qs=new URLSearchParams(window.location.search);
+    if(qs.get("projectId")!=="vida"||!projects.some(p=>p.id==="vida"))return;
+    const code=qs.get("unitCode")||"";
+    const floor=qs.get("unitFloor")||"";
+    if(!/^\d{1,2}[AB]?[-_ ]T?\d{2,3}$/i.test(code)||floor.length>80)return;
+    setProjectId("vida");setSelected(code);setFloorNumber(floor);setSearch(code);
+  },[]);
   const project = projects.find(p => p.id === projectId);
   const unit = units.find(value => value.code === selected && value.floor === floorNumber);
   const selectedPlans=project?.paymentPlans.filter(plan=>chosenPlans.includes(plan.id))||[];
@@ -127,6 +137,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
             {([["Project", project?.name || "—"],["Unit Code",unit.code],["Unit Type",unit.type?.trim() || "—"],["Floor",unit.floor || "—"],["Area",unit.area ? unit.area+" sqm":"—"],["Status",tr(unit.status)],["Price",nicePrice(unit.price)]] as [string,string][]).map(([label,value]) =>
               <div className="detailrow" key={label}><span>{tr(label)}</span><b>{value}</b></div>)}
             <UnitSourceDetails projectId={projectId} code={unit.code} floor={unit.floor}/>
+            {projectId==="vida"&&<VidaBrochurePreview code={unit.code} floor={unit.floor}/>}
           </> : <p className="muted">{tr("Current price, location and availability appear here once you select a unit.")}</p>}
         </section>
         <section className="panel"><div className="eyebrow">{tr("CUSTOM TERMS")}</div><h2 style={{marginTop:12}}>{tr("Payment plan options")}</h2><p className="muted">{tr("Each selected plan produces its own detailed payment schedule in the proposal PDF.")}</p>
