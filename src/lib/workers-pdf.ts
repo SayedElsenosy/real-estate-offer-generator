@@ -5,7 +5,7 @@ import { unitKey } from "@/lib/unit-code";
 import type { PdfUnitLocation } from "@/lib/cairo-offer-location";
 import type { NasaOfferLocation } from "@/lib/nasa-offer-location";
 import type { VidaPdfDrawing } from "@/lib/vida-brochure-download";
-import { drawOriginalVidaImage } from "@/lib/vida-pdf-image";
+import { drawOriginalVidaImage,drawOriginalVidaSiteWithMarker } from "@/lib/vida-pdf-image";
 import type { InventoryUnit } from "@/lib/sheets";
 import type { OfferSchedule, FloorGeometry } from "@/lib/pdf";
 
@@ -211,12 +211,19 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
   if(vidaDrawing?.status==="matched"&&vidaDrawing.masterImage){
     const master=pdf.addPage([W,H]);
     header(master,company,"BUILDING LOCATION","Vida / Phase "+vidaDrawing.phase,bold,regular,logo);
-    await drawOriginalVidaImage(pdf,master,vidaDrawing.masterImage,{x:LEFT+8,y:209,width:RIGHT-LEFT-16,height:474});
+    await drawOriginalVidaSiteWithMarker(pdf,master,vidaDrawing.masterImage,
+      vidaDrawing.building,{x:LEFT+8,y:238,width:RIGHT-LEFT-16,height:444});
+    if(vidaDrawing.locatorImage){
+      await drawOriginalVidaImage(pdf,master,vidaDrawing.locatorImage,
+        {x:LEFT+7,y:44,width:180,height:170});
+    }
     master.drawText("Building "+vidaDrawing.building+(vidaDrawing.wing?" "+vidaDrawing.wing:"")+
-      "  |  Unit "+printable(unit.code)+"  |  Original brochure coding page 8",
-      {x:LEFT,y:173,font:regular,size:10,color:navy});
-    master.drawText("Original brochure crop; no unit boundary is redrawn or inferred.",
-      {x:LEFT,y:151,font:regular,size:9,color:gray});
+      "  |  Unit "+printable(unit.code),{x:LEFT+195,y:192,font:bold,size:10,color:navy});
+    master.drawText("ORIGINAL FLOOR-LOCATION INSET",{x:LEFT+195,y:169,font:bold,size:9,color:navy});
+    master.drawText("The brochure highlights unit layouts.",{x:LEFT+195,y:149,font:regular,size:8,color:gray});
+    master.drawText("Several identical units may share one highlight.",{x:LEFT+195,y:135,font:regular,size:8,color:gray});
+    master.drawText("Single-unit boundary needs engineering review.",{x:LEFT+195,y:121,font:regular,size:8,color:gray});
+    master.drawText("Orange ring: selected building on the full site image.",{x:LEFT+195,y:94,font:regular,size:8,color:gray});
   }
   for(const schedule of schedules){
     let page=pdf.addPage([W,H]);
