@@ -5,6 +5,7 @@ import { currentUser } from "@/lib/guards";
 import { isAvailable } from "@/lib/sheets";
 import { getRecentInventory } from "@/lib/inventory-cache";
 import { calculateSchedule } from "@/lib/payment";
+import { projectPaymentOverrides } from "@/lib/project-payment-overrides";
 import { getCairoOfferLocation } from "@/lib/cairo-offer-location";
 import { getNasaOfferLocation } from "@/lib/nasa-offer-location";
 import { unitKey } from "@/lib/unit-code";
@@ -60,7 +61,8 @@ export async function POST(req: NextRequest) {
       ordinaryInstallmentRebate:plan.ordinaryInstallmentRebate.toString(),
       deliveryMonths: plan.deliveryMonths ?? undefined,
       deliveryCollectionEnabled: plan.deliveryCollectionEnabled,
-      deliveryCollectionPct: plan.deliveryCollectionPct.toString()
+      deliveryCollectionPct: plan.deliveryCollectionPct.toString(),
+      ...projectPaymentOverrides(projectId,plan.id)
     }, date));
     const match = project.floorPlans.find(f => f.floor === unit.floor && f.reviewStatus === "APPROVED" &&
       (projectId !== CAIRO_PLAZA_PROJECT_ID || hasAuthoritativeCairoDwgSource(f)));
