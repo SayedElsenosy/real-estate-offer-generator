@@ -6,6 +6,7 @@ import plexBold from "@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabi
 import Decimal from "decimal.js";
 import { formatOfferMoney } from "@/lib/offer-money";
 import { cairoLocation,drawNasaPdfLocation, embeddedLogo, type Props } from "@/lib/workers-pdf";
+import { drawOriginalVidaImage } from "@/lib/vida-pdf-image";
 
 const W=595.28,H=841.89,LEFT=47,RIGHT=W-47;
 const navy=rgb(0.085,0.16,0.26),gold=rgb(0.72,0.55,0.31);
@@ -93,7 +94,7 @@ function payRow(page:PDFPage,i:number,
   en(page,amount(payment.amount),LEFT+13,y-2,f.latinBold,10.5,ink);
 }
 export async function createArabicOfferPdf({
-  company,logoUrl,project,unit,issuedAt,floor,location,nasaLocation,schedules
+  company,logoUrl,project,unit,issuedAt,floor,location,nasaLocation,vidaDrawing,schedules
 }:Props):Promise<Uint8Array>{
   const pdf=await PDFDocument.create();
   pdf.registerFontkit(fontkit);
@@ -137,6 +138,8 @@ export async function createArabicOfferPdf({
     color:pale,borderColor:border,borderWidth:0.8});
   if(location)cairoLocation(planPage,location);
   else if(nasaLocation) await drawNasaPdfLocation(pdf,planPage,nasaLocation);
+  else if(vidaDrawing?.status==="matched"&&vidaDrawing.planImage)
+    await drawOriginalVidaImage(pdf,planPage,vidaDrawing.planImage,{x:LEFT+10,y:337,width:RIGHT-LEFT-20,height:306});
   else if(floor?.backgroundData?.startsWith("data:image/")){
     try{
       const match=/^data:image\/(png|jpeg);base64,([\s\S]+)$/.exec(floor.backgroundData);
@@ -159,6 +162,14 @@ export async function createArabicOfferPdf({
     :"المخطط لتحديد الموقع ولا يعتمد عليه في حساب المساحة",
     RIGHT,263,f.arabic,10,gray);
 
+  if(vidaDrawing?.status==="matched"&&vidaDrawing.masterImage){
+    const master=pdf.addPage([W,H]);
+    heading(master,company,"موقع المبنى في المشروع","فيدا - المرحلة "+vidaDrawing.phase,logo,f);
+    await drawOriginalVidaImage(pdf,master,vidaDrawing.masterImage,{x:LEFT+8,y:209,width:RIGHT-LEFT-16,height:474});
+    ar(master,"مبنى رقم "+vidaDrawing.building+" - من صفحة الترقيم الأصلية بالبروشور",RIGHT,178,f.arabicBold,11,ink);
+    en(master,unit.code,LEFT,158,f.latinBold,11);
+    ar(master,"الصورة مقتطعة من البروشور الأصلي دون إعادة رسم",RIGHT,139,f.arabic,9,gray);
+  }
   for(const schedule of schedules){
     let page=pdf.addPage([W,H]);
     heading(page,company,"جدول سداد الوحدة",schedule.name,logo,f);

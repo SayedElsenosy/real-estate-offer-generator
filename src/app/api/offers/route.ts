@@ -5,8 +5,10 @@ import { currentUser } from "@/lib/guards";
 import { isAvailable } from "@/lib/sheets";
 import { getRecentInventory } from "@/lib/inventory-cache";
 import { calculateSchedule } from "@/lib/payment";
+import { calculateVidaWorkbookSchedule, isVidaWorkbookPlanId } from "@/lib/vida-payments";
 import { getCairoOfferLocation } from "@/lib/cairo-offer-location";
 import { getNasaOfferLocation } from "@/lib/nasa-offer-location";
+import { getVidaPdfDrawing } from "@/lib/vida-brochure-download";
 import { unitKey } from "@/lib/unit-code";
 import type { FloorGeometry } from "@/lib/pdf";
 import { createPropertyOfferPdf } from "@/lib/workers-pdf";
@@ -50,7 +52,9 @@ export async function POST(req: NextRequest) {
     const plans = await readOfferPlans(projectId, uniquePlanIds);
     if (plans.length !== uniquePlanIds.length) return NextResponse.json({ error: "Invalid payment plan" }, { status: 400 });
     const date = new Date();
-    const schedules = plans.map(plan => calculateSchedule(unit.price, {
+    const schedules = plans.map(plan => projectId==="vida" && isVidaWorkbookPlanId(plan.id)
+      ? calculateVidaWorkbookSchedule(unit.price,plan.id,date)
+      : calculateSchedule(unit.price, {
       name: plan.name, downPaymentPct: plan.downPaymentPct.toString(), months: plan.months,
       maintenancePct: plan.maintenancePct.toString(), startOffsetMonths: plan.startOffsetMonths,
       installmentIntervalMonths: plan.installmentIntervalMonths===3?3:1,
@@ -78,11 +82,12 @@ export async function POST(req: NextRequest) {
       ? await getCairoOfferLocation(unit.code, unit.floor) : null;
     const nasaLocation = projectId==="nasa"
       ? await getNasaOfferLocation(user.id,unit.code,unit.floor) : null;
+    const vidaDrawing = projectId==="vida" ? await getVidaPdfDrawing(user.id,unit) : null;
     // Workers-safe PDF engine. The former renderer relied on a Node URL/file
     // environment and failed with "Invalid URL string" on Cloudflare.
     const common = {
       company: project.companyName, logoUrl: trustedLogo(project.logoUrl),
-      project: project.name, unit, issuedAt, floor: geometry, location, nasaLocation, schedules
+      project: project.name, unit, issuedAt, floor: geometry, location, nasaLocation, vidaDrawing, schedules
     };
     // The studio renders its PDF locally. Prices, availability and financial
     // schedules still come exclusively from the authenticated server checks.

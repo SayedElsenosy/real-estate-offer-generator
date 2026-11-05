@@ -4,11 +4,14 @@ import { formatOfferMoney } from "@/lib/offer-money";
 import { unitKey } from "@/lib/unit-code";
 import type { PdfUnitLocation } from "@/lib/cairo-offer-location";
 import type { NasaOfferLocation } from "@/lib/nasa-offer-location";
+import type { VidaPdfDrawing } from "@/lib/vida-brochure-download";
+import { drawOriginalVidaImage } from "@/lib/vida-pdf-image";
 import type { InventoryUnit } from "@/lib/sheets";
 import type { OfferSchedule, FloorGeometry } from "@/lib/pdf";
 
 export type Props = { company:string; logoUrl?:string|null; project:string; unit:InventoryUnit; issuedAt:string;
-  floor:FloorGeometry; location?:PdfUnitLocation|null; nasaLocation?:NasaOfferLocation|null; schedules:OfferSchedule[] };
+  floor:FloorGeometry; location?:PdfUnitLocation|null; nasaLocation?:NasaOfferLocation|null;
+  vidaDrawing?:VidaPdfDrawing|null; schedules:OfferSchedule[] };
 const W=595.28,H=841.89, LEFT=43,RIGHT=W-43;
 const navy=rgb(0.09,0.16,0.26), gold=rgb(0.70,0.53,0.29), gray=rgb(0.47,0.55,0.64),
   pale=rgb(0.94,0.96,0.98), white=rgb(1,1,1), line=rgb(0.88,0.91,0.94);
@@ -131,7 +134,7 @@ export async function drawNasaPdfLocation(pdf:PDFDocument,page:PDFPage,plan:Nasa
   });
 }
 
-export async function createPropertyOfferPdf({company,logoUrl,project,unit,issuedAt,floor,location,nasaLocation,schedules}:Props):Promise<Uint8Array> {
+export async function createPropertyOfferPdf({company,logoUrl,project,unit,issuedAt,floor,location,nasaLocation,vidaDrawing,schedules}:Props):Promise<Uint8Array> {
   const pdf=await PDFDocument.create();
   const regular=await pdf.embedFont(StandardFonts.Helvetica);
   const bold=await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -172,6 +175,8 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
     cairoLocation(map,location);
   } else if(nasaLocation){
     await drawNasaPdfLocation(pdf,map,nasaLocation);
+  } else if(vidaDrawing?.status==="matched"&&vidaDrawing.planImage){
+    await drawOriginalVidaImage(pdf,map,vidaDrawing.planImage,{x:LEFT+9,y:337,width:RIGHT-LEFT-18,height:306});
   } else if(floor && floor.shapes.length>0 && floor.backgroundData?.startsWith("data:image/")){
     try {
       const match=/^data:image\/(png|jpeg);base64,([\s\S]+)$/.exec(floor.backgroundData);
@@ -196,10 +201,23 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
     });
   }
   map.drawText("Floor: "+printable(unit.floor),{x:LEFT,y:291,font:bold,size:12,color:navy});
+  if(vidaDrawing)map.drawText("Building "+vidaDrawing.building+" / Phase "+vidaDrawing.phase+
+    (vidaDrawing.status==="matched"?" / Original brochure page "+vidaDrawing.brochurePage:" / Drawing needs review"),
+    {x:LEFT,y:246,font:regular,size:9,color:gray});
   map.drawText(nasaLocation ? "NASA outline is approximately traced from PDF; engineering verification required." : location?.reviewed ? "Highlighted outline is pending final engineering verification." :
     "Engineering drawing shown for location reference, not measurement.",{
     x:LEFT,y:265,font:regular,size:9,color:gray
   });
+  if(vidaDrawing?.status==="matched"&&vidaDrawing.masterImage){
+    const master=pdf.addPage([W,H]);
+    header(master,company,"BUILDING LOCATION","Vida / Phase "+vidaDrawing.phase,bold,regular,logo);
+    await drawOriginalVidaImage(pdf,master,vidaDrawing.masterImage,{x:LEFT+8,y:209,width:RIGHT-LEFT-16,height:474});
+    master.drawText("Building "+vidaDrawing.building+(vidaDrawing.wing?" "+vidaDrawing.wing:"")+
+      "  |  Unit "+printable(unit.code)+"  |  Original brochure coding page 8",
+      {x:LEFT,y:173,font:regular,size:10,color:navy});
+    master.drawText("Original brochure crop; no unit boundary is redrawn or inferred.",
+      {x:LEFT,y:151,font:regular,size:9,color:gray});
+  }
   for(const schedule of schedules){
     let page=pdf.addPage([W,H]);
     header(page,company,"PAYMENT SCHEDULE",printable(schedule.name)+" / UNIT "+printable(unit.code),bold,regular,logo);
