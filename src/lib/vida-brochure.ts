@@ -163,7 +163,7 @@ export function getVidaBrochureLocation(unit:InventoryUnit):VidaLocation|null {
   if(!buildingMatch||Number(buildingMatch[1])!==building||
     (wing&&buildingMatch[2]&&wing!==buildingMatch[2].toUpperCase()))
     return unsafe("Building/wing in the live inventory does not match the selected code.");
-  const typeNo=Number(/\b([1-5])\b/.exec(rawField(unit,"TYPE"))?.[1]||0);
+  const typeNo=Number(/type\s*0?([1-5])\b/i.exec(rawField(unit,"TYPE"))?.[1]||0);
   if(typeNo!==group.type)return unsafe("Building type conflicts with the official brochure.");
   if(phase===1&&group.type===5&&/ground/i.test(unit.floor)){
     // Type 05 has overlapping ground/duplex code labels.
