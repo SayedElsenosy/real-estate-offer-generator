@@ -2,11 +2,14 @@ import type { InventoryUnit } from "@/lib/sheets";
 import { getGoogleAccessToken } from "@/lib/sheets";
 import { getVidaBrochureLocation, type VidaLocation } from "@/lib/vida-brochure";
 import { vidaBrochureFileIds } from "@/lib/vida-brochure-assets";
+import { vidaSiteAssetFileIds } from "@/lib/vida-site-assets";
 
 export type VidaPdfDrawing = VidaLocation & {
   /** JPEGs cropped from original brochure, never traced or redrawn. */
   planImage?: string|null;
   masterImage?: string|null;
+  /** Original brochure page inset: the unit-type shaded floor layout. */
+  locatorImage?: string|null;
 };
 const MAX_JPEG=200000;
 function base64(bytes:Uint8Array):string {
@@ -16,7 +19,8 @@ function base64(bytes:Uint8Array):string {
 }
 /** Only explicitly mapped Google Drive IDs can be downloaded; no user-provided URL. */
 export async function readVidaBrochureJpeg(accessToken:string,fileId:string):Promise<Uint8Array>{
-  if(!Object.values(vidaBrochureFileIds).includes(fileId))
+  if(!Object.values(vidaBrochureFileIds).includes(fileId)&&
+     !Object.values(vidaSiteAssetFileIds).includes(fileId))
     throw Error("Unknown Vida brochure artwork");
   const original="https://www.googleapis.com/drive/v3/files/"+encodeURIComponent(fileId)+"?alt=media";
   let url=original;
@@ -46,15 +50,20 @@ export async function readVidaBrochureJpeg(accessToken:string,fileId:string):Pro
 export async function getVidaPdfDrawing(userId:string,unit:InventoryUnit):Promise<VidaPdfDrawing|null>{
   const location=getVidaBrochureLocation(unit);
   if(!location)return null;
-  if(location.status!=="matched"||!location.planFileId||!location.masterFileId)return location;
+  if(location.status!=="matched"||!location.planFileId)return location;
   try{
     const token=await getGoogleAccessToken(userId);
-    const [plan,master]=await Promise.all([
+    const locatorId=vidaSiteAssetFileIds[`p${location.phase}_${String(location.brochurePage).padStart(2,"0")}_locator.jpg`];
+    const siteId=vidaSiteAssetFileIds["vida_site_original.jpg"];
+    if(!locatorId||!siteId)throw Error("Original Vida site or floor inset is missing");
+    const [plan,site,locator]=await Promise.all([
       readVidaBrochureJpeg(token,location.planFileId),
-      readVidaBrochureJpeg(token,location.masterFileId)
+      readVidaBrochureJpeg(token,siteId),
+      readVidaBrochureJpeg(token,locatorId)
     ]);
     return {...location,planImage:"data:image/jpeg;base64,"+base64(plan),
-      masterImage:"data:image/jpeg;base64,"+base64(master)};
+      masterImage:"data:image/jpeg;base64,"+base64(site),
+      locatorImage:"data:image/jpeg;base64,"+base64(locator)};
   }catch(e){
     // Do not silently replace a missing source image with an invented outline.
     console.warn("Vida original brochure image unavailable",e instanceof Error?e.message:"unknown");
