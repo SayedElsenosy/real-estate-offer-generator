@@ -6,6 +6,7 @@ import plexBold from "@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabi
 import Decimal from "decimal.js";
 import { formatOfferMoney } from "@/lib/offer-money";
 import { cairoLocation,drawNasaPdfLocation, embeddedLogo, type Props } from "@/lib/workers-pdf";
+import { drawOriginalVidaCrop, drawVidaLocationCrops } from "@/lib/vida-pdf-draw";
 
 const W=595.28,H=841.89,LEFT=47,RIGHT=W-47;
 const navy=rgb(0.085,0.16,0.26),gold=rgb(0.72,0.55,0.31);
@@ -93,7 +94,7 @@ function payRow(page:PDFPage,i:number,
   en(page,amount(payment.amount),LEFT+13,y-2,f.latinBold,10.5,ink);
 }
 export async function createArabicOfferPdf({
-  company,logoUrl,project,unit,issuedAt,floor,location,nasaLocation,schedules
+  company,logoUrl,project,unit,issuedAt,floor,location,nasaLocation,vidaBrochure,vidaImages,schedules
 }:Props):Promise<Uint8Array>{
   const pdf=await PDFDocument.create();
   pdf.registerFontkit(fontkit);
@@ -135,7 +136,8 @@ export async function createArabicOfferPdf({
   heading(planPage,company,"موقع الوحدة على المخطط",projectArabic(project),logo,f);
   planPage.drawRectangle({x:LEFT,y:327,width:RIGHT-LEFT,height:326,
     color:pale,borderColor:border,borderWidth:0.8});
-  if(location)cairoLocation(planPage,location);
+  if(vidaBrochure&&vidaImages)await drawVidaLocationCrops(pdf,planPage,vidaImages);
+  else if(location)cairoLocation(planPage,location);
   else if(nasaLocation) await drawNasaPdfLocation(pdf,planPage,nasaLocation);
   else if(floor?.backgroundData?.startsWith("data:image/")){
     try{
@@ -150,15 +152,28 @@ export async function createArabicOfferPdf({
       }
     }catch{ar(planPage,"تعذرت معاينة المخطط",RIGHT-20,485,f.arabic,13);}
   }else ar(planPage,"مخطط الوحدة غير متوفر",RIGHT-20,485,f.arabic,13);
-  ar(planPage,"الوحدة المحددة على المخطط",RIGHT,287,f.arabicBold,13);
+  ar(planPage,vidaBrochure?"موقع المبنى ومخطط الدور الأصلي":"الوحدة المحددة على المخطط",RIGHT,287,f.arabicBold,13);
   en(planPage,unit.code,LEFT,287,f.latinBold,11);
-  ar(planPage,nasaLocation
+  ar(planPage,vidaBrochure
+    ?"قصاصات من الماستر بلان والبروشور الأصلي دون إعادة رسم"
+    :nasaLocation
     ?"حدود وحدة ناسا تقريبية من صور PDF وتحتاج مراجعة هندسية"
     :location?.reviewed
     ?"حدود الوحدة المعروضة قيد الاعتماد الهندسي النهائي"
     :"المخطط لتحديد الموقع ولا يعتمد عليه في حساب المساحة",
     RIGHT,263,f.arabic,10,gray);
 
+  if(vidaBrochure&&vidaImages?.unit){
+    const page=pdf.addPage([W,H]);
+    heading(page,company,"الرسم المعماري الأصلي للوحدة",projectArabic(project),logo,f);
+    await drawOriginalVidaCrop(pdf,page,vidaImages.unit,LEFT+7,170,RIGHT-LEFT-14,480);
+    ar(page,"قص مباشر من بروشور فيدا الأصلي - الصفحة "+vidaBrochure.unitPage,
+      RIGHT,137,f.arabic,10,ink);
+    ar(page,vidaBrochure.exactUnitPlan
+      ?"تمت مراجعة تطابق المبنى والحرف وكود الوحدة مع الرسم"
+      :"رسم استرشادي لنوع الوحدة؛ اتجاه المرآة أو البدائل غير مؤكد هندسيا",
+      RIGHT,113,f.arabic,9,gray);
+  }
   for(const schedule of schedules){
     let page=pdf.addPage([W,H]);
     heading(page,company,"جدول سداد الوحدة",schedule.name,logo,f);
