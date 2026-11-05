@@ -69,7 +69,7 @@ p{line-height:1.6}
 @media(max-width:760px){.shell{display:block}.sidebar{padding:20px;gap:13px}.sidebar-bottom{display:none}.menu{flex-direction:row;overflow-x:auto}.menu a{white-space:nowrap}.main{padding:20px}.metrics,.twofields{grid-template-columns:1fr}.header-line{display:block}.header-line .pill{margin-top:12px}h1{font-size:28px}}
 
 
-/* Arabic is the default. The language switch updates html[dir] on the client. */
+/* English is the default. The language switch updates html[dir] on the client. */
 html[dir="rtl"] body { font-family: Tahoma, Arial, "Segoe UI", sans-serif; }
 html[dir="rtl"] .unit { text-align: right; }
 html[dir="rtl"] .field, html[dir="rtl"] input:not([type="date"]) { text-align: right; }

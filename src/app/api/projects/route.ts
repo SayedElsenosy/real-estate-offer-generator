@@ -10,7 +10,11 @@ const config = z.object({
   spreadsheetId: z.string().trim().max(200).nullable(),
   sheetRange: z.string().trim().min(3).max(200),
   companyName: z.string().trim().min(2).max(150),
-  logoUrl: z.union([z.url().startsWith("https://"), z.literal(""), z.null()]).optional()
+  logoUrl: z.union([
+    z.url().startsWith("https://"),
+    z.string().max(380000).regex(/^data:image\/(png|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/),
+    z.literal(""),z.null()
+  ]).optional()
 });
 
 export async function GET() {

@@ -1,15 +1,18 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { useLiveInventory } from "@/hooks/useLiveInventory";
 import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
 import { unitKey } from "@/lib/unit-code";
 import { useLanguage } from "@/components/LanguageProvider";
+import { calculateSchedule, type PaymentTerms } from "@/lib/payment";
+import { calculateVidaWorkbookSchedule, isVidaWorkbookPlanId } from "@/lib/vida-payments";
+import { UnitSourceDetails } from "@/components/UnitSourceDetails";
+import { VidaBrochurePreview } from "@/components/VidaBrochurePreview";
 
-type Unit = { code: string; price: string; area: string; floor: string; status: string; project: string };
-type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; installmentIntervalMonths?: number; deliveryDate?: string | null; deliveryCollectionPct?: string; deliveryCollectionEnabled?: boolean };
+type Unit = { code: string; price: string; area: string; floor: string; status: string; project: string; type?: string };
+type Plan = { id: string; name: string; discountPct?:string; secondDownPaymentPct?:string; secondDownOffsetMonths?:number; quarterlyEndAtTerm?:boolean; ordinaryInstallmentRebate?:string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; installmentIntervalMonths?: number; deliveryMonths?: number|null; deliveryCollectionPct?: string; deliveryCollectionEnabled?: boolean };
 type Project = { id: string; slug: string; name: string; paymentPlans: Plan[] };
-type Shape = { unitCode: string; d: string };
-type Floor = { id: string; name: string; floor: string | null; viewBox: string; shapes: Shape[]; markers?: {code:string;x:number;y:number}[]; backgroundData?: string | null; reviewStatus?: string };
 function isAvailable(status: string): boolean {
   const normalized = String(status).normalize("NFKC").trim().toLowerCase().replace(/\s+/g,"");
   return ["available","avail","forsale","متاح","متاحة","متوفر","متوفرة"].includes(normalized);
@@ -20,35 +23,49 @@ function nicePrice(value: string) {
 }
 export default function Studio({ projects, email }: { projects: Project[]; email: string }) {
   const { tr } = useLanguage();
-  const [projectId, setProjectId] = useState(projects[0]?.id || "");
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [floors, setFloors] = useState<Floor[]>([]);
+  const [projectId, setProjectId] = useState(projects.find(p=>p.id==="cairo-plaza")?.id || projects[0]?.id || "");
+  const {units,loading,refreshing,error,refresh,lastReadAt} = useLiveInventory(projectId);
   const [floorNumber, setFloorNumber] = useState("");
   const [selected, setSelected] = useState("");
   const [chosenPlans, setChosenPlans] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState("");
+  const [offerError,setOfferError] = useState("");
   const [search, setSearch] = useState("");
+  const [offerLanguage,setOfferLanguage]=useState<"ar"|"en">("ar");
+  useEffect(()=>{
+    // Deep-link from an explicitly selected Vida building/floor/unit in plans.
+    const qs=new URLSearchParams(window.location.search);
+    if(qs.get("projectId")!=="vida"||!projects.some(p=>p.id==="vida"))return;
+    const code=qs.get("unitCode")||"";
+    const floor=qs.get("unitFloor")||"";
+    if(!/^\d{1,2}[AB]?[-_ ]T?\d{2,3}$/i.test(code)||floor.length>80)return;
+    setProjectId("vida");setSelected(code);setFloorNumber(floor);setSearch(code);
+  },[]);
   const project = projects.find(p => p.id === projectId);
   const unit = units.find(value => value.code === selected && value.floor === floorNumber);
-  const floor = floors.find(f => f.floor === (unit?.floor ?? floorNumber)) || floors[0];
-  const vb = floor?.viewBox?.trim().split(/\s+/).map(Number) || [0,0,1000,700];
+  const selectedPlans=project?.paymentPlans.filter(plan=>chosenPlans.includes(plan.id))||[];
+  const schedules=useMemo(()=>{
+    if(!unit||!selectedPlans.length)return {rows:[] as ReturnType<typeof calculateSchedule>[],error:""};
+    try{
+      const date=new Date();
+      return {rows:selectedPlans.map(plan=>projectId==="vida" && isVidaWorkbookPlanId(plan.id)
+        ? calculateVidaWorkbookSchedule(unit.price,plan.id,date)
+        : calculateSchedule(unit.price,{
+        name:plan.name,downPaymentPct:plan.downPaymentPct,months:plan.months,
+        maintenancePct:plan.maintenancePct,startOffsetMonths:plan.startOffsetMonths,
+        installmentIntervalMonths:plan.installmentIntervalMonths===3?3:1,
+        discountPct:plan.discountPct||"0",secondDownPaymentPct:plan.secondDownPaymentPct||"0",
+        secondDownOffsetMonths:plan.secondDownOffsetMonths||0,quarterlyEndAtTerm:!!plan.quarterlyEndAtTerm,
+        ordinaryInstallmentRebate:plan.ordinaryInstallmentRebate||"0",
+        deliveryMonths:plan.deliveryMonths??undefined,
+        deliveryCollectionEnabled:plan.deliveryCollectionEnabled,
+        deliveryCollectionPct:plan.deliveryCollectionPct
+      },date)),error:""};
+    }catch(err){return {rows:[] as ReturnType<typeof calculateSchedule>[],
+      error:err instanceof Error?err.message:"Invalid payment plan"};}
+  },[unit,selectedPlans.map(p=>p.id+":"+p.months+":"+p.deliveryMonths+":"+p.installmentIntervalMonths+":"+p.discountPct+":"+p.secondDownPaymentPct).join("|")]);
   const visibleUnits = useMemo(() => units.filter(item =>
     (item.code + " " + item.floor).toLowerCase().includes(search.toLowerCase())).slice(0, 100), [units, search]);
-  useEffect(() => {
-    if (!projectId) return;
-    let cancelled = false;
-    setLoading(true); setError(""); setUnits([]); setSelected(""); setChosenPlans([]); setFloors([]);
-    fetch("/api/inventory?projectId=" + encodeURIComponent(projectId), { cache: "no-store" })
-      .then(async r => { const response = await r.json(); if (!cancelled) {
-        setUnits(response.units || []); setFloors(response.floorPlans || []);
-        if (response.error) setError(response.error);
-      } })
-      .catch(err => { if (!cancelled) setError(err instanceof Error ? tr(err.message) : tr("Inventory request failed")); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [projectId]);
   function selectUnit(code: string, floorCode?: string) {
     const candidates = units.filter(u => unitKey(u.code) === unitKey(code) && (floorCode === undefined || u.floor === floorCode));
     const exact = candidates.find(u => u.code === code);
@@ -59,34 +76,46 @@ export default function Studio({ projects, email }: { projects: Project[]; email
   }
   async function issueOffer() {
     if (!unit || !chosenPlans.length || generating) return;
-    setGenerating(true); setError("");
+    if(schedules.error){setOfferError(schedules.error);return;}
+    setGenerating(true); setOfferError("");
     try {
       const response = await fetch("/api/offers", { method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId, unitCode: unit.code, unitFloor: unit.floor, planIds: chosenPlans }) });
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({ projectId, unitCode: unit.code, unitFloor: unit.floor, planIds: chosenPlans,language:offerLanguage }) });
       if (!response.ok) {
-        const message = await response.json();
-        throw new Error(message.error || "PDF generation failed");
+          const message = await response.json().catch(() => null);
+          throw new Error(message?.error || "The server could not prepare the offer. Please try again.");
       }
-      const objectURL = URL.createObjectURL(await response.blob());
+        const { offer } = await response.json();
+        const bytes = offerLanguage === "ar"
+          ? await (await import("@/lib/arabic-pdf")).createArabicOfferPdf(offer)
+          : await (await import("@/lib/workers-pdf")).createPropertyOfferPdf(offer);
+        const objectURL = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: "application/pdf" }));
       const element = document.createElement("a");
       element.href = objectURL;
-      element.download = "Property-Offer-" + unit.code.replace(/[^a-z0-9_-]/gi, "_") + ".pdf";
+      element.download = (offerLanguage==="ar"?"Arabic-Offer-":"Property-Offer-") + unit.code.replace(/[^a-z0-9_-]/gi, "_") + ".pdf";
       element.click();
       setTimeout(() => URL.revokeObjectURL(objectURL), 3000);
     } catch (err) {
-      setError(err instanceof Error ? tr(err.message) : tr("Could not generate proposal"));
+      setOfferError(err instanceof Error ? tr(err.message) : tr("Could not generate proposal"));
     } finally { setGenerating(false); }
   }
   const toggle = (id: string, checked: boolean) => setChosenPlans(ids => checked ? [...ids, id] : ids.filter(x => x !== id));
-  return <div className="shell"><Sidebar active="studio" email={email} /><main className="main">
+  return <div className="shell"><Sidebar active="studio" email={email} shared={email==="Private link access"} /><main className="main">
     <header className="header-line"><div><div className="eyebrow">{tr("OFFER STUDIO / LIVE INVENTORY")}</div><h1>{tr("Build a property offer")}</h1><p className="muted">{tr("Pick a project, inspect a unit and include one or more financial scenarios.")}</p></div>
       <div style={{ minWidth: 230 }}><label className="fieldlabel">{tr("ACTIVE PROJECT")}
-        <select className="field" value={projectId} onChange={e => setProjectId(e.target.value)}>
+        <select className="field" value={projectId} onChange={e => {setProjectId(e.target.value);setSelected("");setFloorNumber("");setChosenPlans([]);}}>
           {projects.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}
         </select></label></div>
     </header>
-    {error && <div className="notice" style={{marginBottom:18}}>{error}</div>}
+    {(error||offerError) && <div className="notice" role="alert" style={{marginBottom:18}}>{error||offerError}</div>}
+    <div className="muted" style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginBottom:8}}>
+      <span>{tr("Auto-refresh every 10 seconds while this tab is open")}</span>
+      <span>{refreshing?tr("Checking for changes…"):lastReadAt?tr("Inventory synchronized"):""}</span>
+      <button type="button" className="btn soft" style={{padding:"5px 12px"}} onClick={()=>void refresh()} disabled={refreshing}>
+        {tr("Refresh now")}
+      </button>
+    </div>
     <div className="metrics">
       <div className="metric"><div className="eyebrow">{tr("LIVE INVENTORY")}</div><strong>{loading ? tr("Loading…") : units.length}</strong><span className="muted">{tr("Units returned by the authorized Google account")}</span></div>
       <div className="metric"><div className="eyebrow">{tr("SELECTED PROPERTY")}</div><strong>{unit?.code || "—"}</strong><span className="muted">{unit?.area ? unit.area + " m²" : tr("Select a unit to continue")}</span></div>
@@ -98,77 +127,73 @@ export default function Studio({ projects, email }: { projects: Project[]; email
           <input className="field" placeholder={tr("Search Unit Code or floor...")} value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:15}} />
           <div className="list">{visibleUnits.map(value => <button type="button" key={value.code+"::"+value.floor} className={"unit" + (value.code === selected ? " active" : "")}
             disabled={!isAvailable(value.status)} onClick={() => selectUnit(value.code, value.floor)}>
-            <span><b>{value.code}</b><small>{tr("Floor")} {value.floor || "—"} · {value.area || "—"} m²</small></span>
+            <span><b>{value.code}</b><small>{tr("Floor")} {value.floor || "—"} · {value.area || "—"} m²{value.type?.trim() ? " · "+value.type.trim() : ""}</small></span>
             <span style={{textAlign:"right"}}><b>{nicePrice(value.price)}</b><small>{tr(value.status)}</small></span>
           </button>)}
           {!visibleUnits.length && <p className="muted">{tr(loading ? "Loading authorized inventory…" : "No matching live inventory. Confirm the Sheet connection in Settings.")}</p>}</div>
           {units.length > 100 && <p className="muted">{tr("Showing the first 100 matches. Use search to narrow the results.")}</p>}
         </section>
-        <section className="panel">
-          <div className="panelhead">
-            <div><div className="eyebrow">{tr("ARCHITECTURAL MAP")}</div><h2 style={{marginTop:10}}>{tr("Interactive floor plan")}</h2></div>
-            <span className="pill">{tr(floor?.reviewStatus === "APPROVED" ? "Verified shapes" : "Review mode")}</span>
-          </div>
-          {floors.length > 0 && <label className="fieldlabel" style={{display:"block",marginBottom:14}}>
-            {tr("SHOW FLOOR")}
-            <select className="field" value={floor?.floor || ""} onChange={e=>{setFloorNumber(e.target.value);setSelected("");}}>
-              {floors.map(f=><option value={f.floor || ""} key={f.id}>{f.name} — {tr("Floor")} {f.floor}</option>)}
-            </select>
-          </label>}
-          {floor && (floor.backgroundData || floor.shapes.length) ?
-            <svg className="floor-svg" viewBox={floor.viewBox} role="img" aria-label={tr("ARCHITECTURAL MAP")}>
-              {floor.backgroundData && <image href={floor.backgroundData} x={vb[0]} y={vb[1]} width={vb[2]} height={vb[3]} preserveAspectRatio="none"/>}
-              {(floor.markers || []).map((m,i)=>{
-                const candidates=units.filter(value=>value.floor===floor.floor&&unitKey(value.code)===unitKey(m.code));
-                const u=candidates.length===1?candidates[0]:undefined;
-                const status=u?.status || "SOLD OUT";
-                return <circle key={"source-label-"+i} cx={m.x} cy={m.y} r={9}
-                  fill={u?"#c2a064":"#e34545"} fillOpacity={.72}
-                  stroke="#ffffff" strokeWidth={2} aria-label={m.code+" "+status}>
-                    <title>{m.code+" · "+status+" · label location (not unit boundary)"}</title>
-                  </circle>;
-              })}
-              {floor.shapes.map((shape,i)=>{
-                const candidates=units.filter(value=>value.floor===floor.floor&&unitKey(value.code)===unitKey(shape.unitCode));
-                const known=candidates.length===1?candidates[0]:undefined;
-                const blocked = !known || !isAvailable(known.status);
-                const approved = floor.reviewStatus === "APPROVED";
-                return <path key={i} d={shape.d}
-                  fill={!known?"#efaaaa":blocked?"#d3d9e1":unitKey(shape.unitCode)===unitKey(selected)?"#c5a16a":"#d8e8df"}
-                  stroke={approved?"#32465d":"#1b78b9"} strokeWidth={approved?3:2.5}
-                  strokeDasharray={approved?undefined:"8 5"}
-                  fillOpacity={approved?.42:.16}
-                  style={{cursor:approved&&!blocked?"pointer":"default",pointerEvents:approved?"auto":"none"}}
-                  tabIndex={approved&&!blocked?0:-1} role="img"
-                  aria-label={"Unit "+shape.unitCode+" "+(known?.status||"Sold Out")+(approved?" approved":" draft")}
-                  onClick={approved?()=>selectUnit(shape.unitCode, floor.floor || undefined):undefined}
-                  onKeyDown={approved?(e)=>{if(e.key==="Enter"||e.key===" ")selectUnit(shape.unitCode, floor.floor || undefined);}:undefined}>
-                  <title>{shape.unitCode+" · "+(known?.status||"SOLD OUT")+(approved?"":" · PROPOSED OUTLINE (NOT SELECTABLE)")}</title>
-                </path>;
-              })}            </svg> :
-            <div className="floor-blank"><div><div className="symbol">⌗</div><h2>{tr("Floor plan not published")}</h2>
-              <p className="muted">{tr("The original architectural image and reviewed unit boundaries will appear here after a floor is saved in Workspace Settings.")}</p>
-            </div></div>}
-          {floor?.reviewStatus !== "APPROVED" && floor?.backgroundData && <p className="notice">{tr("Draft review: proposed boundaries are shown as dashed blue lines alongside source code-label markers. Red = SOLD OUT if absent from live inventory. These outlines are NOT selectable until approved.")}</p>}
-          {projectId === "cairo-plaza" && <p className="notice">{tr("Cairo Plaza engineering DWG registered; accurate interactive maps will appear after CAD verification.")}</p>}
-          <p className="muted">{tr("Gold: selected. Green: available. Grey: reserved. Red: SOLD OUT if the drawn unit is absent from current inventory. Only approved outlines are interactive.")}</p>
-        </section>
       </div>
       <div className="stack">
         <section className="panel"><div className="eyebrow">{tr("PROPERTY SUMMARY")}</div><h2 style={{marginTop:12}}>{unit ? unit.code : tr("Select a unit")}</h2>
           {unit ? <>
-            {([["Project", project?.name || "—"],["Unit Code",unit.code],["Floor",unit.floor || "—"],["Area",unit.area ? unit.area+" sqm":"—"],["Status",tr(unit.status)],["Price",nicePrice(unit.price)]] as [string,string][]).map(([label,value]) =>
+            {([["Project", project?.name || "—"],["Unit Code",unit.code],["Unit Type",unit.type?.trim() || "—"],["Floor",unit.floor || "—"],["Area",unit.area ? unit.area+" sqm":"—"],["Status",tr(unit.status)],["Price",nicePrice(unit.price)]] as [string,string][]).map(([label,value]) =>
               <div className="detailrow" key={label}><span>{tr(label)}</span><b>{value}</b></div>)}
+            <UnitSourceDetails projectId={projectId} code={unit.code} floor={unit.floor}/>
+            {projectId==="vida"&&<VidaBrochurePreview code={unit.code} floor={unit.floor}/>}
           </> : <p className="muted">{tr("Current price, location and availability appear here once you select a unit.")}</p>}
         </section>
         <section className="panel"><div className="eyebrow">{tr("CUSTOM TERMS")}</div><h2 style={{marginTop:12}}>{tr("Payment plan options")}</h2><p className="muted">{tr("Each selected plan produces its own detailed payment schedule in the proposal PDF.")}</p>
           {project?.paymentPlans.map(plan => <label className="planrow" key={plan.id}>
             <input type="checkbox" checked={chosenPlans.includes(plan.id)} disabled={!unit || (chosenPlans.length >= 5 && !chosenPlans.includes(plan.id))}
               onChange={event => toggle(plan.id, event.target.checked)} />
-            <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% {tr("Down payment %")} · {plan.months} {tr("Total term including down payment (months)")} · {tr("Every")} {plan.installmentIntervalMonths || 1} {tr("months")} · {plan.maintenancePct}% {tr("Maintenance %")}{plan.deliveryDate ? " · " + tr("Delivery date") + ": " + plan.deliveryDate : ""}{plan.deliveryCollectionEnabled ? " · " + plan.deliveryCollectionPct + "% " + tr("Collection at delivery %") : ""}</small></span>
+            <span><b style={{fontSize:13}}>{plan.name}</b><small style={{display:"block",fontSize:11,marginTop:6,color:"#8390a2"}}>{plan.downPaymentPct}% {tr("Down payment %")}{Number(plan.secondDownPaymentPct)>0?" + "+plan.secondDownPaymentPct+"% "+tr("Second down payment %"):""}{Number(plan.discountPct)>0?" · "+plan.discountPct+"% "+tr("Plan discount %"):""} · {plan.months} {tr("months")} · {tr(plan.installmentIntervalMonths===3?"Quarterly installments":"Monthly payments")} · {plan.maintenancePct}% {tr("Maintenance %")}{plan.deliveryMonths ? " · "+tr("Delivery after")+" "+plan.deliveryMonths+" "+tr("months") : ""}{plan.deliveryCollectionEnabled ? " · "+plan.deliveryCollectionPct+"% "+tr("Paid by delivery") : ""}</small></span>
           </label>)}
           {!project?.paymentPlans.length && <div className="notice">{tr("No plans yet. An administrator can add a plan (such as 10% down / 80 months) in Workspace Settings.")}</div>}
-          <button className="btn gold" style={{width:"100%",marginTop:18}} disabled={!unit || chosenPlans.length===0 || generating} onClick={issueOffer}>
+          {unit && selectedPlans.length>0 && <div style={{marginTop:18}}>
+            <h3 style={{marginBottom:8}}>{tr("Live payment schedule preview")}</h3>
+            {schedules.error&&<div className="notice" role="alert">{schedules.error}</div>}
+            {selectedPlans.some(p=>Number(p.maintenancePct)>0)&&
+              <p className="muted">{tr("Maintenance deposit appears at the end of each plan without a due date.")}</p>}
+            {schedules.rows.map((schedule,i)=><div key={selectedPlans[i].id}
+              style={{marginBottom:16,border:"1px solid #e2e8f0",borderRadius:12,overflow:"hidden"}}>
+              <div style={{padding:12,background:"#f6f8fb"}}>
+                <strong>{schedule.name}</strong>
+                <div className="muted" style={{fontSize:12,marginTop:6}}>
+                  {tr("Collected before delivery")}: {nicePrice(schedule.preDeliveryTotal)} ·
+                  {tr("Balance after delivery")}: {nicePrice(schedule.postDeliveryTotal)}
+                </div>
+                <div className="muted" style={{fontSize:12,marginTop:5}}>
+                  {schedule.deliveryMonths>0?tr("Delivery after")+" "+schedule.deliveryMonths+" "+tr("months"):""}
+                  {" · "}{tr("Total including maintenance")}: {nicePrice(schedule.totalIncludingMaintenance)}
+                </div>
+              </div>
+              <div style={{overflow:"auto",maxHeight:440}}>
+                <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+                  <thead style={{position:"sticky",top:0,background:"#eaf0f5"}}>
+                    <tr><th style={{padding:8,textAlign:"start"}}>#</th>
+                      <th style={{padding:8,textAlign:"start"}}>{tr("Payment type")}</th>
+                      <th style={{padding:8,textAlign:"start"}}>{tr("Due date")}</th>
+                      <th style={{padding:8,textAlign:"end"}}>{tr("Amount (EGP)")}</th></tr>
+                  </thead>
+                  <tbody>{schedule.rows.map((row,j)=><tr key={row.type+row.due+j} style={{borderBottom:"1px solid #edf0f4"}}>
+                    <td style={{padding:8}}>{row.number??"—"}</td>
+                    <td style={{padding:8}}>{tr(row.type==="DOWN_PAYMENT"?"Down payment":row.type==="SECOND_DOWN_PAYMENT"?"Second down payment":row.type==="MAINTENANCE"?"Maintenance":"Installment")}</td>
+                    <td style={{padding:8}}>{row.due||"—"}</td>
+                    <td style={{padding:8,textAlign:"end"}}>{nicePrice(row.amount)}</td>
+                  </tr>)}</tbody>
+                </table>
+              </div>
+            </div>)}
+          </div>}
+          <label className="fieldlabel" style={{marginTop:16,display:"block"}}>
+            {tr("PDF offer language")}
+            <select className="field" value={offerLanguage} onChange={event=>setOfferLanguage(event.target.value as "ar"|"en")}>
+              <option value="ar">{tr("Arabic PDF")}</option>
+              <option value="en">{tr("English PDF")}</option>
+            </select>
+          </label>
+          <button className="btn gold" style={{width:"100%",marginTop:18}} disabled={!unit || !isAvailable(unit.status) || !!error || !!schedules.error || loading || chosenPlans.length===0 || generating} onClick={issueOffer}>
             {tr(generating ? "Rendering proposal…" : "Generate premium PDF offer")}
           </button>
           <p className="muted" style={{fontSize:11}}>{tr("The server checks live price and availability again before producing the PDF.")}</p>
