@@ -129,4 +129,4 @@ export function matchVidaBrochure(unit:InventoryUnit):VidaBrochureMatch|null{
      :"Original brochure TYPE reference matched by phase, block, floor and area. Unit orientation is not independently certified.")
      :"Only the original building/floor reference is confirmed. No unique unit drawing was matched."};
 }
-export const VIDA_BROCHURE_ASSET_DRIVE_ID="1ICCw1pcXiuvnMnhbyHK5r3TTX-ao5_Lq";
+export const VIDA_BROCHURE_ASSET_DRIVE_ID="1HvsE5zVPpzJlYtkGUArlO9o_ByzfEpWz";
