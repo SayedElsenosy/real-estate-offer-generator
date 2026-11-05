@@ -4,11 +4,16 @@ import { formatOfferMoney } from "@/lib/offer-money";
 import { unitKey } from "@/lib/unit-code";
 import type { PdfUnitLocation } from "@/lib/cairo-offer-location";
 import type { NasaOfferLocation } from "@/lib/nasa-offer-location";
+import type { VidaBrochureMatch } from "@/lib/vida-brochure";
+import type { VidaBrochureImages } from "@/lib/vida-assets-client";
+import { drawOriginalVidaCrop, drawVidaLocationCrops } from "@/lib/vida-pdf-draw";
 import type { InventoryUnit } from "@/lib/sheets";
 import type { OfferSchedule, FloorGeometry } from "@/lib/pdf";
 
 export type Props = { company:string; logoUrl?:string|null; project:string; unit:InventoryUnit; issuedAt:string;
-  floor:FloorGeometry; location?:PdfUnitLocation|null; nasaLocation?:NasaOfferLocation|null; schedules:OfferSchedule[] };
+  floor:FloorGeometry; location?:PdfUnitLocation|null; nasaLocation?:NasaOfferLocation|null;
+  vidaBrochure?:VidaBrochureMatch|null; vidaImages?:VidaBrochureImages|null;
+  schedules:OfferSchedule[] };
 const W=595.28,H=841.89, LEFT=43,RIGHT=W-43;
 const navy=rgb(0.09,0.16,0.26), gold=rgb(0.70,0.53,0.29), gray=rgb(0.47,0.55,0.64),
   pale=rgb(0.94,0.96,0.98), white=rgb(1,1,1), line=rgb(0.88,0.91,0.94);
@@ -131,7 +136,7 @@ export async function drawNasaPdfLocation(pdf:PDFDocument,page:PDFPage,plan:Nasa
   });
 }
 
-export async function createPropertyOfferPdf({company,logoUrl,project,unit,issuedAt,floor,location,nasaLocation,schedules}:Props):Promise<Uint8Array> {
+export async function createPropertyOfferPdf({company,logoUrl,project,unit,issuedAt,floor,location,nasaLocation,vidaBrochure,vidaImages,schedules}:Props):Promise<Uint8Array> {
   const pdf=await PDFDocument.create();
   const regular=await pdf.embedFont(StandardFonts.Helvetica);
   const bold=await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -168,7 +173,9 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
   // Only approved engineering geometry can be represented as unit boundaries.
   // A source DWG alone does not certify automatically derived unit polygons.
   map.drawRectangle({x:LEFT,y:327,width:RIGHT-LEFT,height:326,color:pale,borderColor:line,borderWidth:1});
-  if(location){
+  if(vidaBrochure&&vidaImages){
+    await drawVidaLocationCrops(pdf,map,vidaImages);
+  } else if(location){
     cairoLocation(map,location);
   } else if(nasaLocation){
     await drawNasaPdfLocation(pdf,map,nasaLocation);
@@ -195,11 +202,27 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
       x:LEFT+22,y:467,font:regular,size:10,color:gray
     });
   }
-  map.drawText("Floor: "+printable(unit.floor),{x:LEFT,y:291,font:bold,size:12,color:navy});
-  map.drawText(nasaLocation ? "NASA outline is approximately traced from PDF; engineering verification required." : location?.reviewed ? "Highlighted outline is pending final engineering verification." :
+  map.drawText(vidaBrochure
+    ? "Vida - Phase "+vidaBrochure.phase+" / Building "+vidaBrochure.building+(vidaBrochure.wing||"")
+    : "Floor: "+printable(unit.floor),{x:LEFT,y:291,font:bold,size:12,color:navy});
+  map.drawText(vidaBrochure ? "Original masterplan / floor crops from brochures; no new unit outlines were drawn."
+    : nasaLocation ? "NASA outline is approximately traced from PDF; engineering verification required." : location?.reviewed ? "Highlighted outline is pending final engineering verification." :
     "Engineering drawing shown for location reference, not measurement.",{
     x:LEFT,y:265,font:regular,size:9,color:gray
   });
+  if(vidaBrochure&&vidaImages?.unit){
+    const planPage=pdf.addPage([W,H]);
+    header(planPage,company,"ORIGINAL UNIT DRAWING",
+      "Vida Phase "+vidaBrochure.phase+" / Building "+vidaBrochure.building+(vidaBrochure.wing||"")+
+      " / Unit "+printable(unit.code),bold,regular,logo);
+    await drawOriginalVidaCrop(pdf,planPage,vidaImages.unit,LEFT+7,170,RIGHT-LEFT-14,480);
+    planPage.drawText("Cropped directly from original Vida brochure, page "+vidaBrochure.unitPage+".",
+      {x:LEFT,y:131,font:regular,size:9,color:navy});
+    planPage.drawText(vidaBrochure.exactUnitPlan
+      ? "Block, wing and unit label were verified against the source drawing."
+      : "Representative unit type. Mirrored orientation is not independently certified.",
+      {x:LEFT,y:113,font:regular,size:9,color:gray});
+  }
   for(const schedule of schedules){
     let page=pdf.addPage([W,H]);
     header(page,company,"PAYMENT SCHEDULE",printable(schedule.name)+" / UNIT "+printable(unit.code),bold,regular,logo);
