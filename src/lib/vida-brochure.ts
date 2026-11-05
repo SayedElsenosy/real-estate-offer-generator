@@ -1,5 +1,5 @@
 import type { InventoryUnit } from "@/lib/sheets";
-import { vidaBrochureFileIds } from "@/lib/vida-brochure-assets";
+import { vidaBrochureFileIds } from "./vida-brochure-assets.ts";
 
 /**
  * Verified against Vida Elaf phase 1 (87 PDF pages) and phase 2 (45 pages).
