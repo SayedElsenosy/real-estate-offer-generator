@@ -85,7 +85,7 @@ export function VidaInteractiveMap({units}:{units:Unit[]}){
          {t("Phase","المرحلة")} {p}
        </button>)}
      </div>
-     <div style={{display:"grid",gridTemplateColumns:"minmax(0,1.5fr) minmax(250px,.85fr)",gap:17,alignItems:"start"}}>
+     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,330px),1fr))",gap:17,alignItems:"start"}}>
        <VidaSitePicker
          selectedBuilding={building} selectedPhase={phase}
          onSelectBuilding={chooseBuilding} language={language}
