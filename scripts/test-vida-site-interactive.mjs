@@ -18,7 +18,7 @@ assert.equal(Object.keys(vidaSiteAssetFileIds).length,73,
  "Full original site image + 72 original floor-locator crop images must all exist");
 assert.ok(vidaSiteAssetFileIds["vida_site_original.jpg"]);
 for(const filename of Object.keys(vidaSiteAssetFileIds)){
- assert.ok(filename==="vida_site_original.jpg"||/^p[12]_\\d{2}_locator\\.jpg$/.test(filename));
+ assert.ok(filename==="vida_site_original.jpg"||/^p[12]_[0-9]{2}_locator[.]jpg$/.test(filename));
 }
 const viewer=read("components/VidaInteractiveMap.tsx");
 const picker=read("components/VidaSitePicker.tsx");
@@ -32,7 +32,7 @@ assert.match(viewer,/VidaSitePicker/);
 assert.match(viewer,/phaseBuildings/);
 assert.match(viewer,/setFloor\(/);
 assert.match(viewer,/api\/vida\/lookup/);
-assert.match(viewer,/page=loc-/);
+assert.ok(viewer.includes('artwork("loc-"+'),"Original floor locator must be shown on selection");
 assert.match(viewer,/single-unit outline|حدود الشقة الواحدة/);
 assert.match(picker,/vidaHotspotPoints/);
 assert.match(picker,/onSelectBuilding\(s\.id\)/);
