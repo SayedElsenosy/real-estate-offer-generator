@@ -16,6 +16,10 @@ export type PaymentTerms = {
   deliveryCollectionEnabled?: boolean;
   deliveryCollectionPct?: string | null;
   maintenanceDueDate?: string | null;
+  /** Optional exceptional quarterly plan: regular installments continue before the second deposit. */
+  regularBeforeSecondDown?: boolean;
+  /** Deposit is levied on original list price even when a discount is applied. */
+  maintenanceOnOriginalPrice?: boolean;
 };
 export type ScheduleRow = {
   number: number | null;
@@ -87,7 +91,7 @@ export function calculateSchedule(priceInput:string,terms:PaymentTerms,issueDate
   // installment schedule; it never consumes a payment slot or changes its term.
   const down=money(price.mul(downPct).div(100));
   const secondDown=money(price.mul(secondPct).div(100));
-  const maintenance=money(price.mul(maintenancePct).div(100));
+  const maintenance=money((terms.maintenanceOnOriginalPrice?originalPrice:price).mul(maintenancePct).div(100));
   const preDeliveryTarget=terms.deliveryCollectionEnabled
     ? money(price.mul(preDeliveryPct).div(100)) : down;
   const hasDown=down.gt(0);
@@ -96,11 +100,14 @@ export function calculateSchedule(priceInput:string,terms:PaymentTerms,issueDate
   // without extending past the agreed duration. Explicit late start offsets
   // remain supported for legacy plans.
   const firstFutureOffset=Math.max(interval,terms.startOffsetMonths||interval,
-    secondDown.gt(0)?secondOffset+interval:0);
+    secondDown.gt(0)&&!terms.regularBeforeSecondDown?secondOffset+interval:0);
   const lastOffset=interval===3&&terms.quarterlyEndAtTerm
     ?terms.months:terms.months-(hasDown?1:0);
   const offsets:number[]=[];
-  for(let month=firstFutureOffset;month<=lastOffset;month+=interval)offsets.push(month);
+  for(let month=firstFutureOffset;month<=lastOffset;month+=interval){
+    if(secondDown.gt(0)&&terms.regularBeforeSecondDown&&month===secondOffset)continue;
+    offsets.push(month);
+  }
   if (!offsets.length && !price.eq(down.plus(secondDown)))
     throw Error("The selected duration contains no future installment dates.");
   const before=offsets.filter(month=>terms.deliveryCollectionEnabled && month<deliveryMonths);
