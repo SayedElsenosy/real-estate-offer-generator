@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { unitKey } from "@/lib/unit-code";
 import { useLanguage } from "@/components/LanguageProvider";
 import { calculateSchedule, type PaymentTerms } from "@/lib/payment";
+import { projectPaymentOverrides } from "@/lib/project-payment-overrides";
 import { UnitSourceDetails } from "@/components/UnitSourceDetails";
 
 type Unit = { code: string; price: string; area: string; floor: string; status: string; project: string; type?: string };
@@ -46,11 +47,12 @@ export default function Studio({ projects, email }: { projects: Project[]; email
         ordinaryInstallmentRebate:plan.ordinaryInstallmentRebate||"0",
         deliveryMonths:plan.deliveryMonths??undefined,
         deliveryCollectionEnabled:plan.deliveryCollectionEnabled,
-        deliveryCollectionPct:plan.deliveryCollectionPct
+        deliveryCollectionPct:plan.deliveryCollectionPct,
+        ...projectPaymentOverrides(projectId,plan.id)
       },date)),error:""};
     }catch(err){return {rows:[] as ReturnType<typeof calculateSchedule>[],
       error:err instanceof Error?err.message:"Invalid payment plan"};}
-  },[unit,selectedPlans.map(p=>p.id+":"+p.months+":"+p.deliveryMonths+":"+p.installmentIntervalMonths+":"+p.discountPct+":"+p.secondDownPaymentPct).join("|")]);
+  },[projectId,unit,selectedPlans.map(p=>p.id+":"+p.months+":"+p.deliveryMonths+":"+p.installmentIntervalMonths+":"+p.discountPct+":"+p.secondDownPaymentPct).join("|")]);
   const visibleUnits = useMemo(() => units.filter(item =>
     (item.code + " " + item.floor).toLowerCase().includes(search.toLowerCase())).slice(0, 100), [units, search]);
   function selectUnit(code: string, floorCode?: string) {
