@@ -8,6 +8,7 @@ import { calculateSchedule } from "@/lib/payment";
 import { getCairoOfferLocation } from "@/lib/cairo-offer-location";
 import { getNasaOfferLocation } from "@/lib/nasa-offer-location";
 import { unitKey } from "@/lib/unit-code";
+import { matchVidaBrochure } from "@/lib/vida-brochure";
 import type { FloorGeometry } from "@/lib/pdf";
 import { createPropertyOfferPdf } from "@/lib/workers-pdf";
 import { CAIRO_PLAZA_PROJECT_ID, hasAuthoritativeCairoDwgSource } from "@/lib/cairo-architectural-source";
@@ -80,9 +81,14 @@ export async function POST(req: NextRequest) {
       ? await getNasaOfferLocation(user.id,unit.code,unit.floor) : null;
     // Workers-safe PDF engine. The former renderer relied on a Node URL/file
     // environment and failed with "Invalid URL string" on Cloudflare.
+    // Only phase/building/floor/source-area verified matches may reference
+    // cropped original drawings. Never reuse a similar unit's floorplan.
+    const vidaBrochure=projectId==="vida" ? matchVidaBrochure(unit) : null;
+    const {sourceHeaders,sourceCells,...publicUnit}=unit;
     const common = {
       company: project.companyName, logoUrl: trustedLogo(project.logoUrl),
-      project: project.name, unit, issuedAt, floor: geometry, location, nasaLocation, schedules
+      project: project.name, unit:publicUnit, issuedAt, floor: geometry,
+      location, nasaLocation, vidaBrochure, schedules
     };
     // The studio renders its PDF locally. Prices, availability and financial
     // schedules still come exclusively from the authenticated server checks.
@@ -90,6 +96,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ offer: common, language }, {
         headers: { "Cache-Control": "private, no-store" }
       });
+    }
+    if(projectId==="vida" && vidaBrochure){
+      return NextResponse.json({error:"Download Vida offers from Offer Studio to include original brochure drawings."},
+        {status:406,headers:{"Cache-Control":"no-store"}});
     }
     const pdfBytes = language==="ar"
       ? await (await import("@/lib/arabic-pdf")).createArabicOfferPdf(common)
