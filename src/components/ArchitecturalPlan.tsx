@@ -6,6 +6,7 @@ import { useLiveInventory } from "@/hooks/useLiveInventory";
 import { Sidebar } from "@/components/Sidebar";
 import { CairoPlazaInteractiveMap } from "@/components/CairoPlazaInteractiveMap";
 import { NasaInteractiveMap } from "@/components/NasaInteractiveMap";
+import { VidaInteractiveMap } from "@/components/VidaInteractiveMap";
 import { UnitSourceDetails } from "@/components/UnitSourceDetails";
 import { unitKey } from "@/lib/unit-code";
 
@@ -30,13 +31,14 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
   const {language} = useLanguage();
   const t=(en:string,ar:string)=>language==="ar"?ar:en;
   const {units:liveUnits,floorPlans,loading,refreshing,error,refresh,lastReadAt} =
-    useLiveInventory(projectId,projectId!=="cairo-plaza"&&projectId!=="nasa");
+    useLiveInventory(projectId,projectId!=="cairo-plaza"&&projectId!=="nasa"&&projectId!=="vida");
   const result:Result|null = loading||error ? null : {units:liveUnits,floorPlans};
   const [selected,setSelected]=useState("");
   const [zoom,setZoom]=useState(1);
   const current=projects.find(p=>p.id===projectId);
   const isCairo=projectId==="cairo-plaza";
   const isNasa=projectId==="nasa";
+  const isVida=projectId==="vida";
   const approved=useMemo(()=> (result?.floorPlans||[]).filter(f=>
     f.reviewStatus==="APPROVED"&&Array.isArray(f.shapes)&&f.shapes.length>0
   ),[result]);
@@ -71,14 +73,14 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
               {projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </label>
-          <label className="fieldlabel" style={{minWidth:230,flex:1}}>{t("Floor","الدور")}
+          {!isVida&&<label className="fieldlabel" style={{minWidth:230,flex:1}}>{t("Floor","الدور")}
             <select className="field" value={floorNumber}
               onChange={e=>{setFloorNumber(e.target.value);setSelected("");setZoom(1);}}>
               {isCairo||isNasa?floorOptions.filter(([value])=>!isNasa||value!=="6").map(([value,en,ar])=><option value={value} key={value}>{t(en,ar)}</option>):
                 (approved.length?approved:result?.floorPlans||[]).map(f=>
                   <option key={f.id} value={f.floor||""}>{f.name}</option>)}
             </select>
-          </label>
+          </label>}
         </div>
         <p className="muted" style={{marginTop:12}}>
           {current?.name||"No project selected"} · {loading?t("Loading live inventory…","جاري تحميل المخزون…"):error?t("Inventory unavailable","المخزون غير متاح"):(result?.units?.length||0)+" "+t("inventory units","وحدة من المخزون")}
@@ -93,8 +95,9 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
       {isNasa&&result&&!error&&
         <NasaInteractiveMap floor={floorNumber} inventory={result.units||[]}
           selected={selected} onSelect={setSelected}/>}
-      {(isCairo||isNasa)&&!result&&!error&&<section className="panel">{t("Loading inventory and floor plans…","جاري تحميل المخزون والمخططات…")}</section>}
-      {!isCairo&&!isNasa&&otherFloor&&result&&!error&&<section className="panel">
+      {isVida&&result&&!error&&<VidaInteractiveMap units={result.units||[]}/>}
+      {(isCairo||isNasa||isVida)&&!result&&!error&&<section className="panel">{t("Loading inventory and floor plans…","جاري تحميل المخزون والمخططات…")}</section>}
+      {!isCairo&&!isNasa&&!isVida&&otherFloor&&result&&!error&&<section className="panel">
         <div className="between" style={{flexWrap:"wrap",gap:10}}>
           <h2>{t("Floor plan","مخطط")} {otherFloor.name}</h2>
           <div className="actionline">
@@ -129,7 +132,7 @@ export default function ArchitecturalPlan({email,projects}:{email:string;project
         </div>}
         {currentStock && <UnitSourceDetails projectId={projectId} code={currentStock.code} floor={currentStock.floor}/>}
       </section>}
-      {!isCairo&&!isNasa&&!loading&&!error&&!otherFloor&&<section className="panel">
+      {!isCairo&&!isNasa&&!isVida&&!loading&&!error&&!otherFloor&&<section className="panel">
         <h2>{t("No approved unit outlines for this project yet","لا توجد حدود وحدات معتمدة لهذا المشروع حتى الآن")}</h2>
         <p>{t("An administrator can upload its engineering floorplan in settings.","يمكن إضافة المخطط الأصلي من إعدادات النظام.")}</p>
       </section>}
