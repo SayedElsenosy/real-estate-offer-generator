@@ -25,6 +25,9 @@ const probes = [
   {path:"/api/offers", name:"quote history remains disabled", expected:410},
   {path:"/api/offers", method:"POST", name:"quote generation rejects unauthenticated users", expected:401},
   {path:"/api/inventory?projectId=cairo-plaza", name:"inventory rejects anonymous users", expected:401},
+  {path:"/api/vida/artwork?phase=1&page=site", name:"original Vida full site image requires authorization", expected:401},
+  {path:"/api/vida/artwork?phase=2&page=loc-33", name:"original Vida floor locator requires authorization", expected:401},
+  {path:"/api/vida/lookup?unitCode=23-302&unitFloor=Third", name:"Vida unit selection requires authorization", expected:401},
 ];
 let failures=0;
 for(const probe of probes){
