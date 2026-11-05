@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { unitKey } from "@/lib/unit-code";
 import { useLanguage } from "@/components/LanguageProvider";
 import { calculateSchedule, type PaymentTerms } from "@/lib/payment";
+import { calculateVidaWorkbookSchedule, isVidaWorkbookPlanId } from "@/lib/vida-payments";
 import { UnitSourceDetails } from "@/components/UnitSourceDetails";
 import { VidaBrochurePreview } from "@/components/VidaBrochurePreview";
 
@@ -47,7 +48,9 @@ export default function Studio({ projects, email }: { projects: Project[]; email
     if(!unit||!selectedPlans.length)return {rows:[] as ReturnType<typeof calculateSchedule>[],error:""};
     try{
       const date=new Date();
-      return {rows:selectedPlans.map(plan=>calculateSchedule(unit.price,{
+      return {rows:selectedPlans.map(plan=>projectId==="vida" && isVidaWorkbookPlanId(plan.id)
+        ? calculateVidaWorkbookSchedule(unit.price,plan.id,date)
+        : calculateSchedule(unit.price,{
         name:plan.name,downPaymentPct:plan.downPaymentPct,months:plan.months,
         maintenancePct:plan.maintenancePct,startOffsetMonths:plan.startOffsetMonths,
         installmentIntervalMonths:plan.installmentIntervalMonths===3?3:1,
