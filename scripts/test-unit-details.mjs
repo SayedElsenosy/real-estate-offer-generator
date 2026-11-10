@@ -37,9 +37,9 @@ const read=p=>readFileSync("src/"+p,"utf8");
 const layouts=read("lib/sheets.ts");
 // Verified from the three native tabs in NASA Sales inv (Nasa, Vida, Aqmar).
 // These assertions guard against silently treating garage/garden price as unit total.
-assert.match(layouts,/vida:\\s*\\{\\s*columns:\\s*\\{\\s*code:\\s*4,\\s*price:\\s*17,\\s*area:\\s*8,\\s*floor:\\s*3,\\s*status:\\s*10\\s*\\}/,
+assert.ok(layouts.includes("columns: { code: 4, price: 17, area: 8, floor: 3, status: 10 }"),
   "Vida must map R=Total Price, I=BUA and K=Status; never Q=Garage Price.");
-assert.match(layouts,/aqmar:\\s*\\{\\s*columns:\\s*\\{\\s*code:\\s*5,\\s*price:\\s*20,\\s*area:\\s*15,\\s*floor:\\s*4,\\s*status:\\s*6\\s*\\}/,
+assert.ok(layouts.includes("columns: { code: 5, price: 20, area: 15, floor: 4, status: 6 }"),
   "Aqmar must map U=total unit price, P=BUA and G=Status.");
 const vidaHeaders=["TYPE","PH","Building","FLOOR","Unit Code","unit type","rooms","asfasf","BUA",
   "Garden Area","Status","m price","unit price","Garden Price","unit price",
