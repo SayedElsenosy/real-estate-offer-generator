@@ -34,6 +34,27 @@ assert.deepEqual(extractUnitSourceFields(["Buyer name","Mobile number","Property
   ["Example","010...","Admin","private"]),[{column:3,label:"Property Type",value:"Admin"}]);
 
 const read=p=>readFileSync("src/"+p,"utf8");
+const layouts=read("lib/sheets.ts");
+// Verified from the three native tabs in NASA Sales inv (Nasa, Vida, Aqmar).
+// These assertions guard against silently treating garage/garden price as unit total.
+assert.match(layouts,/vida:\\s*\\{\\s*columns:\\s*\\{\\s*code:\\s*4,\\s*price:\\s*17,\\s*area:\\s*8,\\s*floor:\\s*3,\\s*status:\\s*10\\s*\\}/,
+  "Vida must map R=Total Price, I=BUA and K=Status; never Q=Garage Price.");
+assert.match(layouts,/aqmar:\\s*\\{\\s*columns:\\s*\\{\\s*code:\\s*5,\\s*price:\\s*20,\\s*area:\\s*15,\\s*floor:\\s*4,\\s*status:\\s*6\\s*\\}/,
+  "Aqmar must map U=total unit price, P=BUA and G=Status.");
+const vidaHeaders=["TYPE","PH","Building","FLOOR","Unit Code","unit type","rooms","asfasf","BUA",
+  "Garden Area","Status","m price","unit price","Garden Price","unit price",
+  "Price After Dis 5%","Garage price","Total Price"];
+assert.equal(vidaHeaders[17],"Total Price");
+assert.equal(vidaHeaders[8],"BUA");
+assert.equal(vidaHeaders[10],"Status");
+const vidaLiveRow=["TYPE 3","PH 1","Building 5 A","First","5A-103","Apartment","1 Bed","Apartment-1 Bed",
+  "73.2","","Available","33,000","2,415,600","0","2,415,600","2,415,600","120,000","2,535,600"];
+assert.equal(vidaLiveRow[17],"2,535,600","Live full unit price must include garage, not garage alone");
+assert.equal(vidaLiveRow[16],"120,000","Garage price is a separate column");
+const aqmarLiveRow=["1","type6","PH 1","Building 1","Ground","1-01","Available",
+  "","","","","","","Apartment","1Bed","98.13","40","44,000","4,317,720","586,667","4,904,387"];
+assert.equal(aqmarLiveRow[20],"4,904,387","Aqmar actual total price stays at U, not S=unit base price");
+
 const inventory=read("app/api/inventory/route.ts");
 const detailApi=read("app/api/unit-details/route.ts");
 assert.match(inventory,/sourceUnits\.map\(\(\{sourceHeaders,sourceCells,\.\.\.publicUnit\}\)=>publicUnit\)/,
