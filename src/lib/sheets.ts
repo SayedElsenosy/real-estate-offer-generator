@@ -149,7 +149,7 @@ const layoutByProject: Record<string, Layout> = {
       floor: ["floor"], status: ["status"] }
   },
   vida: {
-    columns: { code: 4, price: 16, area: 7, floor: 3, status: 9 },
+    columns: { code: 4, price: 17, area: 8, floor: 3, status: 10 },
     expected: { code: ["unitcode"], price: ["totalprice"], area: ["bua"],
       floor: ["floor"], status: ["status"] }
   }
