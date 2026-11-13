@@ -1,7 +1,8 @@
 "use client";
+import type { CairoFoodPricing } from "@/lib/cairo-food-pricing";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export type LiveInventoryUnit = {code:string;price:string;area:string;floor:string;status:string;project:string;type?:string};
+export type LiveInventoryUnit = {code:string;price:string;area:string;floor:string;status:string;project:string;type?:string;foodPricing?:CairoFoodPricing};
 export type LiveFloorPlan = {id:string;name:string;floor:string|null;viewBox:string;
   shapes:{unitCode:string;d:string}[];backgroundData?:string|null;reviewStatus:string};
 type Result = {units:LiveInventoryUnit[];floorPlans:LiveFloorPlan[];lastReadAt:number};
