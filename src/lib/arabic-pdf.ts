@@ -119,7 +119,7 @@ export async function createArabicOfferPdf({
   pair(intro,"المشروع",projectArabic(project),H-273,f,true);
   pair(intro,"كود الوحدة",unit.code,H-317,f);
   pair(intro,"الدور",unit.floor,H-361,f);
-  pair(intro,"المساحة بالمتر المربع",unit.area||"-",H-405,f);
+  pair(intro,unit.foodPricing?"المساحة الداخلية بالمتر المربع":"المساحة بالمتر المربع",unit.area||"-",H-405,f);
   pair(intro,"حالة الوحدة","متاحة",H-449,f,true);
   pair(intro,"سعر الوحدة بالجنيه",amount(unit.price),H-493,f);
   let priceSqm="-";
@@ -128,9 +128,15 @@ export async function createArabicOfferPdf({
     const area=new Decimal(String(unit.area).replace(/,/g,""));
     if(price.isFinite()&&area.isFinite()&&area.gt(0))priceSqm=amount(price.div(area));
   }catch{}
-  pair(intro,"سعر المتر المربع بالجنيه",priceSqm,H-537,f);
+  if(unit.foodPricing){
+    pair(intro,"سعر المتر الداخلي بالجنيه",amount(unit.foodPricing.indoorRateEgp),H-537,f);
+    pair(intro,"المساحة الخارجية بالمتر المربع",unit.foodPricing.outdoorAreaSqm,H-577,f);
+    pair(intro,"سعر المتر الخارجي بالجنيه",amount(unit.foodPricing.outdoorRateEgp),H-617,f);
+  }else {
+    pair(intro,"سعر المتر المربع بالجنيه",priceSqm,H-537,f);
+  }
   ar(intro,"تم استخراج بيانات السعر والمساحة من مصدر المخزون الحالي",
-    RIGHT,186,f.arabic,11,gray);
+    RIGHT,unit.foodPricing?158:186,f.arabic,10,gray);
 
   const planPage=pdf.addPage([W,H]);
   heading(planPage,company,"موقع الوحدة على المخطط",projectArabic(project),logo,f);
