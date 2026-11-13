@@ -151,7 +151,7 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
   pair(intro,"Project",project,H-269,regular,bold);
   pair(intro,"Unit code",unit.code,H-313,regular,bold);
   pair(intro,"Floor",unit.floor,H-357,regular,bold);
-  pair(intro,"Area",unit.area ? unit.area+" sqm":"-",H-401,regular,bold);
+  pair(intro,unit.foodPricing?"INDOOR AREA":"Area",unit.area ? unit.area+" sqm":"-",H-401,regular,bold);
   pair(intro,"Inventory status",unit.status,H-445,regular,bold);
   pair(intro,"UNIT PRICE","EGP "+formatOfferMoney(unit.price),H-489,regular,bold);
   const priceValue=new Decimal(String(unit.price).replace(/[,\s]/g,""));
@@ -159,12 +159,20 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
   const areaValue=new Decimal(/^\d+(?:\.\d+)?$/.test(cleanArea)?cleanArea:"0");
   const sqmPrice=priceValue.isFinite()&&areaValue.isFinite()&&areaValue.gt(0)
     ?priceValue.div(areaValue).toDecimalPlaces(2,Decimal.ROUND_HALF_UP).toFixed(2):"—";
-  pair(intro,"PRICE PER SQM","EGP "+formatOfferMoney(sqmPrice),H-533,regular,bold);
+  if(unit.foodPricing){
+    pair(intro,"INDOOR PRICE PER SQM","EGP "+formatOfferMoney(unit.foodPricing.indoorRateEgp),
+      H-533,regular,bold);
+    pair(intro,"OUTDOOR AREA",unit.foodPricing.outdoorAreaSqm+" sqm",H-577,regular,bold);
+    pair(intro,"OUTDOOR PRICE PER SQM","EGP "+formatOfferMoney(unit.foodPricing.outdoorRateEgp),
+      H-621,regular,bold);
+  } else {
+    pair(intro,"PRICE PER SQM","EGP "+formatOfferMoney(sqmPrice),H-533,regular,bold);
+  }
   intro.drawText("Prices and availability are rechecked against the live project source before issue.",{
-    x:LEFT,y:195,font:regular,size:9,color:gray
+    x:LEFT,y:unit.foodPricing?161:195,font:regular,size:9,color:gray
   });
   intro.drawText("No quotation file, payment schedule or offer history is stored by the platform.",{
-    x:LEFT,y:176,font:regular,size:9,color:gray
+    x:LEFT,y:unit.foodPricing?142:176,font:regular,size:9,color:gray
   });
   const map=pdf.addPage([W,H]);
   header(map,company,"UNIT LOCATION",printable(project)+"  /  "+printable(unit.code),bold,regular,logo);
