@@ -4,15 +4,16 @@ import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
 import { FloorPlanEditor } from "@/components/FloorPlanEditor";
 import { useLanguage } from "@/components/LanguageProvider";
+import { ShareLinkButton } from "@/components/ShareLinkButton";
 
-type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; installmentIntervalMonths: number; deliveryDate: string | null; deliveryCollectionEnabled: boolean; deliveryCollectionPct: string };
+type Plan = { id: string; name: string; downPaymentPct: string; maintenancePct: string; discountPct:string; secondDownPaymentPct:string; secondDownOffsetMonths:number; quarterlyEndAtTerm:boolean; ordinaryInstallmentRebate:string; months: number; startOffsetMonths: number; installmentIntervalMonths: number; deliveryMonths: number | null; deliveryCollectionEnabled: boolean; deliveryCollectionPct: string };
 type Shape = { unitCode: string; d: string };
 type Floor = { id: string; name: string; floor: string | null; viewBox: string; shapes: Shape[] };
 type Project = {
   id: string; name: string; spreadsheetId: string | null; sheetRange: string;
   companyName: string; logoUrl: string | null; paymentPlans: Plan[]; floorPlans: Floor[];
 };
-const blankPlan = { id: "", name: "", downPaymentPct: "10", maintenancePct: "8", months: "80", startOffsetMonths: "1", installmentIntervalMonths: "1", deliveryDate: "", deliveryCollectionEnabled: false, deliveryCollectionPct: "0" };
+const blankPlan = { id: "", name: "", discountPct:"0", secondDownPaymentPct:"0", secondDownOffsetMonths:"0", quarterlyEndAtTerm:false, ordinaryInstallmentRebate:"0", downPaymentPct: "10", maintenancePct: "8", months: "80", startOffsetMonths: "1", installmentIntervalMonths: "1", deliveryMonths: "", deliveryCollectionEnabled: false, deliveryCollectionPct: "0" };
 const blankFloor = { id: "", name: "", floor: "", viewBox: "0 0 1000 700", shapes: [] as Shape[] };
 function extractPaths(source: string): { viewBox: string; shapes: Shape[] } {
   const document = new DOMParser().parseFromString(source, "image/svg+xml");
@@ -40,7 +41,7 @@ function extractPaths(source: string): { viewBox: string; shapes: Shape[] } {
 export default function AdminPanel({ email, projects }: { email: string; projects: Project[] }) {
   const { tr } = useLanguage();
   const [items, setItems] = useState(projects);
-  const [id, setId] = useState(items[0]?.id || "");
+  const [id, setId] = useState(items.find(p=>p.id==="cairo-plaza")?.id || items[0]?.id || "");
   const [plan, setPlan] = useState(blankPlan);
   const [floor, setFloor] = useState(blankFloor);
   const [notice, setNotice] = useState("");
@@ -48,6 +49,31 @@ export default function AdminPanel({ email, projects }: { email: string; project
   const project = items.find(p => p.id === id);
   function changeProject(key: "spreadsheetId" | "sheetRange" | "companyName" | "logoUrl", value: string) {
     setItems(old => old.map(p => p.id === id ? { ...p, [key]: value } : p));
+  }
+  async function readCompanyLogo(file:File) {
+    setNotice("");
+    if(!["image/png","image/jpeg"].includes(file.type) || file.size>6_000_000){
+      setNotice(tr("Choose a PNG or JPEG logo under 6 MB."));return;
+    }
+    const objectUrl=URL.createObjectURL(file);
+    try{
+      const image=new Image();
+      image.src=objectUrl;
+      await image.decode();
+      if(!image.naturalWidth||!image.naturalHeight)throw Error("Invalid image.");
+      const factor=Math.min(1,500/Math.max(image.naturalWidth,image.naturalHeight));
+      const canvas=document.createElement("canvas");
+      canvas.width=Math.max(1,Math.round(image.naturalWidth*factor));
+      canvas.height=Math.max(1,Math.round(image.naturalHeight*factor));
+      const ctx=canvas.getContext("2d");if(!ctx)throw Error("Image processing is unavailable.");
+      ctx.drawImage(image,0,0,canvas.width,canvas.height);
+      let encoded=canvas.toDataURL(file.type,0.88);
+      if(encoded.length>350000) encoded=canvas.toDataURL("image/jpeg",0.78);
+      if(encoded.length>350000)throw Error("Logo remains too large. Choose a smaller picture.");
+      changeProject("logoUrl",encoded);
+      setNotice(tr("Logo prepared. Save project settings to keep it permanently."));
+    }catch(e){setNotice(e instanceof Error?e.message:tr("Logo could not be loaded"));}
+    finally{URL.revokeObjectURL(objectUrl);}
   }
   async function saveProject() {
     if (!project) return;
@@ -112,6 +138,11 @@ export default function AdminPanel({ email, projects }: { email: string; project
   }
   return <div className="shell"><Sidebar active="admin" email={email} /><main className="main">
     <div className="header-line"><div><div className="eyebrow">{tr("ADMINISTRATION / WORKSPACE SETTINGS")}</div><h1>{tr("Project configuration")}</h1><p className="muted">{tr("Connect each project's inventory and configure client-facing financial offers.")}</p></div><Link href="/studio" className="btn soft">{tr("Back to Offer Studio")}</Link></div>
+    <details className="panel" style={{marginBottom:20}}>
+      <summary style={{cursor:"pointer",fontWeight:700}}>{tr("Private access link for other devices")}</summary>
+      <p className="muted" style={{marginTop:12}}>{tr("Share the private link to open the studio and floor plans on another device without Google sign-in. The link does not grant administrator rights.")}</p>
+      <ShareLinkButton />
+    </details>
     {notice && <div className={"notice" + ((notice.toLowerCase().includes("saved") || notice.startsWith("تم")) ? " good" : "")} style={{marginBottom:20}}>{notice}</div>}
     <div className="panel" style={{marginBottom:20}}><div className="between"><div><div className="eyebrow">{tr("ACTIVE PROJECT")}</div><h2 style={{marginTop:10,marginBottom:0}}>{project?.name || tr("No project")}</h2></div>
       <select className="field" style={{maxWidth:300}} value={id} onChange={e=>{setId(e.target.value);setPlan(blankPlan);setFloor(blankFloor);setNotice("");}}>
@@ -123,7 +154,21 @@ export default function AdminPanel({ email, projects }: { email: string; project
           <label className="fieldlabel">{tr("Google Drive file ID")}<input className="field" value={project.spreadsheetId || ""} placeholder="1AbCdEf..." onChange={e=>changeProject("spreadsheetId",e.target.value)}/></label>
           <label className="fieldlabel">{tr("Tab / range")}<input className="field" value={project.sheetRange} onChange={e=>changeProject("sheetRange",e.target.value)}/></label>
           <label className="fieldlabel">{tr("Company name on offers")}<input className="field" value={project.companyName} onChange={e=>changeProject("companyName",e.target.value)}/></label>
-          <label className="fieldlabel">{tr("Company logo URL (HTTPS)")}<input className="field" value={project.logoUrl||""} onChange={e=>changeProject("logoUrl",e.target.value)}/></label>
+          <label className="fieldlabel">{tr("Upload company logo (PNG or JPEG)")}
+            <input className="field" type="file" accept="image/png,image/jpeg"
+              onChange={e=>{const file=e.target.files?.[0];if(file)void readCompanyLogo(file);}}/>
+          </label>
+          {project.logoUrl?.startsWith("data:image/") && <div style={{display:"flex",gap:12,alignItems:"center"}}>
+            <img src={project.logoUrl} alt={tr("Company logo preview")}
+              style={{maxWidth:120,maxHeight:80,objectFit:"contain",border:"1px solid #e2e8f0",padding:6,borderRadius:8}}/>
+            <span className="muted">{tr("Uploaded logo will be embedded directly into PDF offers.")}</span>
+          </div>}
+          <label className="fieldlabel">{tr("Or use a permanent HTTPS logo URL")}
+            <input className="field" placeholder={tr("Image URL (not a temporary Facebook link)")}
+              value={project.logoUrl?.startsWith("data:image/")?"":project.logoUrl||""}
+              onChange={e=>changeProject("logoUrl",e.target.value)}/>
+          </label>
+          <p className="muted">{tr("Temporary Facebook photo URLs expire. Upload the original logo once and save settings to keep it available in every offer.")}</p>
           <button className="btn" onClick={saveProject} disabled={busy}>{tr("Save project settings")}</button>
         </div>
         <div className="notice" style={{marginTop:18}}>{tr("Cairo Plaza: Excel Sheet1 (column A code, G area, E floor, L status, M total price). The other projects use their verified live sheet layouts.")}</div>
@@ -141,10 +186,10 @@ export default function AdminPanel({ email, projects }: { email: string; project
       <section className="panel"><div className="eyebrow">{tr("FINANCIAL CONFIGURATION")}</div><h2 style={{marginTop:12}}>{tr("Payment plan manager")}</h2>
         <p className="muted">{tr("Define reusable payment structures, then select multiple scenarios when issuing an offer.")}</p>
         {project.paymentPlans.map(p=><div className="unit" key={p.id}>
-          <span><b>{p.name}</b><small>{p.downPaymentPct}% {tr("Down payment %")} · {p.months} {tr("Total term including down payment (months)")} · {tr("Every")} {p.installmentIntervalMonths || 1} {tr("months")} · {tr("First payment is the down payment")}{p.deliveryDate ? " · " + tr("Delivery date") + ": " + p.deliveryDate : ""}</small></span>
+          <span><b>{p.name}</b><small>{p.downPaymentPct}% {tr("Down payment %")} · {p.months} {tr("Total term including down payment (months)")} · {tr(p.installmentIntervalMonths===3?"Quarterly installments":"Monthly payments")} · {tr("First payment is the down payment")}{p.deliveryMonths ? " · "+tr("Delivery after")+" "+p.deliveryMonths+" "+tr("months") : ""}</small></span>
           <div className="actionline">
             <button className="btn soft" type="button" disabled={busy}
-              onClick={()=>setPlan({id:p.id,name:p.name,downPaymentPct:p.downPaymentPct,months:String(p.months),maintenancePct:p.maintenancePct,startOffsetMonths:String(p.startOffsetMonths),installmentIntervalMonths:String(p.installmentIntervalMonths || 1),deliveryDate:p.deliveryDate || "",deliveryCollectionEnabled:p.deliveryCollectionEnabled,deliveryCollectionPct:p.deliveryCollectionPct})}>
+              onClick={()=>setPlan({id:p.id,name:p.name,discountPct:p.discountPct||"0",secondDownPaymentPct:p.secondDownPaymentPct||"0",secondDownOffsetMonths:String(p.secondDownOffsetMonths||0),quarterlyEndAtTerm:p.quarterlyEndAtTerm||false,ordinaryInstallmentRebate:p.ordinaryInstallmentRebate||"0",downPaymentPct:p.downPaymentPct,months:String(p.months),maintenancePct:p.maintenancePct,startOffsetMonths:String(p.startOffsetMonths),installmentIntervalMonths:String(p.installmentIntervalMonths||1),deliveryMonths:p.deliveryMonths ? String(p.deliveryMonths) : "",deliveryCollectionEnabled:p.deliveryCollectionEnabled,deliveryCollectionPct:p.deliveryCollectionPct})}>
               {tr("Edit")}
             </button>
             <button className="btn danger" type="button" disabled={busy} onClick={()=>void deletePlan(p.id)}>{tr("Delete")}</button>
@@ -158,37 +203,54 @@ export default function AdminPanel({ email, projects }: { email: string; project
             <label className="fieldlabel">{tr("Total term including down payment (months)")}<input className="field" type="number" min="1" max="360" value={plan.months} onChange={e=>setPlan({...plan,months:e.target.value})}/></label>
             <label className="fieldlabel">{tr("Maintenance %")}<input className="field" type="number" min="0" max="100" step="0.01" value={plan.maintenancePct} onChange={e=>setPlan({...plan,maintenancePct:e.target.value})}/></label>
             <label className="fieldlabel">{tr("Next payment after down payment (months)")}<input className="field" type="number" min="0" max="120" value={plan.startOffsetMonths} onChange={e=>setPlan({...plan,startOffsetMonths:e.target.value})}/></label>
-            <label className="fieldlabel">{tr("Installment every (months)")}
-              <input className="field" type="number" min="1" max="36" step="1" value={plan.installmentIntervalMonths}
-                onChange={e=>setPlan(old=>{
-                  const next=e.target.value;
-                  return {...old,installmentIntervalMonths:next,
-                    startOffsetMonths:old.startOffsetMonths===old.installmentIntervalMonths ? next : old.startOffsetMonths};
-                })}/>
-            </label>
           </div>
-          <p className="muted">{tr("Installment frequency hint")} — {tr("Zero offset means automatic start after one payment interval")}</p>
-          <p className="notice">{tr("Down payment counts as payment number 1 within the selected term.")}{" "}
-            {Number(plan.months)>0 && Number(plan.installmentIntervalMonths)>0 && Number(plan.downPaymentPct)>=0
-              ? tr("Estimated payment breakdown") + ": " +
-                (Number(plan.downPaymentPct)>0 ? "1 " + tr("down payment") + " + " : "") +
-                (Number(plan.downPaymentPct) + (plan.deliveryCollectionEnabled ? Number(plan.deliveryCollectionPct) : 0) >= 100 ? 0 :
-                  Math.max(0,Math.ceil(Number(plan.months)/Number(plan.installmentIntervalMonths))-
-                    (Number(plan.downPaymentPct)>0 ? 1 : 0))) + " " + tr("future installments")
-              : null}
-          </p>
-          <label className="fieldlabel">{tr("Delivery date")}<input className="field" type="date" value={plan.deliveryDate}
-            onChange={e=>setPlan({...plan,deliveryDate:e.target.value})} /></label>
+          <label className="fieldlabel">{tr("Installment frequency")}
+            <select className="field" value={plan.installmentIntervalMonths}
+              onChange={event=>{
+                const cadence=event.target.value;
+                const first=cadence==="3"
+                  ? String(Math.max(3,Number(plan.startOffsetMonths)||3))
+                  : "1";
+                setPlan({...plan,installmentIntervalMonths:cadence,startOffsetMonths:first});
+              }}>
+              <option value="1">{tr("Monthly — every month")}</option>
+              <option value="3">{tr("Quarterly — every 3 months")}</option>
+            </select>
+          </label>
+          <p className="notice">{tr("The down payment is the first payment within the term. Later installments follow the selected frequency. The schedule and PDF use the same cadence.")}</p>
+          <div className="twofields">
+            <label className="fieldlabel">{tr("Plan discount %")}<input className="field" type="number" min="0" max="99" step="0.01" value={plan.discountPct}
+              onChange={e=>setPlan({...plan,discountPct:e.target.value})}/></label>
+            <label className="fieldlabel">{tr("Second down payment %")}<input className="field" type="number" min="0" max="100" step="0.01" value={plan.secondDownPaymentPct}
+              onChange={e=>setPlan({...plan,secondDownPaymentPct:e.target.value})}/></label>
+            <label className="fieldlabel">{tr("Second down payment after (months)")}<input className="field" type="number" min="0" max="360" step="1" value={plan.secondDownOffsetMonths}
+              onChange={e=>setPlan({...plan,secondDownOffsetMonths:e.target.value})}/></label>
+            <label className="fieldlabel">{tr("Adjustment per regular installment (EGP)")}<input className="field" type="number" min="0" step="0.01" value={plan.ordinaryInstallmentRebate}
+              onChange={e=>setPlan({...plan,ordinaryInstallmentRebate:e.target.value})}/></label>
+          </div>
+          <label className="fieldlabel" style={{display:"flex",gap:8,alignItems:"center"}}>
+            <input type="checkbox" checked={plan.quarterlyEndAtTerm}
+              onChange={e=>setPlan({...plan,quarterlyEndAtTerm:e.target.checked})}/>
+            {tr("Final quarterly installment at the end of the term")}
+          </label>
+          <label className="fieldlabel">{tr("Delivery after (months)")}
+            <input className="field" type="number" min="1" max={Math.max(1,Number(plan.months)-1)} step="1"
+              value={plan.deliveryMonths}
+              onChange={e=>setPlan({...plan,deliveryMonths:e.target.value})}/>
+          </label>
           <label className="fieldlabel" style={{display:"flex",alignItems:"center",gap:9}}>
             <input type="checkbox" checked={plan.deliveryCollectionEnabled}
-              onChange={e=>setPlan({...plan,deliveryCollectionEnabled:e.target.checked,deliveryCollectionPct:e.target.checked?plan.deliveryCollectionPct:"0"})}/>
-            {tr("Collect a percentage at delivery")}
+              onChange={e=>setPlan({...plan,deliveryCollectionEnabled:e.target.checked})}/>
+            {tr("Split installments before and after delivery")}
           </label>
-          {plan.deliveryCollectionEnabled && <label className="fieldlabel">{tr("Collection at delivery %")}
-            <input className="field" type="number" min="0.01" max="100" step="0.01" value={plan.deliveryCollectionPct}
-              onChange={e=>setPlan({...plan,deliveryCollectionPct:e.target.value})}/>
-          </label>}
-          <p className="muted">{tr("Delivery collection is optional. When enabled, it is deducted from the installment balance.")}</p>
+          {plan.deliveryCollectionEnabled && <>
+            <label className="fieldlabel">{tr("Target paid by delivery (% of unit price, includes down payment)")}
+              <input className="field" type="number" min={plan.downPaymentPct} max="100" step="0.01"
+                value={plan.deliveryCollectionPct}
+                onChange={e=>setPlan({...plan,deliveryCollectionPct:e.target.value})}/>
+            </label>
+          </>}
+          <p className="muted">{tr("The pre-delivery percentage is distributed across the installments before delivery, with no separate payment at delivery. The remainder is distributed after delivery.")}</p>
           <div className="actionline"><button className="btn" disabled={busy||!plan.name} onClick={savePlan}>{tr(plan.id?"Update payment plan":"Add payment plan")}</button><button className="btn soft" onClick={()=>setPlan(blankPlan)}>{tr("New plan")}</button></div>
         </div>
       </section>
@@ -197,7 +259,7 @@ export default function AdminPanel({ email, projects }: { email: string; project
         <div className="pitem"><span>{tr("Administrative changes")}</span><b>{tr("Allowlisted admins")}</b></div>
         <div className="pitem"><span>{tr("Unit prices")}</span><b>{tr("Verified live")}</b></div>
         <div className="pitem"><span>{tr("Issued offers")}</span><b>{tr("Not saved")}</b></div>
-        <p className="muted">{tr("Logos are embedded in PDFs only when their domain is explicitly listed in ALLOWED_LOGO_HOSTS.")}</p>
+        <p className="muted">{tr("Company branding is loaded from the project settings. Public Facebook CDN logos and configured trusted logo hosts can be embedded in PDFs.")}</p>
       </section>
     </div></div>}
   </main></div>;
