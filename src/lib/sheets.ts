@@ -1,6 +1,7 @@
 import { readGoogleAccount, saveGoogleAccessToken } from "@/lib/public-data";
 import { getExcelInventory } from "@/lib/excel-inventory";
 import { unitTypeColumnForProject } from "@/lib/unit-type";
+import type { CairoFoodPricing } from "@/lib/cairo-food-pricing";
 
 export type InventoryUnit = {
   code: string;
@@ -11,6 +12,8 @@ export type InventoryUnit = {
   project: string;
   /** Official optional type/category from the live inventory heading. */
   type?: string;
+  /** Verified restaurant indoor/outdoor rate breakdown; absent for other units. */
+  foodPricing?: CairoFoodPricing;
   /** Server-only raw source fields. Never include in inventory list responses. */
   sourceHeaders?: string[];
   sourceCells?: string[];

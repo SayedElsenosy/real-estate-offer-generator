@@ -9,8 +9,9 @@ import { calculateSchedule, type PaymentTerms } from "@/lib/payment";
 import { calculateVidaWorkbookSchedule, isVidaWorkbookPlanId } from "@/lib/vida-payments";
 import { UnitSourceDetails } from "@/components/UnitSourceDetails";
 import { VidaBrochurePreview } from "@/components/VidaBrochurePreview";
+import type { CairoFoodPricing } from "@/lib/cairo-food-pricing";
 
-type Unit = { code: string; price: string; area: string; floor: string; status: string; project: string; type?: string };
+type Unit = { code: string; price: string; area: string; floor: string; status: string; project: string; type?: string; foodPricing?:CairoFoodPricing };
 type Plan = { id: string; name: string; discountPct?:string; secondDownPaymentPct?:string; secondDownOffsetMonths?:number; quarterlyEndAtTerm?:boolean; ordinaryInstallmentRebate?:string; downPaymentPct: string; maintenancePct: string; months: number; startOffsetMonths: number; installmentIntervalMonths?: number; deliveryMonths?: number|null; deliveryCollectionPct?: string; deliveryCollectionEnabled?: boolean };
 type Project = { id: string; slug: string; name: string; paymentPlans: Plan[] };
 function isAvailable(status: string): boolean {
@@ -31,6 +32,12 @@ export default function Studio({ projects, email }: { projects: Project[]; email
   const [generating, setGenerating] = useState(false);
   const [offerError,setOfferError] = useState("");
   const [search, setSearch] = useState("");
+  const [inventoryFloor,setInventoryFloor]=useState("");
+  const [minArea,setMinArea]=useState("");
+  const [maxArea,setMaxArea]=useState("");
+  const [minPrice,setMinPrice]=useState("");
+  const [maxPrice,setMaxPrice]=useState("");
+  const [inventorySort,setInventorySort]=useState<"code"|"area-asc"|"area-desc"|"price-asc"|"price-desc">("code");
   const [offerLanguage,setOfferLanguage]=useState<"ar"|"en">("ar");
   useEffect(()=>{
     // Deep-link from an explicitly selected Vida building/floor/unit in plans.
@@ -64,8 +71,40 @@ export default function Studio({ projects, email }: { projects: Project[]; email
     }catch(err){return {rows:[] as ReturnType<typeof calculateSchedule>[],
       error:err instanceof Error?err.message:"Invalid payment plan"};}
   },[unit,selectedPlans.map(p=>p.id+":"+p.months+":"+p.deliveryMonths+":"+p.installmentIntervalMonths+":"+p.discountPct+":"+p.secondDownPaymentPct).join("|")]);
-  const visibleUnits = useMemo(() => units.filter(item =>
-    (item.code + " " + item.floor).toLowerCase().includes(search.toLowerCase())).slice(0, 100), [units, search]);
+  const availableFloors=useMemo(()=>[...new Set(units.map(u=>u.floor))].filter(Boolean)
+    .sort((a,b)=>Number(a)-Number(b)||a.localeCompare(b,undefined,{numeric:true})),[units]);
+  // Filter ALL rows returned from the project's read-only inventory, not
+  // merely the first 100. Sorting never changes the XLSX or pricing source.
+  const visibleUnits=useMemo(()=>{
+    const num=(s:string)=>Number(String(s).replace(/[,\s]/g,""));
+    const lowArea=minArea.trim()?num(minArea):null;
+    const highArea=maxArea.trim()?num(maxArea):null;
+    const lowPrice=minPrice.trim()?num(minPrice):null;
+    const highPrice=maxPrice.trim()?num(maxPrice):null;
+    const lower=search.trim().toLocaleLowerCase();
+    const list=units.filter(item=>{
+      if(!(item.code+" "+item.floor+" "+(item.type||"")).toLocaleLowerCase().includes(lower))return false;
+      if(inventoryFloor&&item.floor!==inventoryFloor)return false;
+      const area=num(item.area),price=num(item.price);
+      if(lowArea!==null&&(!Number.isFinite(area)||area<lowArea))return false;
+      if(highArea!==null&&(!Number.isFinite(area)||area>highArea))return false;
+      if(lowPrice!==null&&(!Number.isFinite(price)||price<lowPrice))return false;
+      if(highPrice!==null&&(!Number.isFinite(price)||price>highPrice))return false;
+      return true;
+    });
+    return list.sort((a,b)=>{
+      const compareCode=()=>a.code.localeCompare(b.code,undefined,{numeric:true});
+      if(inventorySort==="code")return compareCode();
+      const field=inventorySort.startsWith("area")?"area":"price";
+      const direction=inventorySort.endsWith("desc")?-1:1;
+      const delta=(num(a[field])-num(b[field]))*direction;
+      return Number.isFinite(delta)&&delta!==0?delta:compareCode();
+    });
+  },[units,search,inventoryFloor,minArea,maxArea,minPrice,maxPrice,inventorySort]);
+  function clearInventoryFilters(){
+    setSearch("");setInventoryFloor("");setMinArea("");setMaxArea("");
+    setMinPrice("");setMaxPrice("");setInventorySort("code");
+  }
   function selectUnit(code: string, floorCode?: string) {
     const candidates = units.filter(u => unitKey(u.code) === unitKey(code) && (floorCode === undefined || u.floor === floorCode));
     const exact = candidates.find(u => u.code === code);
@@ -104,7 +143,7 @@ export default function Studio({ projects, email }: { projects: Project[]; email
   return <div className="shell"><Sidebar active="studio" email={email} shared={email==="Private link access"} /><main className="main">
     <header className="header-line"><div><div className="eyebrow">{tr("OFFER STUDIO / LIVE INVENTORY")}</div><h1>{tr("Build a property offer")}</h1><p className="muted">{tr("Pick a project, inspect a unit and include one or more financial scenarios.")}</p></div>
       <div style={{ minWidth: 230 }}><label className="fieldlabel">{tr("ACTIVE PROJECT")}
-        <select className="field" value={projectId} onChange={e => {setProjectId(e.target.value);setSelected("");setFloorNumber("");setChosenPlans([]);}}>
+        <select className="field" value={projectId} onChange={e => {setProjectId(e.target.value);setSelected("");setFloorNumber("");setChosenPlans([]);clearInventoryFilters();}}>
           {projects.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}
         </select></label></div>
     </header>
@@ -124,14 +163,55 @@ export default function Studio({ projects, email }: { projects: Project[]; email
     <div className="grid2">
       <div className="stack">
         <section className="panel"><div className="panelhead"><div><div className="eyebrow">{tr("CURRENT INVENTORY")}</div><h2 style={{marginTop:10}}>{tr("Find your property")}</h2></div><span className="pill">{units.length} {tr("total")}</span></div>
-          <input className="field" placeholder={tr("Search Unit Code or floor...")} value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:15}} />
-          <div className="list">{visibleUnits.map(value => <button type="button" key={value.code+"::"+value.floor} className={"unit" + (value.code === selected ? " active" : "")}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(145px,1fr))",gap:10,marginBottom:12}}>
+            <label className="fieldlabel" style={{gridColumn:"1 / -1"}}>{tr("Search unit code, floor or type")}
+              <input className="field" placeholder={tr("Search units…")} value={search}
+                onChange={e=>setSearch(e.target.value)} />
+            </label>
+            <label className="fieldlabel">{tr("Floor")}
+              <select className="field" value={inventoryFloor} onChange={e=>setInventoryFloor(e.target.value)}>
+                <option value="">{tr("All floors")}</option>
+                {availableFloors.map(value=><option key={value} value={value}>{value}</option>)}
+              </select>
+            </label>
+            <label className="fieldlabel">{tr("Min area (m²)")}
+              <input className="field" type="number" inputMode="decimal" min="0" step="any"
+                value={minArea} onChange={e=>setMinArea(e.target.value)} />
+            </label>
+            <label className="fieldlabel">{tr("Max area (m²)")}
+              <input className="field" type="number" inputMode="decimal" min="0" step="any"
+                value={maxArea} onChange={e=>setMaxArea(e.target.value)} />
+            </label>
+            <label className="fieldlabel">{tr("Min price (EGP)")}
+              <input className="field" type="number" inputMode="numeric" min="0" step="any"
+                value={minPrice} onChange={e=>setMinPrice(e.target.value)} />
+            </label>
+            <label className="fieldlabel">{tr("Max price (EGP)")}
+              <input className="field" type="number" inputMode="numeric" min="0" step="any"
+                value={maxPrice} onChange={e=>setMaxPrice(e.target.value)} />
+            </label>
+            <label className="fieldlabel">{tr("Sort by")}
+              <select className="field" value={inventorySort} onChange={e=>setInventorySort(e.target.value as typeof inventorySort)}>
+                <option value="code">{tr("Unit code")}</option>
+                <option value="area-asc">{tr("Area: smallest first")}</option>
+                <option value="area-desc">{tr("Area: largest first")}</option>
+                <option value="price-asc">{tr("Price: lowest first")}</option>
+                <option value="price-desc">{tr("Price: highest first")}</option>
+              </select>
+            </label>
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:9,marginBottom:12,flexWrap:"wrap"}}>
+            <span className="muted">{tr("Showing")} <b>{visibleUnits.length}</b> / {units.length} {tr("units from the live sheet")}</span>
+            <button type="button" className="btn soft" style={{padding:"7px 12px"}}
+              onClick={clearInventoryFilters}>{tr("Reset filters")}</button>
+          </div>
+          <div className="list">{visibleUnits.map(value => <button type="button" key={value.code+"::"+value.floor} className={"unit" + (value.code === selected && value.floor === floorNumber ? " active" : "")}
             disabled={!isAvailable(value.status)} onClick={() => selectUnit(value.code, value.floor)}>
             <span><b>{value.code}</b><small>{tr("Floor")} {value.floor || "—"} · {value.area || "—"} m²{value.type?.trim() ? " · "+value.type.trim() : ""}</small></span>
             <span style={{textAlign:"right"}}><b>{nicePrice(value.price)}</b><small>{tr(value.status)}</small></span>
           </button>)}
           {!visibleUnits.length && <p className="muted">{tr(loading ? "Loading authorized inventory…" : "No matching live inventory. Confirm the Sheet connection in Settings.")}</p>}</div>
-          {units.length > 100 && <p className="muted">{tr("Showing the first 100 matches. Use search to narrow the results.")}</p>}
+          <p className="muted" style={{fontSize:12,marginTop:10}}>{tr("Every matching unit is listed above, including reserved and unavailable properties. You can scroll through the full result.")}</p>
         </section>
       </div>
       <div className="stack">
@@ -139,6 +219,12 @@ export default function Studio({ projects, email }: { projects: Project[]; email
           {unit ? <>
             {([["Project", project?.name || "—"],["Unit Code",unit.code],["Unit Type",unit.type?.trim() || "—"],["Floor",unit.floor || "—"],["Area",unit.area ? unit.area+" sqm":"—"],["Status",tr(unit.status)],["Price",nicePrice(unit.price)]] as [string,string][]).map(([label,value]) =>
               <div className="detailrow" key={label}><span>{tr(label)}</span><b>{value}</b></div>)}
+            {unit.foodPricing&&<>
+              <div className="detailrow"><span>{tr("Indoor area")}</span><b>{unit.foodPricing.indoorAreaSqm} m²</b></div>
+              <div className="detailrow"><span>{tr("Indoor price per sqm")}</span><b>{nicePrice(unit.foodPricing.indoorRateEgp)}</b></div>
+              <div className="detailrow"><span>{tr("Outdoor area")}</span><b>{unit.foodPricing.outdoorAreaSqm} m²</b></div>
+              <div className="detailrow"><span>{tr("Outdoor price per sqm")}</span><b>{nicePrice(unit.foodPricing.outdoorRateEgp)}</b></div>
+            </>}
             <UnitSourceDetails projectId={projectId} code={unit.code} floor={unit.floor}/>
             {projectId==="vida"&&<VidaBrochurePreview code={unit.code} floor={unit.floor}/>}
           </> : <p className="muted">{tr("Current price, location and availability appear here once you select a unit.")}</p>}

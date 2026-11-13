@@ -1,6 +1,7 @@
 import { readXlsxRows } from "@/lib/xlsx-values";
 import type { InventoryUnit } from "@/lib/sheets";
 import { unitTypeColumnForProject } from "@/lib/unit-type";
+import { getCairoFoodPricing } from "@/lib/cairo-food-pricing";
 
 const MAX_XLSX_BYTES = 10 * 1024 * 1024;
 
@@ -126,6 +127,8 @@ export async function getExcelInventory(
     items.set(code, {
       code, price, area: valueAt(row, columns.area), floor: valueAt(row, columns.floor), status, project: projectName,
       type: typeColumn >= 0 ? valueAt(row, typeColumn + 1) : "",
+      foodPricing: getCairoFoodPricing(headings,row,
+        typeColumn>=0?valueAt(row,typeColumn+1):"",price) || undefined,
       sourceHeaders: headings, sourceCells: row
     });
   });

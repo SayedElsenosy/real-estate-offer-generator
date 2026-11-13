@@ -85,9 +85,12 @@ export async function POST(req: NextRequest) {
     const vidaDrawing = projectId==="vida" ? await getVidaPdfDrawing(user.id,unit) : null;
     // Workers-safe PDF engine. The former renderer relied on a Node URL/file
     // environment and failed with "Invalid URL string" on Cloudflare.
+    // Only the approved sales-facing fields (including validated restaurant pricing)
+    // go into the downloaded offer response. Never send entire private XLSX rows.
+    const { sourceHeaders: _sourceHeaders, sourceCells: _sourceCells, ...offerUnit } = unit;
     const common = {
       company: project.companyName, logoUrl: trustedLogo(project.logoUrl),
-      project: project.name, unit, issuedAt, floor: geometry, location, nasaLocation, vidaDrawing, schedules
+      project: project.name, unit: offerUnit, issuedAt, floor: geometry, location, nasaLocation, vidaDrawing, schedules
     };
     // The studio renders its PDF locally. Prices, availability and financial
     // schedules still come exclusively from the authenticated server checks.
