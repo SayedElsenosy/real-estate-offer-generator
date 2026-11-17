@@ -37,12 +37,8 @@ function branding(page:PDFPage,fonts:Fonts,logo:PDFImage|null,dark:boolean){
   const color=dark?WHITE:CAIRO_NAVY;
   text(page,"ELAF",43,H-60,23,true,fonts,color);
   text(page,"D E V E L O P M E N T S",44,H-77,7.2,false,fonts,dark?CAIRO_GOLD:DARK);
-  if(logo){
-    const ratio=Math.min(80/logo.width,55/logo.height);
-    // Keep official original brand mark compact and away from the headline.
-    page.drawImage(logo,{x:W-46-logo.width*ratio,y:H-91,
-      width:logo.width*ratio,height:logo.height*ratio,opacity:.92});
-  }
+  // The existing logo has an opaque black photo background.
+  // Use the text-only premium lockup rather than inserting a black square.
 }
 function imageFromBase64(pdf:PDFDocument,data?:string):Promise<PDFImage|null>{
   const match=data&&/^data:image\/jpeg;base64,([A-Za-z0-9+/]+={0,2})$/.exec(data);
@@ -89,33 +85,33 @@ function cover(pdf:PDFDocument,fonts:Fonts,logo:PDFImage|null,lang:"ar"|"en",
     thickness:1.2,color:CAIRO_GOLD,opacity:.65});
   branding(page,fonts,logo,true);
   if(lang==="ar"){
-    arabic(page,"القاهرة بلازا",W-42,H-199,39,true,fonts,WHITE);
-    text(page,"CAIRO  PLAZA",W-44,H-228,16,true,fonts,CAIRO_GOLD,"right");
-    arabic(page,"تجاري  •  إداري  •  طبي",W-44,H-266,14,false,fonts,WHITE);
+    arabic(page,"القاهرة بلازا",W-43,H-130,40,true,fonts,WHITE);
+    text(page,"CAIRO  PLAZA",W-44,H-166,15,true,fonts,CAIRO_GOLD,"right");
+    arabic(page,"تجاري، إداري، طبي",W-44,H-203,13,false,fonts,WHITE);
   }else{
-    text(page,"CAIRO PLAZA",44,H-202,41,true,fonts,WHITE);
-    text(page,"RETAIL  /  OFFICES  /  MEDICAL",45,H-243,13,true,fonts,CAIRO_GOLD);
-    text(page,"6TH OF OCTOBER CITY",45,H-276,12,false,fonts,WHITE);
+    text(page,"CAIRO PLAZA",44,H-139,43,true,fonts,WHITE);
+    text(page,"RETAIL  /  OFFICES  /  MEDICAL",45,H-181,13,true,fonts,CAIRO_GOLD);
   }
-  page.drawRectangle({x:43,y:H-303,width:75,height:3,color:CAIRO_GOLD});
+  page.drawRectangle({x:43,y:H-217,width:75,height:3,color:CAIRO_GOLD});
   const image=facade||aerial;
   if(image){
-    const imgHeight=W*image.height/image.width;
-    const w=Math.max(W,1);
-    page.drawImage(image,{x:0,y:126,width:w,height:Math.min(imgHeight,421)});
-    page.drawRectangle({x:0,y:126,width:W,height:76,color:CAIRO_NAVY,opacity:.55});
+    // Portrait-cropped from the user's original facade, keeping proportions.
+    const scale=Math.min(W/image.width,480/image.height);
+    const iw=image.width*scale,ih=image.height*scale;
+    page.drawRectangle({x:0,y:112,width:W,height:480,color:CAIRO_NAVY});
+    page.drawImage(image,{x:(W-iw)/2,y:112+(480-ih)/2,width:iw,height:ih});
+    page.drawRectangle({x:0,y:112,width:W,height:54,color:CAIRO_NAVY,opacity:.25});
   }else{
-    page.drawRectangle({x:0,y:126,width:W,height:364,color:rgb(.13,.19,.22)});
-    page.drawRectangle({x:65,y:166,width:465,height:220,borderColor:CAIRO_GOLD,borderWidth:.7,opacity:.3});
+    page.drawRectangle({x:0,y:112,width:W,height:480,color:rgb(.13,.19,.22)});
   }
-  page.drawRectangle({x:0,y:0,width:W,height:126,color:CAIRO_NAVY});
-  page.drawLine({start:{x:43,y:104},end:{x:W-43,y:104},thickness:1,color:CAIRO_GOLD});
+  page.drawRectangle({x:0,y:0,width:W,height:112,color:CAIRO_NAVY});
+  page.drawLine({start:{x:43,y:100},end:{x:W-43,y:100},thickness:1,color:CAIRO_GOLD});
   if(lang==="ar"){
-    arabic(page,"مدينة السادس من أكتوبر",W-46,69,15,true,fonts,WHITE);
-    arabic(page,"ميدان ليلة القدر  •  المحور المركزي",W-46,47,10,false,fonts,LIGHT);
+    arabic(page,"مدينة السادس من أكتوبر",W-46,62,14,true,fonts,WHITE);
+    arabic(page,"ميدان ليلة القدر، المحور المركزي",W-46,41,10,false,fonts,LIGHT);
   }else{
-    text(page,"6TH OF OCTOBER CITY",45,69,15,true,fonts,WHITE);
-    text(page,"LAYLAT AL QADR SQUARE  |  CENTRAL AXIS",45,47,9.2,false,fonts,LIGHT);
+    text(page,"6TH OF OCTOBER CITY",45,62,14,true,fonts,WHITE);
+    text(page,"LAYLAT AL QADR SQUARE  |  CENTRAL AXIS",45,41,9.2,false,fonts,LIGHT);
   }
   pageNumber(page,1,fonts,true);
 }
@@ -137,12 +133,11 @@ function overview(pdf:PDFDocument,fonts:Fonts,logo:PDFImage|null,lang:"ar"|"en",
   projectStats(p,fonts,lang);
   const mapX=43,mapY=237,mapW=325,mapH=333;
   p.drawRectangle({x:mapX,y:mapY,width:mapW,height:mapH,color:CAIRO_NAVY});
-  if(lang==="ar")arabic(p,"الماستر بلان الأصلي",mapX+mapW-16,mapY+mapH-30,13,true,fonts,WHITE);
-  else text(p,"ORIGINAL PROJECT MASTERPLAN",mapX+14,mapY+mapH-30,11,true,fonts,WHITE);
+  if(lang==="ar")arabic(p,"التوزيع الداخلي",mapX+mapW-16,mapY+mapH-30,13,true,fonts,WHITE);
+  else text(p,"MASTERPLAN",mapX+14,mapY+mapH-30,11,true,fonts,WHITE);
   if(masterplan)imageContain(p,masterplan,mapX+12,mapY+43,mapW-24,mapH-86);
   else text(p,"Cairo Plaza Masterplan",mapX+26,mapY+mapH/2,16,true,fonts,CAIRO_GOLD);
-  if(lang==="ar")arabic(p,"من بروشور المشروع الأصلي",mapX+mapW-16,mapY+15,8.5,false,fonts,LIGHT);
-  else text(p,"FROM THE ORIGINAL PROJECT BROCHURE",mapX+14,mapY+16,8,false,fonts,LIGHT);
+  // Leave the plan caption-free; source evidence is retained internally.
 
   const x=382,w=W-x-43;
   p.drawRectangle({x,y:421,width:w,height:149,color:WHITE,borderColor:LIGHT,borderWidth:.8});
@@ -163,18 +158,17 @@ function overview(pdf:PDFDocument,fonts:Fonts,logo:PDFImage|null,lang:"ar"|"en",
   }
   p.drawLine({start:{x:43,y:202},end:{x:W-43,y:202},thickness:.9,color:CAIRO_GOLD});
   if(lang==="ar"){
-    arabic(p,"عشرة شوارع داخلية بعرض 11 متر تقريباً لكل شارع طبقاً للبروشور.",W-43,177,11,false,fonts,DARK);
-    arabic(p,"الرسومات للتعريف بالمشروع، وتفاصيل الوحدة والسعر موضحة في الصفحات التالية.",W-43,153,9.6,false,fonts,DARK);
+    arabic(p,"عشرة شوارع داخلية بعرض أحد عشر مترًا",W-43,167,12,true,fonts,CAIRO_NAVY);
   }else{
-    text(p,"10 internal streets, each 11 m wide, as presented in the project brochure.",43,177,9.5,false,fonts,DARK);
-    text(p,"Unit plans, prices and installments follow on subsequent pages.",43,153,9.5,false,fonts,DARK);
+    text(p,"10 INTERNAL STREETS  /  11 m WIDTH",43,167,12,true,fonts,CAIRO_NAVY);
   }
-  text(p,"ELAF  /  CAIRO PLAZA",43,39,9,true,fonts,CAIRO_NAVY);
-  pageNumber(p,2,fonts);
+  p.drawRectangle({x:0,y:0,width:W,height:49,color:CAIRO_NAVY});
+  text(p,"ELAF  /  CAIRO PLAZA",43,21,9,true,fonts,WHITE);
+  pageNumber(p,2,fonts,true);
 }
 export async function addCairoPremiumPrelude(pdf:PDFDocument,{artwork,logo,fonts,language}:Options){
   const [facade,aerial,masterplan,facadeAlt]=await Promise.all([
-    imageFromBase64(pdf,artwork?.facade),
+    imageFromBase64(pdf,artwork?.facadePortrait||artwork?.facade),
     imageFromBase64(pdf,artwork?.aerial),
     imageFromBase64(pdf,artwork?.masterplan),
     imageFromBase64(pdf,artwork?.facadeAlt)
@@ -187,10 +181,10 @@ export function addCairoPremiumPageNumbers(pdf:PDFDocument,fromIndex:number,font
   const pages=pdf.getPages();
   for(let i=fromIndex;i<pages.length;i++){
     const p=pages[i];
-    p.drawRectangle({x:0,y:0,width:W,height:14,color:CAIRO_NAVY});
-    p.drawRectangle({x:0,y:14,width:W,height:2.4,color:CAIRO_GOLD});
-    p.drawRectangle({x:43,y:77,width:W-86,height:.55,color:CAIRO_GOLD,opacity:.6});
-    text(p,"CAIRO PLAZA  /  ELAF DEVELOPMENTS",43,26,8,false,fonts,CAIRO_NAVY);
-    pageNumber(p,i+1,fonts);
+    p.drawRectangle({x:0,y:0,width:W,height:49,color:CAIRO_NAVY});
+    p.drawRectangle({x:0,y:49,width:W,height:2.4,color:CAIRO_GOLD});
+    text(p,"ELAF",43,20,11,true,fonts,WHITE);
+    text(p,"CAIRO PLAZA",W/2,22,8,true,fonts,CAIRO_GOLD,"left");
+    pageNumber(p,i+1,fonts,true);
   }
 }

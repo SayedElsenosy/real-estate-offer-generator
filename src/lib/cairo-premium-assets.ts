@@ -7,6 +7,7 @@ import { getGoogleAccessToken } from "@/lib/sheets";
  */
 const IMAGE_IDS = {
   facade: "1KYzGnhSebTMEinPxLfNrS2IWCB_2Ujya",
+  facadePortrait: "1AdSxaGDQBDjSPkYnSwCdWIBPAAzL-Mej",
   aerial: "1td4nbjJ0TbNKD1IMR8meovOpBYqpBeri",
   masterplan: "11H_qpZtBRjId-fz8ivvQzOkpsxqMGfD0",
   facadeAlt: "1_H20eliPEPH3sGN2YaCIY0wznMuaop8v"
