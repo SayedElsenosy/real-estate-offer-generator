@@ -7,6 +7,7 @@ import Decimal from "decimal.js";
 import { formatOfferMoney } from "@/lib/offer-money";
 import { cairoLocation,drawNasaPdfLocation, embeddedLogo, type Props } from "@/lib/workers-pdf";
 import { drawOriginalVidaImage,drawOriginalVidaSiteWithMarker } from "@/lib/vida-pdf-image";
+import { addCairoPremiumPrelude, addCairoPremiumPageNumbers } from "@/lib/cairo-premium-pdf";
 
 const W=595.28,H=841.89,LEFT=47,RIGHT=W-47;
 const navy=rgb(0.085,0.16,0.26),gold=rgb(0.72,0.55,0.31);
@@ -94,7 +95,7 @@ function payRow(page:PDFPage,i:number,
   en(page,amount(payment.amount),LEFT+13,y-2,f.latinBold,10.5,ink);
 }
 export async function createArabicOfferPdf({
-  company,logoUrl,project,unit,issuedAt,floor,location,nasaLocation,vidaDrawing,schedules
+  company,logoUrl,project,unit,issuedAt,floor,location,nasaLocation,vidaDrawing,cairoPremium,cairoArtwork,schedules
 }:Props):Promise<Uint8Array>{
   const pdf=await PDFDocument.create();
   pdf.registerFontkit(fontkit);
@@ -109,12 +110,14 @@ export async function createArabicOfferPdf({
   pdf.setAuthor(company);
   pdf.setSubject("عرض سعر وحدة باللغة العربية");
   pdf.setProducer("Offer Atelier / Cloudflare Workers");
+  if(cairoPremium)await addCairoPremiumPrelude(pdf,{artwork:cairoArtwork,logo,
+    fonts:{arabic:f.arabic,arabicBold:f.arabicBold,latin:f.latin,latinBold:f.latinBold},language:"ar"});
 
   const intro=pdf.addPage([W,H]);
-  heading(intro,company,"عرض سعر وحدة",projectArabic(project),logo,f);
-  intro.drawRectangle({x:LEFT,y:H-192,width:RIGHT-LEFT,height:48,color:pale});
-  ar(intro,"بيانات الوحدة",RIGHT-16,H-174,f.arabicBold,17,ink);
-  en(intro,unit.code,LEFT+16,H-175,f.latinBold,15,ink);
+  heading(intro,company,cairoPremium?"وحدتك داخل القاهرة بلازا":"عرض سعر وحدة",projectArabic(project),logo,f);
+  intro.drawRectangle({x:LEFT,y:H-192,width:RIGHT-LEFT,height:48,color:cairoPremium?navy:pale});
+  ar(intro,"بيانات الوحدة",RIGHT-16,H-174,f.arabicBold,17,cairoPremium?gold:ink);
+  en(intro,unit.code,LEFT+16,H-175,f.latinBold,15,cairoPremium?white:ink);
   pair(intro,"تاريخ العرض",issuedAt,H-229,f);
   pair(intro,"المشروع",projectArabic(project),H-273,f,true);
   pair(intro,"كود الوحدة",unit.code,H-317,f);
@@ -212,5 +215,7 @@ export async function createArabicOfferPdf({
       y-=27;
     }
   }
+  if(cairoPremium)addCairoPremiumPageNumbers(pdf,2,{
+    latin:f.latin,latinBold:f.latinBold,arabic:f.arabic,arabicBold:f.arabicBold});
   return pdf.save({useObjectStreams:false});
 }
