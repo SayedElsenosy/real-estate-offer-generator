@@ -1,13 +1,14 @@
 import { PDFDocument, StandardFonts, rgb, type PDFPage, type PDFFont, type PDFImage } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { drawArabicText } from "arabic-bidi-shaper/pdf-lib";
-import plexRegular from "@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-400-normal.woff?inline";
-import plexBold from "@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-700-normal.woff?inline";
+import cairoRegular from "@fontsource/cairo/files/cairo-arabic-400-normal.woff?inline";
+import cairoBold from "@fontsource/cairo/files/cairo-arabic-700-normal.woff?inline";
 import Decimal from "decimal.js";
 import { formatOfferMoney } from "@/lib/offer-money";
 import { cairoLocation,drawNasaPdfLocation, embeddedLogo, type Props } from "@/lib/workers-pdf";
 import { drawOriginalVidaImage,drawOriginalVidaSiteWithMarker } from "@/lib/vida-pdf-image";
 import { addCairoPremiumPrelude, addCairoPremiumPageNumbers } from "@/lib/cairo-premium-pdf";
+import { addCairoPremiumDetailPages } from "@/lib/cairo-premium-pages";
 
 const W=595.28,H=841.89,LEFT=47,RIGHT=W-47;
 const navy=rgb(0.085,0.16,0.26),gold=rgb(0.72,0.55,0.31);
@@ -100,8 +101,8 @@ export async function createArabicOfferPdf({
   const pdf=await PDFDocument.create();
   pdf.registerFontkit(fontkit);
   const f:Fonts={
-    arabic:await pdf.embedFont(fontBytes(plexRegular),{subset:true}),
-    arabicBold:await pdf.embedFont(fontBytes(plexBold),{subset:true}),
+    arabic:await pdf.embedFont(fontBytes(cairoRegular),{subset:true}),
+    arabicBold:await pdf.embedFont(fontBytes(cairoBold),{subset:true}),
     latin:await pdf.embedFont(StandardFonts.Helvetica),
     latinBold:await pdf.embedFont(StandardFonts.HelveticaBold)
   };
@@ -110,8 +111,17 @@ export async function createArabicOfferPdf({
   pdf.setAuthor(company);
   pdf.setSubject("عرض سعر وحدة باللغة العربية");
   pdf.setProducer("Offer Atelier / Cloudflare Workers");
-  if(cairoPremium)await addCairoPremiumPrelude(pdf,{artwork:cairoArtwork,logo,
-    fonts:{arabic:f.arabic,arabicBold:f.arabicBold,latin:f.latin,latinBold:f.latinBold},language:"ar"});
+  if(cairoPremium){
+    const premiumFonts={arabic:f.arabic,arabicBold:f.arabicBold,latin:f.latin,latinBold:f.latinBold};
+    await addCairoPremiumPrelude(pdf,{artwork:cairoArtwork,logo,
+      fonts:premiumFonts,language:"ar"});
+    addCairoPremiumDetailPages(pdf,{
+      fonts:premiumFonts,language:"ar",company,unit,issuedAt,schedules,
+      drawEngineeringLocation:location ? (page,frame)=>cairoLocation(page,location,frame) : undefined
+    });
+    addCairoPremiumPageNumbers(pdf,2,premiumFonts);
+    return pdf.save({useObjectStreams:false});
+  }
 
   const intro=pdf.addPage([W,H]);
   heading(intro,company,cairoPremium?"وحدتك داخل القاهرة بلازا":"عرض سعر وحدة",projectArabic(project),logo,f);
