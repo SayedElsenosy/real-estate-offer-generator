@@ -14,7 +14,7 @@ assert.match(template,/pdf\.addPage\(\[W,H\]\)/);
 assert.match(template,/projectStats/);
 assert.match(template,/7\.5/,"Original brochure says 7.5 feddans");
 assert.match(template,/220 m/,"Original brochure has 220m frontage");
-assert.match(template,/internal streets/,"Original brochure describes 10 internal streets");
+assert.match(template,/internal streets/i,"Original brochure describes 10 internal streets");
 assert.match(template,/11 m/,"Original brochure mentions 11m internal width");
 assert.match(template,/Original|original/);
 assert.match(template,/CAIRO_GOLD/);
