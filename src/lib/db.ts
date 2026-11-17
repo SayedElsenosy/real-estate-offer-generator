@@ -1,12 +1,14 @@
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient } from "@/generated/prisma/client";
 
-const cache = globalThis as unknown as { offerPrisma?: PrismaClient };
+// Cloudflare Workers keep modules alive between requests but isolate async I/O
+// to the originating request context. Reusing a global Prisma/Neon connection
+// across requests can hang or raise "different request context" errors.
+// Construct clients lazily inside the request that performs the database I/O.
 export function db(): PrismaClient {
-  if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not configured");
-  if (!cache.offerPrisma) {
-    const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL });
-    cache.offerPrisma = new PrismaClient({ adapter });
-  }
-  return cache.offerPrisma;
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) throw new Error("DATABASE_URL is not configured");
+  return new PrismaClient({
+    adapter: new PrismaNeon({ connectionString })
+  });
 }

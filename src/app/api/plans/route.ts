@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { currentAdmin } from "@/lib/guards";
 import { db } from "@/lib/db";
-import { validIsoDate } from "@/lib/payment";
+
 
 const inputSchema = z.object({
   id: z.string().optional(),
@@ -12,26 +12,47 @@ const inputSchema = z.object({
   months: z.coerce.number().int().min(1).max(360),
   maintenancePct: z.coerce.number().min(0).max(100),
   startOffsetMonths: z.coerce.number().int().min(0).max(120),
-  installmentIntervalMonths: z.coerce.number().int().min(1).max(36).default(1),
-  deliveryDate: z.union([z.string(), z.null()]).optional(),
+  installmentIntervalMonths: z.coerce.number().int().refine(value => value === 1 || value === 3, "Choose monthly or quarterly installments.").default(1),
+  discountPct: z.coerce.number().min(0).max(99.9999).default(0),
+  secondDownPaymentPct: z.coerce.number().min(0).max(100).default(0),
+  secondDownOffsetMonths: z.coerce.number().int().min(0).max(360).default(0),
+  quarterlyEndAtTerm: z.boolean().default(false),
+  ordinaryInstallmentRebate: z.coerce.number().min(0).max(100000).default(0),
+  deliveryMonths: z.coerce.number().int().min(0).max(360).default(0),
   deliveryCollectionEnabled: z.boolean().default(false),
   deliveryCollectionPct: z.coerce.number().min(0).max(100).default(0)
 }).superRefine((input, context) => {
-  const date = input.deliveryDate || null;
-  if (date && !validIsoDate(date)) context.addIssue({ code: "custom", message: "Invalid delivery date", path: ["deliveryDate"] });
-  if (input.deliveryCollectionEnabled && (!date || input.deliveryCollectionPct <= 0))
-    context.addIssue({ code: "custom", message: "Select delivery date and percentage when collection at delivery is enabled", path: ["deliveryDate"] });
-  const totalSlots = Math.ceil(input.months / input.installmentIntervalMonths);
-  const recurringCount = totalSlots - (input.downPaymentPct > 0 ? 1 : 0);
-  const collection = input.deliveryCollectionEnabled ? input.deliveryCollectionPct : 0;
-  if (input.downPaymentPct + collection > 100)
-    context.addIssue({ code: "custom", message: "Down payment and delivery collection cannot exceed 100%", path: ["deliveryCollectionPct"] });
-  if (recurringCount === 0 && input.downPaymentPct + collection < 100)
-    context.addIssue({ code: "custom", message: "Duration and interval leave no future installment slots; extend the duration or shorten the interval", path: ["months"] });
-  const firstFutureOffset = input.startOffsetMonths === 0 ? input.installmentIntervalMonths : input.startOffsetMonths;
-  if (recurringCount > 0 &&
-      firstFutureOffset + (recurringCount - 1) * input.installmentIntervalMonths > input.months)
-    context.addIssue({ code: "custom", message: "Last installment falls outside the selected duration; adjust the offset or frequency", path: ["startOffsetMonths"] });
+  const target = input.deliveryCollectionEnabled ? input.deliveryCollectionPct : 0;
+  if (input.downPaymentPct + input.secondDownPaymentPct > 100)
+    context.addIssue({code:"custom",message:"Combined down payments cannot exceed 100%.",path:["secondDownPaymentPct"]});
+  if (input.secondDownPaymentPct>0 && (input.secondDownOffsetMonths<=0 || input.secondDownOffsetMonths>=input.months))
+    context.addIssue({code:"custom",message:"Second down payment needs an offset inside the term.",path:["secondDownOffsetMonths"]});
+  // Validate that the selected frequency provides enough due dates for every
+  // nonzero allocation before persisting a plan that cannot produce an offer.
+  const interval = input.installmentIntervalMonths;
+  const first = Math.max(interval, input.startOffsetMonths || interval,
+    input.secondDownPaymentPct>0?input.secondDownOffsetMonths+interval:0);
+  const final = interval===3&&input.quarterlyEndAtTerm ? input.months : input.months-(input.downPaymentPct>0?1:0);
+  const dates:number[] = [];
+  for (let month=first;month<=final;month+=interval) dates.push(month);
+  const beforeCount=dates.filter(month=>month<input.deliveryMonths).length;
+  const afterCount=dates.filter(month=>month>=input.deliveryMonths).length;
+  if (input.downPaymentPct+input.secondDownPaymentPct<100 && dates.length===0)
+    context.addIssue({code:"custom",message:"The chosen term is too short for this installment frequency.",path:["months"]});
+  if (input.deliveryCollectionEnabled && target>input.downPaymentPct && beforeCount===0)
+    context.addIssue({code:"custom",message:"No installment date exists before delivery with this frequency. Increase delivery months or choose monthly payments.",path:["deliveryMonths"]});
+  if (input.deliveryCollectionEnabled && target<100 && afterCount===0)
+    context.addIssue({code:"custom",message:"No installment date exists after delivery with this frequency. Increase the plan duration or move delivery earlier.",path:["months"]});
+  if (input.deliveryMonths>0 && input.deliveryMonths>=input.months)
+    context.addIssue({code:"custom",message:"Delivery month must be less than the payment term.",path:["deliveryMonths"]});
+  if (input.deliveryCollectionEnabled && input.deliveryMonths<2)
+    context.addIssue({code:"custom",message:"Delivery month must be at least 2 to split pre-delivery payments.",path:["deliveryMonths"]});
+  if (input.deliveryCollectionEnabled && target<input.downPaymentPct)
+    context.addIssue({code:"custom",message:"Pre-delivery target cannot be smaller than the down payment.",path:["deliveryCollectionPct"]});
+  if (input.deliveryCollectionEnabled && input.startOffsetMonths>0 &&
+      input.startOffsetMonths>=input.deliveryMonths && target>input.downPaymentPct)
+    context.addIssue({code:"custom",message:"No installment can be paid before delivery.",path:["deliveryMonths"]});
+
 });
 export async function POST(req: NextRequest) {
   const admin = await currentAdmin();
@@ -44,7 +65,13 @@ export async function POST(req: NextRequest) {
       downPaymentPct: payload.downPaymentPct.toString(), months: payload.months,
       maintenancePct: payload.maintenancePct.toString(), startOffsetMonths: payload.startOffsetMonths,
       installmentIntervalMonths: payload.installmentIntervalMonths,
-      deliveryDate: payload.deliveryDate || null,
+      discountPct:payload.discountPct.toString(),
+      secondDownPaymentPct:payload.secondDownPaymentPct.toString(),
+      secondDownOffsetMonths:payload.secondDownOffsetMonths,
+      quarterlyEndAtTerm:payload.quarterlyEndAtTerm,
+      ordinaryInstallmentRebate:payload.ordinaryInstallmentRebate.toString(),
+      deliveryDate: null,
+      deliveryMonths: payload.deliveryMonths > 0 ? payload.deliveryMonths : null,
       deliveryCollectionEnabled: payload.deliveryCollectionEnabled,
       deliveryCollectionPct: (payload.deliveryCollectionEnabled ? payload.deliveryCollectionPct : 0).toString(),
       updatedAt: new Date() };
