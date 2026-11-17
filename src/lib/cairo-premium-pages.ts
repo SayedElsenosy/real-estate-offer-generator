@@ -69,7 +69,10 @@ function meter(p:PDFPage,x:number,y:number,w:number,h:number,titleAr:string,titl
  p.drawRectangle({x:x+11,y:y+h-9,width:37,height:3,color:CAIRO_GOLD});
  const fg=dark?WHITE:INK;
  paragraph(p,titleEn,titleAr,lang==="ar"?x+w-12:x+12,y+h-30,9,false,fonts,lang,dark?WHITE:MUTED);
- write(p,value,lang==="ar"?x+w-13:x+13,y+17,17,true,fonts,fg,lang==="ar"?"right":"left",w-26);
+ const font=fonts.latinBold;
+ let fontSize=17;
+ while(fontSize>9 && font.widthOfTextAtSize(latin(value),fontSize)>w-26)fontSize-=.5;
+ write(p,value,lang==="ar"?x+w-13:x+13,y+17,fontSize,true,fonts,fg,lang==="ar"?"right":"left",w-26);
 }
 function detail(p:PDFPage,y:number,titleAr:string,titleEn:string,value:string,fonts:PremiumFonts,lang:"ar"|"en"){
  p.drawLine({start:{x:LEFT+17,y:y-13},end:{x:RIGHT-17,y:y-13},thickness:.5,color:LINE});
@@ -176,13 +179,13 @@ function financialPages(pdf:PDFDocument,options:CairoPremiumDetails){
      "CAIRO PLAZA  /  "+latin(unit.code)+"  /  "+latin(s.name),fonts,lang);
    // Summary cards echo the approved mockup and are drawn on every first page only.
    const thirds=(RIGHT-LEFT-20)/3;
-   meter(page,LEFT,595,thirds,86,"كود الوحدة","UNIT CODE",latin(unit.code),fonts,lang);
-   meter(page,LEFT+thirds+10,595,thirds,86,"إجمالي سعر الوحدة","TOTAL PRICE",
+   meter(page,LEFT,550,thirds,82,"كود الوحدة","UNIT CODE",latin(unit.code),fonts,lang);
+   meter(page,LEFT+thirds+10,550,thirds,82,"إجمالي سعر الوحدة","TOTAL PRICE",
      formatMoney(s.totalPrice)+" EGP",fonts,lang);
-   meter(page,LEFT+2*(thirds+10),595,thirds,86,"وديعة الصيانة","MAINTENANCE",
+   meter(page,LEFT+2*(thirds+10),550,thirds,82,"وديعة الصيانة","MAINTENANCE",
      formatMoney(s.maintenance)+" EGP",fonts,lang);
-   rowTitle(page,555,fonts,lang);
-   let y=510;let continuation=0;
+   rowTitle(page,516,fonts,lang);
+   let y=470;let continuation=0;
    s.rows.forEach((item,i)=>{
      if(y<111){
        continuation++;
