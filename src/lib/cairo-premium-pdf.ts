@@ -179,8 +179,8 @@ export async function addCairoPremiumPrelude(pdf:PDFDocument,{artwork,logo,fonts
     imageFromBase64(pdf,artwork?.masterplan),
     imageFromBase64(pdf,artwork?.facadeAlt)
   ]);
-  cover(pdf,fonts,logo,language,facade??null,aerial??null);
-  overview(pdf,fonts,logo,language,masterplan??null,aerial??null,facadeAlt??null);
+  cover(pdf,fonts,logo??null,language,facade??null,aerial??null);
+  overview(pdf,fonts,logo??null,language,masterplan??null,aerial??null,facadeAlt??null);
 }
 /** Keep the existing unit, drawing and every continued installment page on theme. */
 export function addCairoPremiumPageNumbers(pdf:PDFDocument,fromIndex:number,fonts:Fonts){
