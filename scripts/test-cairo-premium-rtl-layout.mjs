@@ -33,7 +33,7 @@ assert.match(english,/drawEngineeringLocation:location [\s\S]*?cairoLocation\(pa
 assert.match(arabic,/drawEngineeringLocation:location [\s\S]*?cairoLocation\(page,location,frame\)/);
 assert.match(pages,/unit\.foodPricing/,"Verified restaurant indoor/outdoor pricing preserved");
 assert.match(pages,/formatMoney\(unit\.price\)/,"No hardcoded unit price");
-assert.match(pages,/for\(const [\s\S]*? of schedules\.entries\(\)\)/,"All selected schedules render");
+assert.match(pages,/for\(const \[index,s\]of schedules\.entries\(\)\)/,"All selected schedules render");
 assert.match(pages,/paymentRow\(page,y,i,item,fonts,lang\)/,"Every payment row renders");
 assert.match(pages,/const due=item\.due\|\|"-"/,"Maintenance remains undated");
 assert.match(english,/if\(cairoPremium\)\{[\s\S]+?addCairoPremiumDetailPages[\s\S]+?return pdf\.save/);
