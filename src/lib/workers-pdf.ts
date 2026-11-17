@@ -9,6 +9,7 @@ import { drawOriginalVidaImage,drawOriginalVidaSiteWithMarker } from "@/lib/vida
 import type { InventoryUnit } from "@/lib/sheets";
 import type { CairoPremiumArtwork } from "@/lib/cairo-premium-assets";
 import { addCairoPremiumPrelude, addCairoPremiumPageNumbers } from "@/lib/cairo-premium-pdf";
+import { addCairoPremiumDetailPages } from "@/lib/cairo-premium-pages";
 import type { OfferSchedule, FloorGeometry } from "@/lib/pdf";
 
 export type Props = { company:string; logoUrl?:string|null; project:string; unit:InventoryUnit; issuedAt:string;
@@ -94,12 +95,14 @@ export async function embeddedLogo(pdf:PDFDocument,url?:string|null):Promise<PDF
     return type.includes("png")?await pdf.embedPng(bytes):await pdf.embedJpg(bytes);
   }catch{return null;}
 }
-export function cairoLocation(page:PDFPage,plan:PdfUnitLocation) {
+export function cairoLocation(page:PDFPage,plan:PdfUnitLocation,
+  frame?:{x:number;y:number;width:number;height:number}) {
   const viewX=214,viewY=155;
-  const frameW=RIGHT-LEFT-18,frameH=306;
-  const scale=Math.min(frameW/viewX,frameH/viewY);
-  const x=LEFT+9+(frameW-viewX*scale)/2;
-  const y=327+326-10;
+  const availableW=(frame?.width??RIGHT-LEFT)-18;
+  const availableH=(frame?.height??326)-20;
+  const scale=Math.min(availableW/viewX,availableH/viewY);
+  const x=(frame?.x??LEFT)+9+(availableW-viewX*scale)/2;
+  const y=(frame?.y??327)+(frame?.height??326)-10;
   // Draw underlying engineering CAD as native PDF vector paths.
   // svgPath automatically flips its Y axis to match SVG top-down coordinates.
   for(const line of plan.cadPaths){
@@ -146,8 +149,17 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
   pdf.setSubject("Live real estate offer; not stored by Offer Atelier");
   pdf.setAuthor(printable(company,"Offer Atelier"));
   pdf.setProducer("Offer Atelier / Cloudflare Workers");
-  if(cairoPremium)await addCairoPremiumPrelude(pdf,{artwork:cairoArtwork,logo,
-    fonts:{latin:regular,latinBold:bold},language:"en"});
+  if(cairoPremium){
+    const premiumFonts={latin:regular,latinBold:bold};
+    await addCairoPremiumPrelude(pdf,{artwork:cairoArtwork,logo,
+      fonts:premiumFonts,language:"en"});
+    addCairoPremiumDetailPages(pdf,{
+      fonts:premiumFonts,language:"en",company,unit,issuedAt,schedules,
+      drawEngineeringLocation:location ? (page,frame)=>cairoLocation(page,location,frame) : undefined
+    });
+    addCairoPremiumPageNumbers(pdf,2,premiumFonts);
+    return pdf.save({useObjectStreams:false});
+  }
   const intro=pdf.addPage([W,H]);
   header(intro,company,cairoPremium?"YOUR CAIRO PLAZA UNIT":"PROPERTY OFFER",printable(project),bold,regular,logo);
   intro.drawRectangle({x:LEFT,y:H-191,width:RIGHT-LEFT,height:45,color:cairoPremium?navy:pale});
