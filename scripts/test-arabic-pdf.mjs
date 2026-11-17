@@ -4,7 +4,7 @@ import { PDFDocument } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { drawArabicText } from "arabic-bidi-shaper/pdf-lib";
 
-const fontBytes=readFileSync("node_modules/@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-400-normal.woff");
+const fontBytes=readFileSync("node_modules/@fontsource/cairo/files/cairo-arabic-400-normal.woff");
 const pdf=await PDFDocument.create();
 pdf.registerFontkit(fontkit);
 const font=await pdf.embedFont(fontBytes,{subset:true});
