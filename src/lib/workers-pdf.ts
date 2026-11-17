@@ -7,11 +7,14 @@ import type { NasaOfferLocation } from "@/lib/nasa-offer-location";
 import type { VidaPdfDrawing } from "@/lib/vida-brochure-download";
 import { drawOriginalVidaImage,drawOriginalVidaSiteWithMarker } from "@/lib/vida-pdf-image";
 import type { InventoryUnit } from "@/lib/sheets";
+import type { CairoPremiumArtwork } from "@/lib/cairo-premium-assets";
+import { addCairoPremiumPrelude, addCairoPremiumPageNumbers } from "@/lib/cairo-premium-pdf";
 import type { OfferSchedule, FloorGeometry } from "@/lib/pdf";
 
 export type Props = { company:string; logoUrl?:string|null; project:string; unit:InventoryUnit; issuedAt:string;
   floor:FloorGeometry; location?:PdfUnitLocation|null; nasaLocation?:NasaOfferLocation|null;
-  vidaDrawing?:VidaPdfDrawing|null; schedules:OfferSchedule[] };
+  vidaDrawing?:VidaPdfDrawing|null; cairoPremium?:boolean; cairoArtwork?:CairoPremiumArtwork|null;
+  schedules:OfferSchedule[] };
 const W=595.28,H=841.89, LEFT=43,RIGHT=W-43;
 const navy=rgb(0.09,0.16,0.26), gold=rgb(0.70,0.53,0.29), gray=rgb(0.47,0.55,0.64),
   pale=rgb(0.94,0.96,0.98), white=rgb(1,1,1), line=rgb(0.88,0.91,0.94);
@@ -134,7 +137,7 @@ export async function drawNasaPdfLocation(pdf:PDFDocument,page:PDFPage,plan:Nasa
   });
 }
 
-export async function createPropertyOfferPdf({company,logoUrl,project,unit,issuedAt,floor,location,nasaLocation,vidaDrawing,schedules}:Props):Promise<Uint8Array> {
+export async function createPropertyOfferPdf({company,logoUrl,project,unit,issuedAt,floor,location,nasaLocation,vidaDrawing,cairoPremium,cairoArtwork,schedules}:Props):Promise<Uint8Array> {
   const pdf=await PDFDocument.create();
   const regular=await pdf.embedFont(StandardFonts.Helvetica);
   const bold=await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -143,10 +146,12 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
   pdf.setSubject("Live real estate offer; not stored by Offer Atelier");
   pdf.setAuthor(printable(company,"Offer Atelier"));
   pdf.setProducer("Offer Atelier / Cloudflare Workers");
+  if(cairoPremium)await addCairoPremiumPrelude(pdf,{artwork:cairoArtwork,logo,
+    fonts:{latin:regular,latinBold:bold},language:"en"});
   const intro=pdf.addPage([W,H]);
-  header(intro,company,"PROPERTY OFFER",printable(project),bold,regular,logo);
-  intro.drawRectangle({x:LEFT,y:H-191,width:RIGHT-LEFT,height:45,color:pale});
-  intro.drawText("UNIT "+shorten(unit.code,40),{x:LEFT+18,y:H-174,size:19,font:bold,color:navy});
+  header(intro,company,cairoPremium?"YOUR CAIRO PLAZA UNIT":"PROPERTY OFFER",printable(project),bold,regular,logo);
+  intro.drawRectangle({x:LEFT,y:H-191,width:RIGHT-LEFT,height:45,color:cairoPremium?navy:pale});
+  intro.drawText("UNIT "+shorten(unit.code,40),{x:LEFT+18,y:H-174,size:19,font:bold,color:cairoPremium?gold:navy});
   pair(intro,"Offer date",issuedAt, H-225,regular,bold);
   pair(intro,"Project",project,H-269,regular,bold);
   pair(intro,"Unit code",unit.code,H-313,regular,bold);
@@ -257,5 +262,6 @@ export async function createPropertyOfferPdf({company,logoUrl,project,unit,issue
       row(page,index,[entry.number===null?"-":String(entry.number),type,entry.due||"-",formatOfferMoney(entry.amount)],y,regular);y-=23;
     });
   }
+  if(cairoPremium)addCairoPremiumPageNumbers(pdf,2,{latin:regular,latinBold:bold});
   return pdf.save({useObjectStreams:false});
 }

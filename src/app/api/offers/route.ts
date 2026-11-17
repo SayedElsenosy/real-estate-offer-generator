@@ -9,6 +9,7 @@ import { calculateVidaWorkbookSchedule, isVidaWorkbookPlanId } from "@/lib/vida-
 import { getCairoOfferLocation } from "@/lib/cairo-offer-location";
 import { getNasaOfferLocation } from "@/lib/nasa-offer-location";
 import { getVidaPdfDrawing } from "@/lib/vida-brochure-download";
+import { getCairoPremiumArtwork } from "@/lib/cairo-premium-assets";
 import { unitKey } from "@/lib/unit-code";
 import type { FloorGeometry } from "@/lib/pdf";
 import { createPropertyOfferPdf } from "@/lib/workers-pdf";
@@ -83,6 +84,8 @@ export async function POST(req: NextRequest) {
     const nasaLocation = projectId==="nasa"
       ? await getNasaOfferLocation(user.id,unit.code,unit.floor) : null;
     const vidaDrawing = projectId==="vida" ? await getVidaPdfDrawing(user.id,unit) : null;
+    const cairoPremium=projectId===CAIRO_PLAZA_PROJECT_ID;
+    const cairoArtwork=cairoPremium?await getCairoPremiumArtwork(user.id):null;
     // Workers-safe PDF engine. The former renderer relied on a Node URL/file
     // environment and failed with "Invalid URL string" on Cloudflare.
     // Only the approved sales-facing fields (including validated restaurant pricing)
@@ -90,7 +93,8 @@ export async function POST(req: NextRequest) {
     const { sourceHeaders: _sourceHeaders, sourceCells: _sourceCells, ...offerUnit } = unit;
     const common = {
       company: project.companyName, logoUrl: trustedLogo(project.logoUrl),
-      project: project.name, unit: offerUnit, issuedAt, floor: geometry, location, nasaLocation, vidaDrawing, schedules
+      project: project.name, unit: offerUnit, issuedAt, floor: geometry, location, nasaLocation, vidaDrawing,
+      cairoPremium,cairoArtwork,schedules
     };
     // The studio renders its PDF locally. Prices, availability and financial
     // schedules still come exclusively from the authenticated server checks.
