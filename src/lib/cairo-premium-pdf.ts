@@ -158,7 +158,7 @@ function overview(pdf:PDFDocument,fonts:Fonts,logo:PDFImage|null,lang:"ar"|"en",
   }
   p.drawLine({start:{x:43,y:202},end:{x:W-43,y:202},thickness:.9,color:CAIRO_GOLD});
   if(lang==="ar"){
-    arabic(p,"10 شوارع داخلية بعرض 11 متر",W-43,167,12,true,fonts,CAIRO_NAVY);
+    arabic(p,"عشرة شوارع داخلية بعرض أحد عشر مترًا",W-43,167,12,true,fonts,CAIRO_NAVY);
   }else{
     text(p,"10 INTERNAL STREETS  /  11 m WIDTH",43,167,12,true,fonts,CAIRO_NAVY);
   }
